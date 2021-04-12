@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 		std::cerr << "getaddrinfo: " + std::string(gai_strerror(status)) << std::endl;
 		return 2;
 	}
+	std::cout << hints.ai_socktype << " " << res->ai_socktype << std::endl;
 	std::cout << "IP address for: " + std::string(argv[1]) << std::endl;
 	for (p = res; p != nullptr; p = p->ai_next) {
 		void *addr;
@@ -54,3 +55,25 @@ int main(int argc, char *argv[]) {
 	freeaddrinfo(res);
 	return 0;
 }
+
+//int main() {
+//
+//	char hostName[100];
+//	size_t size;
+//	int status;
+//	hostent *tester;
+//
+//	memset(&hostName, 0, 100);
+//	size = 100;
+//	if ((status = gethostname(hostName, size)) == -1)
+//		std::cerr << "Error" << std::endl;
+//	std::cout << hostName << " " << size << std::endl;
+//	tester = gethostbyname(hostName);
+//	for (int i = 0; tester->h_addr_list[i]; i++)
+//		std::cout <<"Address list: " << tester->h_addr_list[i] << std::endl;
+//	std::cout << "Address type: " << tester->h_addrtype << std::endl;
+//	for (int i = 0; tester->h_aliases[i] ; ++i)
+//		std::cout << "Aliases: " << tester->h_aliases[i] << std::endl;
+//	std::cout << "Address name: " << tester->h_name << std::endl;
+//	std::cout << "Address length: " << tester->h_length << std::endl;
+//}
