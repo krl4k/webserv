@@ -21,7 +21,6 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 	}
 	_server = parser->getServers();
 
-	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
 
 
 	for (int i = 0; i < _server.size(); ++i) {
@@ -29,11 +28,12 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 			throw std::exception();
 		}
 	}
+	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
 
 //	test(_server);
 
 //	lifeCycle();
-	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
+//	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
 
 	testCycle();
 }
@@ -123,19 +123,53 @@ WebServer::~WebServer() {
 
 
 int WebServer::testCycle() {
-	int clientSocket;
+
+	fd_set current_sockets, ready_sockets;
+
+	int maxSockSize = _server[0]->getSocketFd();
+//	int maxSockSize = FD_SETSIZE;
+	FD_ZERO(&current_sockets);
+//	for (size_t i = 0; i < _server.size(); ++i) {
+		FD_SET(_server[0]->getSocketFd(), &current_sockets);
+//		maxSockSize = _server[0]->getSocketFd();
+//	}
+	std::cout << "max sock size  = " << maxSockSize << std::endl;
 
 	while (true){
 		std::cout << "Waiting for connection!" << std::endl;
-		clientSocket = acceptNewConnection();
-		if (clientSocket < 0){
-			std::cerr << "bad client socket" << std::endl;
+		ready_sockets = current_sockets;
+
+		// todo check 5 param (timeout)
+		if (select(maxSockSize + 1, &ready_sockets, NULL, NULL, NULL) < 0){
+			std::cerr << "select error" << std::endl;
 			return -1;
 		}
-		std::cout << "Client connected" << std::endl;
+		std::cout << "after select!" << std::endl;
+		for (int i = 0; i <= maxSockSize; ++i) {
+			if (FD_ISSET(i, &ready_sockets)) {
+ 				for (size_t j = 0; j < _server.size(); ++j) {
+ 					std::cout << "i = " << i << std::endl;
+					if (i == _server[0]->getSocketFd()) {
+						// new connection
+						int clientSocket = acceptNewConnection();
 
-		handle_connection(clientSocket);
-
+						if (clientSocket < 0){
+							std::cerr << "bad client socket" << std::endl;
+							return -1;
+						}
+						FD_SET(clientSocket, &current_sockets);
+						std::cout << "Client connected = " << clientSocket << std::endl;
+						if (clientSocket > maxSockSize)
+							maxSockSize = clientSocket;
+						std::cout << "maxsocksize = " << maxSockSize << std::endl;
+					}
+					else {
+						handle_connection(i);
+						FD_CLR(i, &current_sockets);
+					}
+				}
+			}
+		}
 	}
 }
 
