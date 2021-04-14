@@ -73,21 +73,30 @@ void Server::setErrorPage(const std::pair<std::string, std::string> &errorPage) 
 }
 
 int Server::createSocket() {
-	struct addrinfo hints;
-	struct addrinfo *servInfo;
 
-	hints.ai_family = 0;
+
+//	hints.ai_family = 0;
 //	std::cout << "sizeof hints " << sizeof(hints) << std::endl;
 
 //	memset(servInfo, 0, sizeof(hints));
 //	bzero(&hints, sizeof(addrinfo));
 
 //	memset(&hints, 0,1);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
+//	hints.ai_family = AF_UNSPEC;
+//	hints.ai_socktype = SOCK_STREAM;
+//	hints.ai_flags = AI_PASSIVE;
 
-	if ((_socketFd = socket(PF_INET, hints.ai_socktype, 0)) == -1){
+/*	sockfd = socket(PF_INET, SOCK_STREAM, 0);
+
+	my_addr.sin_family = AF_INET;
+	my_addr.sin_port = htons(MYPORT);     // short, сетевой порядок байт
+	my_addr.sin_addr.s_addr = inet_addr(«10.12.110.57»);
+	memset(my_addr.sin_zero, ‘, sizeof my_addr.sin_zero);
+
+	bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr);*/
+
+
+	if ((_socketFd = socket(PF_INET, SOCK_STREAM, 0)) == -1){
 		std::cerr << "socket descriptor failure" << std::endl;
 		return -1;
 	}
@@ -99,18 +108,17 @@ int Server::createSocket() {
 		return -2;
 	}
 
+	struct sockaddr_in *myAddr;
+
+	bzero(&myAddr, sizeof myAddr);
+	myAddr->sin_family = AF_INET;
+	myAddr->sin_port = htons(8000);
+	myAddr->sin_addr.s_addr = inet_addr(_host.c_str());
+	memset(myAddr->sin_zero, 0, sizeof myAddr);
+	//	myAddr->sin_addr.s_addr = inet_addr(_host.c_str());
 
 
-	struct addrinfo *temp;
-	struct sockaddr_in *sockaddrIn = (sockaddr_in *)malloc(sizeof(sockaddr_in));
-
-	bzero(&sockaddrIn, sizeof sockaddrIn);
-	sockaddrIn->sin_family = AF_INET;
-//	sockaddrIn->sin_addr.s_addr = inet_addr(_host.c_str());
-	sockaddrIn->sin_addr.s_addr = htonl(INADDR_ANY);
-	sockaddrIn->sin_port = htons(8000);
-
-	if (bind(_socketFd, (struct sockaddr *)(&sockaddrIn), sizeof(sockaddrIn)) == -1){
+	if (bind(_socketFd, (struct sockaddr *)(&myAddr), sizeof(myAddr)) == -1){
 		std::cerr << "bind failure!" << std::endl;
 		return -3;
 	}

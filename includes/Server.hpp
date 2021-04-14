@@ -72,6 +72,7 @@ public:
 
 private:
 	std::string							_host;
+	// todo: int _port "stoi"
 	std::string							_port;
 	std::string							_serverName;
 	std::map<std::string, Location>		_location;

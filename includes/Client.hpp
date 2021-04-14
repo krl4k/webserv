@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <dns_util.h>
+//#include <../include/HttpRequest.hpp>
+#include "HttpRequest.hpp"
 
 class Client {
 
@@ -31,7 +33,7 @@ public:
 	int getSocketFd() const;
 
 private:
-//	HttpRequest* 	_request;
+	HttpRequest* 	_request;
 //	HttpResponse*	_response;
 	std::string		_host;
 	std::string		_port;

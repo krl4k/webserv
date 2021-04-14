@@ -28,11 +28,13 @@ public:
 
 
 
-		private:
+private:
 	std::string 			_configFileName;
 	std::vector<Client *> 	_client;
 	std::vector<Server *> 	_server;
 	uint					_countMaxFd;
+
+	int test(std::vector<Server *> vector);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP
