@@ -15,6 +15,7 @@
 
 class WebServer {
 public:
+
 	WebServer(const char *fileName, int countMaxFd = 1000);
 	WebServer();
 
@@ -23,7 +24,6 @@ public:
 	WebServer(const WebServer &other);
 
 	WebServer &operator=(const WebServer &other);
-	int lifeCycle();
 
 
 
@@ -35,6 +35,10 @@ private:
 	uint					_countMaxFd;
 
 	int test(std::vector<Server *> vector);
+	int lifeCycle();
+
+
+	int testCycle();
 };
 
 #endif //WEBSERV_WEBSERVER_HPP

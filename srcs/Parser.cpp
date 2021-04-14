@@ -28,7 +28,19 @@ Parser::Parser(const std::string &fileName) {
 
 	Server *server = new Server;
 	server->setHost("127.0.0.1");
-	server->setPort("8080");
+
+	std::string port = "8080";
+	int p;
+	/*
+	 * look like this
+	 */
+	try {
+		p = std::stoi(port);
+	}catch (std::exception &exception){
+		throw std::runtime_error("bad port!");
+	}
+	server->setPort(p);
+
 	server->setServerName("ppizda");
 	_servers.push_back(server);
 }

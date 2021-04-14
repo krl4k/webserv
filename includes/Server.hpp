@@ -40,9 +40,7 @@ public:
 
 	void setHost(const std::string &host);
 
-	const std::string &getPort() const;
-
-	void setPort(const std::string &port);
+	uint16_t getPort() const;
 
 	const std::string &getServerName() const;
 
@@ -70,10 +68,11 @@ public:
 
 	void setFds(const std::vector<int> &fds);
 
+	void setPort(uint16_t port);
+
 private:
 	std::string							_host;
-	// todo: int _port "stoi"
-	std::string							_port;
+	uint16_t							_port;
 	std::string							_serverName;
 	std::map<std::string, Location>		_location;
 	std::string							_root;

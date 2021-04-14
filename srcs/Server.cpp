@@ -32,11 +32,7 @@ void Server::setHost(const std::string &host) {
 	_host = host;
 }
 
-const std::string &Server::getPort() const {
-	return _port;
-}
-
-void Server::setPort(const std::string &port) {
+void Server::setPort(uint16_t port) {
 	_port = port;
 }
 
@@ -73,59 +69,32 @@ void Server::setErrorPage(const std::pair<std::string, std::string> &errorPage) 
 }
 
 int Server::createSocket() {
-
-
-//	hints.ai_family = 0;
-//	std::cout << "sizeof hints " << sizeof(hints) << std::endl;
-
-//	memset(servInfo, 0, sizeof(hints));
-//	bzero(&hints, sizeof(addrinfo));
-
-//	memset(&hints, 0,1);
-//	hints.ai_family = AF_UNSPEC;
-//	hints.ai_socktype = SOCK_STREAM;
-//	hints.ai_flags = AI_PASSIVE;
-
-/*	sockfd = socket(PF_INET, SOCK_STREAM, 0);
-
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(MYPORT);     // short, сетевой порядок байт
-	my_addr.sin_addr.s_addr = inet_addr(«10.12.110.57»);
-	memset(my_addr.sin_zero, ‘, sizeof my_addr.sin_zero);
-
-	bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr);*/
-
-
-	if ((_socketFd = socket(PF_INET, SOCK_STREAM, 0)) == -1){
-		std::cerr << "socket descriptor failure" << std::endl;
+	int listenFd;
+	struct sockaddr_in servaddr;
+	if ((listenFd = socket(PF_INET, SOCK_STREAM, 0)) < 0){
+		std::cerr << "fatal error! socket!" << std::endl;
 		return -1;
 	}
-
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = inet_addr(_host.c_str());
+	servaddr.sin_port = htons(_port);
 	int yes = 1;
-	if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
-		std::cerr << "set socket opt error" << std::endl;
-		close(_socketFd);
+	if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	{
+		std::cerr << "error setsockopt" << std::endl;
+		close(listenFd);
 		return -2;
 	}
-
-	struct sockaddr_in *myAddr;
-
-	bzero(&myAddr, sizeof myAddr);
-	myAddr->sin_family = AF_INET;
-	myAddr->sin_port = htons(8000);
-	myAddr->sin_addr.s_addr = inet_addr(_host.c_str());
-	memset(myAddr->sin_zero, 0, sizeof myAddr);
-	//	myAddr->sin_addr.s_addr = inet_addr(_host.c_str());
-
-
-	if (bind(_socketFd, (struct sockaddr *)(&myAddr), sizeof(myAddr)) == -1){
-		std::cerr << "bind failure!" << std::endl;
+	if ((bind(listenFd, (struct sockaddr * )&servaddr, sizeof servaddr)) < 0){
+		std::cerr << "bind error" << std::endl;
+		return -2;
+	}
+	if (listen(listenFd, 1000) < 0){ // todo delete magic number!
+		std::cerr << "listen error!" << std::endl;
 		return -3;
 	}
-	if (listen(_socketFd, 1000) == -1){
-		std::cerr << "listen failure!" << std::endl;
-		return -4;
-	}
+	_socketFd = listenFd;
 	return _socketFd;
 }
 
@@ -140,54 +109,6 @@ void Server::setFds(const std::vector<int> &fds) {
 Server::~Server() {
 }
 
-//void server::addrInfoInit() {
-//	ft_memset(&_hints, 0, sizeof (_hints));
-//	_hints.ai_family = PF_INET;
-//	_hints.ai_socktype = SOCK_STREAM;
-//	_hints.ai_flags = AI_PASSIVE;
-//}
-//
-//void server::socketInit() {
-//	addrInfoInit();
-//	int temp = 1;
-//	if ((_socket = socket(_hints.ai_family, _hints.ai_socktype, 0)) == -1){
-//		std::cout << "socket descriptor failure" << std::endl;
-//
-//	}
-//	/** setsockopt sets the options specified by the arguments.
-//	 *  If we want to use our socket again, we need to specify that
-//	 *  we can reuse it.
-//	 * */
-//	if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &temp, sizeof(int)) == -1){
-//		std::cout << "set socket opt error" << std::endl;
-//		close(_socket);
-//		throw std::exception();
-//	}
-//}
-//
-//void server::bind_socket() {
-//	struct addrinfo *temp;
-//	int result;
-//
-//	std::string IP = "127.0.0.1";
-//	/** https://www.opennet.ru/docs/RUS/socket/node4.html */
-//
-//	_sockaddr->sin_family = AF_INET;
-//	_sockaddr->sin_port = htons(_port); /** put port here*/
-//	_sockaddr->sin_addr.s_addr = inet_addr(IP);/** PUT IP HERE or htonl*/
-//
-//	//_hints.ai_addr = _sockaddr;
-//
-//	if (bind(_socket, (stdruct sockaddr *)(&_sockaddr), sizeof (_sockaddr)) == -1){
-//		std::cerr << "Failed to bind" << std::endl;
-//		throw std::exception();
-//	}
-//	connectServ();
-//}
-//
-//void server::connectServ() {
-//	int backlog = 100;
-//	if (listen(_socket, backlog) == -1){
-//		std::cerr << "Failed to listen" << std::endl;
-//	}
-//}
+uint16_t Server::getPort() const {
+	return _port;
+}

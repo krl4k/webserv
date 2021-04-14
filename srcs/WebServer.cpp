@@ -20,124 +20,28 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 	}
 	_server = parser->getServers();
 
+
 //	std::cout << "server = " << _server[0]->getPort() << std::endl;
 //	std::cout << "server = " << _server[0]->getHost() << std::endl;
 
-//	for (int i = 0; i < _server.size(); ++i) {
-//		if (_server[i]->createSocket() < 0){
-//			//clear vectors±!
-//			throw std::exception();
-//		}
-//	}
+	for (int i = 0; i < _server.size(); ++i) {
+		if (_server[i]->createSocket() < 0){
+			throw std::exception();
+		}
+	}
 
-	test(_server);
+//	test(_server);
 
 //	lifeCycle();
+	testCycle();
 }
 
 WebServer::WebServer() : _configFileName("/configs/default.conf"), _countMaxFd(1000) {}
 
-typedef enum
-{
-	eHTTP_UNKNOWN = 0
-	,eHTTP_CONNECT
-	,eHTTP_DELETE
-	,eHTTP_GET
-	,eHTTP_HEAD
-	,eHTTP_OPTIONS
-	,eHTTP_PATCH
-	,eHTTP_POST
-	,eHTTP_PUT
-	,eHTTP_TRACE
-}	eHTTPMethod;
-
-typedef struct
-{
-	eHTTPMethod type;
-	char        path[255];
-}sHTTPHeader;
-
-void parse_http_request(const char *apstrRequest, sHTTPHeader *apHeader)
-{
-	int  type_length = 0;
-	char type[255]   = {0};
-	int  index = 0;
-
-	apHeader->type = eHTTP_UNKNOWN;
-
-	sscanf(&apstrRequest[index], "%s", type);
-	type_length = strlen(type);
-
-	if(type_length == 3)
-	{
-		if(type[0] == 'G' && type[1] == 'E' && type[2] == 'T')
-			apHeader->type = eHTTP_GET;
-
-		index += type_length + 1;
-		sscanf(&apstrRequest[index], "%s", apHeader->path);
-		std::cout << "Path = " << apHeader->path << std::endl;
-	}
-}
-
-void send_message(int aSock, const char *apstrMessage)
-{
-	char buffer[65536] = { 0 };
-
-	strcat(buffer, "HTTP/1.1 200 OK\n\n");
-	strcat(buffer, "<h1>");
-	strcat(buffer, apstrMessage);
-	strcat(buffer, "</h1>");
-
-	int len = strlen(buffer);
-
-	std::cout << "msg: " << buffer << std::endl;
-	send(aSock, buffer, len, 0);
-}
-
-void send_404(int aSock)
-{
-	const char *buffer = "HTTP/1.1 404 \n\n";
-	int len = strlen(buffer);
-	send(aSock, buffer, len, 0);
-}
-
-void http_request(int aSock)
-{
-	const int request_buffer_size = 65536;
-	char      request[request_buffer_size];
-
-	int bytes_recvd = recv(aSock, request, request_buffer_size - 1, 0);
-
-	if (bytes_recvd < 0)
-	{
-		fprintf(stderr, "error recv\n");
-		return;
-	}
-	request[bytes_recvd] = '\0';
-
-	printf("request:\n%s\n",request);
-
-	sHTTPHeader req;
-	parse_http_request(request, &req);
-
-	if(req.type == eHTTP_GET)
-	{
-		send_message(aSock,"sensor 1: 10<br> "
-						   "sensor 2: 20<br>"
-						   "<a href=\"http://cppprosto.blogspot.com/2017/09/blog-post_23.html\">"
-						   "external</a><br><a href=\""
-						   "internal\">internal</a>"
-						   "welcome to the club, body</a><br><a href=\"");
-	}
-	else
-	{
-		send_404(aSock);
-	}
-}
 
 
 int WebServer::lifeCycle(){
-	while (1){
+/*	while (1){
 		int fd;
 		fd_set readFds, writeFds;
 		int maxFd = _server[(_server.size() - 1)]->getSocketFd();
@@ -157,7 +61,7 @@ int WebServer::lifeCycle(){
 			if (fd > maxFd)
 				maxFd = fd;
 		}
-		/* maybe timeout!!!!!!!!!!! */
+		*//* maybe timeout!!!!!!!!!!! *//*
 
 		int res = select(maxFd + 1, &readFds, NULL, NULL, NULL);
 		if (res < 1){
@@ -180,12 +84,12 @@ int WebServer::lifeCycle(){
 			_client.push_back(new Client(fdClient, _server[0]->getHost(), _server[0]->getPort()));
 
 		if (FD_ISSET(_client[0]->getSocketFd(), &readFds)) {
-			http_request(_client[0]->getSocketFd());
+//			http_request(_client[0]->getSocketFd());
 		}
 
 //
 
-	/*	for (size_t i = 0; i < _server.size(); ++i) {
+	*//*	for (size_t i = 0; i < _server.size(); ++i) {
 			if (FD_ISSET(_server[i]->getSocketFd(), &readFds)){
 
 				socklen_t l = sizeof(_server[i]->getSocketAddr());
@@ -200,13 +104,14 @@ int WebServer::lifeCycle(){
 			if (FD_ISSET(_client[i]->getSocketFd(), &readFds)){
 				http_request(_client[i]->getSocketFd());
 			}
-		}*/
+		}*//*
 
 
 
 		if (_countMaxFd)
 			break;
 	}
+	return (0);*/
 	return (0);
 }
 
@@ -230,8 +135,8 @@ int WebServer::test(std::vector<Server *> vector) {
 	servaddr.sin_family = AF_INET;
 //	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_addr.s_addr = inet_addr(_server[0]->getHost().c_str());
-	int port = std::stoi(_server[0]->getPort());
-	servaddr.sin_port = htons(port);
+//	int port = std::stoi(_server[0]->getPort());
+	servaddr.sin_port = htons(_server[0]->getPort());
 
 	int yes = 1;
 	if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
@@ -290,4 +195,45 @@ int WebServer::test(std::vector<Server *> vector) {
 	}
 
 
+}
+
+int WebServer::testCycle() {
+
+	int connectFd;
+	const int MAXLINE = 1024;
+	char recvLine[MAXLINE];
+	char sendLine[MAXLINE];
+	int n;
+	for (;;) {
+		struct sockaddr_in clientAddr;
+		socklen_t clientAddrLen = sizeof clientAddr;
+		char client_info[MAXLINE];
+		std::cout << "waiting connection!" << std::endl;
+
+		connectFd = accept(_server[0]->getSocketFd(), (struct sockaddr *)&clientAddr, &clientAddrLen);
+		inet_ntop(AF_INET, &clientAddr, client_info, MAXLINE);
+
+		std::cout << "Client connection: " << client_info << std::endl;
+
+		bzero(recvLine, MAXLINE);
+
+		while ((n = read(connectFd, recvLine, MAXLINE -1 )) > 0){
+			if (recvLine[n - 1] == '\n'){
+				break;
+			}
+			bzero(recvLine, MAXLINE);
+		}
+		if (n < 0){
+			std::cerr << "read error!!!" << std::endl;
+			return -3;
+		}
+
+		std::cout << "request:\n" << recvLine << std::endl;
+		strcpy(sendLine, "HTTP/1.1 200 OK\r\n\r\nlol pizda!!!");
+
+		std::cout << "response:\n" << sendLine << std::endl;
+
+		send(connectFd, sendLine, strlen(sendLine), 0);
+		close(connectFd);
+	}
 }
