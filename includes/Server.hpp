@@ -57,13 +57,6 @@ public:
 	const std::pair<std::string, std::string> &getErrorPage() const;
 
 	void setErrorPage(const std::pair<std::string, std::string> &errorPage);
-
-private:
-	int									_socketFd;
-	struct sockaddr_in					_socketAddr;
-
-	std::vector<int>					_fds;
-public:
 	const std::vector<int> &getFds() const;
 
 	void setFds(const std::vector<int> &fds);
@@ -71,6 +64,10 @@ public:
 	void setPort(uint16_t port);
 
 private:
+	int									_socketFd;
+	struct sockaddr_in					_socketAddr;
+
+//	std::vector<int>					_fds;
 	std::string							_host;
 	uint16_t							_port;
 	std::string							_serverName;

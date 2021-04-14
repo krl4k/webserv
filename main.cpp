@@ -1,17 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <netdb.h>
-#include <time.h>
-#include <sys/socket.h>
 #include <iostream>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netinet/in.h>
-
 // http://localhost:8000
 
 #include "includes/WebServer.hpp"

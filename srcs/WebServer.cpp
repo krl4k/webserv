@@ -3,6 +3,7 @@
 //
 
 
+#include <fstream>
 #include "../includes/WebServer.hpp"
 
 WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMaxFd) {
@@ -20,9 +21,8 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 	}
 	_server = parser->getServers();
 
+	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
 
-//	std::cout << "server = " << _server[0]->getPort() << std::endl;
-//	std::cout << "server = " << _server[0]->getHost() << std::endl;
 
 	for (int i = 0; i < _server.size(); ++i) {
 		if (_server[i]->createSocket() < 0){
@@ -33,10 +33,12 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 //	test(_server);
 
 //	lifeCycle();
+	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
+
 	testCycle();
 }
 
-WebServer::WebServer() : _configFileName("/configs/default.conf"), _countMaxFd(1000) {}
+WebServer::WebServer() : _configFileName("/configs/default.conf"), _countMaxFd(1000) {}//todo delete MN
 
 
 
@@ -119,6 +121,82 @@ WebServer::~WebServer() {
 
 }
 
+
+int WebServer::testCycle() {
+	int clientSocket;
+
+	while (true){
+		std::cout << "Waiting for connection!" << std::endl;
+		clientSocket = acceptNewConnection();
+		if (clientSocket < 0){
+			std::cerr << "bad client socket" << std::endl;
+			return -1;
+		}
+		std::cout << "Client connected" << std::endl;
+
+		handle_connection(clientSocket);
+
+	}
+}
+
+std::string readFile(const std::string& fileName) {
+	std::ifstream f(fileName);
+	f.seekg(0, std::ios::end);
+	size_t size = f.tellg();
+	std::string s(size, ' ');
+	f.seekg(0);
+	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
+	return s;
+}
+
+#define BUFSIZE 1024
+void WebServer::handle_connection(int clientSocket) {
+	char buffer[BUFSIZE];
+	size_t bytes_read;
+	size_t msgSize = 0;
+	std::string paths[3] = {"/srcs", "/", "includes"};
+
+	while ((bytes_read = read(clientSocket, buffer + msgSize, sizeof(buffer) - msgSize - 1)) > 0){
+		msgSize += bytes_read;
+		if (msgSize > BUFSIZE - 1 || buffer[msgSize - 1 ] == '\n')
+			break;
+	}
+	if (bytes_read < 0){
+		std::cerr << "recv error !" << std::endl;
+		return;
+	}
+	buffer[msgSize - 1] = '\0';
+
+	char actualPath[PATH_MAX];
+	std::cout << "buffer = " << buffer << std::endl;
+	if (realpath(buffer, actualPath) == 0){
+		std::cout << "bad path: " << actualPath << std::endl;
+		send(clientSocket, "bad path!!!", 10, 0);
+		close(clientSocket);
+		return;
+	}
+
+	std::cout << "actual path = " << actualPath << std::endl;
+	std::cout << "request:\n" << buffer << std::endl;
+	int fileFd = open(actualPath, O_RDONLY);
+	if (fileFd < 0) {
+		std::cerr << "file not found" << std::endl;
+		close(clientSocket);
+		return;
+	}
+
+//	sleep(1);
+
+	while ((bytes_read = read(fileFd, buffer, BUFSIZE)) > 0){
+//		std::cout << "sending " << bytes_read << " bytes" << std::endl;
+		send(clientSocket, buffer, bytes_read, 0);
+	}
+	close(clientSocket);
+	close(fileFd);
+	std::cout << "connnection close" << std::endl;
+}
+
+
 int WebServer::test(std::vector<Server *> vector) {
 	int listenFd;
 	struct sockaddr_in servaddr;
@@ -169,9 +247,9 @@ int WebServer::test(std::vector<Server *> vector) {
 
 		connectFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 		inet_ntop(AF_INET, &clientAddr, client_info, MAXLINE);
-		
+
 		std::cout << "Client connection: " << client_info << std::endl;
-		
+
 		bzero(recvLine, MAXLINE);
 
 		while ((n = read(connectFd, recvLine, MAXLINE -1 )) > 0){
@@ -197,43 +275,18 @@ int WebServer::test(std::vector<Server *> vector) {
 
 }
 
-int WebServer::testCycle() {
-
-	int connectFd;
-	const int MAXLINE = 1024;
-	char recvLine[MAXLINE];
-	char sendLine[MAXLINE];
-	int n;
-	for (;;) {
-		struct sockaddr_in clientAddr;
-		socklen_t clientAddrLen = sizeof clientAddr;
-		char client_info[MAXLINE];
-		std::cout << "waiting connection!" << std::endl;
-
-		connectFd = accept(_server[0]->getSocketFd(), (struct sockaddr *)&clientAddr, &clientAddrLen);
-		inet_ntop(AF_INET, &clientAddr, client_info, MAXLINE);
-
-		std::cout << "Client connection: " << client_info << std::endl;
-
-		bzero(recvLine, MAXLINE);
-
-		while ((n = read(connectFd, recvLine, MAXLINE -1 )) > 0){
-			if (recvLine[n - 1] == '\n'){
-				break;
-			}
-			bzero(recvLine, MAXLINE);
-		}
-		if (n < 0){
-			std::cerr << "read error!!!" << std::endl;
-			return -3;
-		}
-
-		std::cout << "request:\n" << recvLine << std::endl;
-		strcpy(sendLine, "HTTP/1.1 200 OK\r\n\r\nlol pizda!!!");
-
-		std::cout << "response:\n" << sendLine << std::endl;
-
-		send(connectFd, sendLine, strlen(sendLine), 0);
-		close(connectFd);
+int WebServer::acceptNewConnection() {
+	int clientSocket;
+	struct sockaddr_in clientAddr;
+	char clientInfo[100];
+	socklen_t addrSize = sizeof(sockaddr_in);
+	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
+	clientSocket = accept(_server[0]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
+	if (clientSocket < 0){
+		std::cerr << "accept failed" << std::endl;
+		return -1;
 	}
+	inet_ntop(AF_INET, &clientAddr, clientInfo, addrSize);
+	return clientSocket;
 }
+

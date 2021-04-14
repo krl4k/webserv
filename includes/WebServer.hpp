@@ -12,6 +12,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Parser.hpp"
+#include <fcntl.h>
 
 class WebServer {
 public:
@@ -39,6 +40,10 @@ private:
 
 
 	int testCycle();
+
+	void handle_connection(int clientSocket);
+
+	int acceptNewConnection();
 };
 
 #endif //WEBSERV_WEBSERVER_HPP

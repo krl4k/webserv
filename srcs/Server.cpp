@@ -95,16 +95,10 @@ int Server::createSocket() {
 		return -3;
 	}
 	_socketFd = listenFd;
+	_socketAddr = servaddr;
 	return _socketFd;
 }
 
-const std::vector<int> &Server::getFds() const {
-	return _fds;
-}
-
-void Server::setFds(const std::vector<int> &fds) {
-	_fds = fds;
-}
 
 Server::~Server() {
 }

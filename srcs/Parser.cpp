@@ -40,8 +40,9 @@ Parser::Parser(const std::string &fileName) {
 		throw std::runtime_error("bad port!");
 	}
 	server->setPort(p);
-
 	server->setServerName("ppizda");
+//	std::map<std::string, Location>()
+//	server->setLocation()
 	_servers.push_back(server);
 }
 
