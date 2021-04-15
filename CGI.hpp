@@ -12,7 +12,7 @@ class Client {};
 #include <map>
 #include <unistd.h>
 #include <fcntl.h>
-#include <string.h>
+#include <cstring>
 #define RED "\x1B[31m"
 #define ENDC "\x1B[0m"
 
@@ -26,8 +26,9 @@ public:
 	CGI &operator=(const CGI &other);
 
 	void 	setArguments();
-	char **getEnvironment() const;
-	void executeCGI(HTTPResponse &response);
+	void	getEnvironment() const;
+	void	executeCGI(HTTPResponse &response);
+	void	mapToString(std::map <std::string, std::string> env);
 
 private:
 	char 			**_environment;
@@ -37,9 +38,10 @@ private:
 	HTTPResponse	*_response;
 	HTTPRequest		*_request;
 
+	void 			setEnvironment();
 	char *strjoin(char *s1, char *s2);
 	void makeProccess();
-	bool checkAlloc();
+	char **mapToString(std::map<std::string, std::string> env);
 };
 
 
