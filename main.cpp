@@ -20,49 +20,16 @@
 
 int main() {
 
-	int socketFD, clientSocketFD;
-	socklen_t cliLen;
-	char buffer[256];
-	struct sockaddr_in serverAddress, clientAddress;
-	int n;
-
-	if ((socketFD = socket(AF_INET, SOCK_STREAM, 0)) == FAILURE)
-		std::cerr << "Error opening socket" << std::endl;
-	bzero(&serverAddress, sizeof(serverAddress));
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
-	serverAddress.sin_port = htons(8080);
-	if (bind(socketFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == FAILURE)
-		std::cerr << "Error on socker binding" << std::endl;
-	listen(socketFD, 5);
-	cliLen = sizeof(clientAddress);
-
-	if ((clientSocketFD = accept(socketFD, (struct sockaddr *) &clientAddress, &cliLen)) == FAILURE)
-		std::cerr << "Error on accept" << std::endl;
-	bool flag = true;
-	std::string msg;
-	while (1)
+	int i;
+	char **env = (char **)calloc(sizeof(char *), 18);
+	for (i = 0; i < 18; i++)
 	{
-		if (flag) {
-			std::cout << "Server: got connection from "  << inet_ntoa(clientAddress.sin_addr) << " port ";
-			std::cout << ntohs(clientAddress.sin_port) << std::endl;
-			flag = false;
-			bzero(buffer, 256);
-			send(clientSocketFD, "Hello from server\0", 18, 0);
-		}
-		bzero(buffer, 256);
-		if ((n = recv(clientSocketFD, buffer, 255, 0)) == FAILURE)
-			std::cerr << "Error reading from socket" << std::endl;
-		std::cout << "Here is the message from client: " << buffer << std::endl;
-		if (!flag) {
-			std::cout << "Enter your message: ";
-			getline(std::cin, msg);
-			send(clientSocketFD, msg.c_str(), std::strlen(msg.c_str()), 0);
-		}
+		env[i] = strdup("ab");
 	}
-	close(clientSocketFD);
-	close(socketFD);
-	return 0;
+	std::cout << i << std::endl;
+	env[i] = nullptr;
+	for (i = 0; env[i]; i++);
+	std::cout << i << std::endl;
 }
 
 
