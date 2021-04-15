@@ -61,11 +61,16 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 	if (bufSize == 0) {
 		throw std::runtime_error("fd closed");
 	}
-	if (buffer[bufSize - 1] == '\n')
+//	if (buffer[bufSize - 1] == '\n')
 		_state = State::FULL;
 	buffer[bufSize] = '\0';
+
+	_buffer = strdup(buffer);
+
+	free(buffer);
+
 //	_state = HttpRequest::State::FULL;
-	ft_strjoin(_buffer,buffer);
+//	ft_strjoin(_buffer,buffer);
 //	if (strcmp(_buffer, "\r\n\r\n")) {
 //
 //	}
@@ -73,4 +78,12 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 
 int HttpRequest::getState() const {
 	return _state;
+}
+
+char *HttpRequest::getBuffer() const {
+	return _buffer;
+}
+
+void HttpRequest::setState(int state) {
+	_state = state;
 }

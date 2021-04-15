@@ -17,6 +17,7 @@ public:
 
 	virtual ~HttpResponse();
 
+	void generate();
 
 private:
 	char	*_buffer;

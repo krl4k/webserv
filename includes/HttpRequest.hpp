@@ -30,6 +30,10 @@ public:
 
 	HttpRequest &operator=(const HttpRequest &other);
 
+	void setState(int state);
+
+	char *getBuffer() const;
+
 	int getState() const;
 
 

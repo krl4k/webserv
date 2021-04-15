@@ -15,7 +15,8 @@ public:
 		REQUEST_PARSE,
 		CREATING_RESPONSE,
 		ACCEPT_RESPONSE,
-		CLOSE
+		CLOSE,
+		WAITING,
 	};
 
 	Client(int fd, const std::string &host, uint16_t  port, const sockaddr_in &addr);

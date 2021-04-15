@@ -13,3 +13,7 @@ HttpResponse::~HttpResponse() {
 
 }
 
+void HttpResponse::generate() {
+//	_buffer = new char[1024];
+
+}

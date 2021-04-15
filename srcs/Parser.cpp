@@ -41,9 +41,15 @@ Parser::Parser(const std::string &fileName) {
 	}
 	server->setPort(p);
 	server->setServerName("ppizda");
+
+	Server *server2 = new Server;
+	server2->setPort(8000);
+	server2->setHost("127.0.0.1");
+	server2->setServerName("qwe");
 //	std::map<std::string, Location>()
 //	server->setLocation()
 	_servers.push_back(server);
+	_servers.push_back(server2);
 }
 
 

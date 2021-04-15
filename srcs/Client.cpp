@@ -40,6 +40,7 @@ HttpResponse *Client::getResponse() const {
 }
 
 Client::~Client() {
+	std::cout << "client clone connection" << std::endl;
 	close(_socketFd);
 	delete _request;
 	delete _response;

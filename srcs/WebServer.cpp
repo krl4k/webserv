@@ -42,34 +42,40 @@ int WebServer::testCycle() {
 
 
 	_maxFdSize = _server.back()->getSocketFd();
-	FD_ZERO(&readFdSet);
-	FD_ZERO(&writeFdSet);
-	
-	for (size_t i = 0; i < _server.size(); ++i)
-		FD_SET(_server[i]->getSocketFd(), &readFdSet);
+//	FD_ZERO(&readFdSet);
+//	FD_ZERO(&writeFdSet);
 
+	struct timeval timeout;
 	while (true) {
+		FD_ZERO(&readFdSet);
+		FD_ZERO(&writeFdSet);
 
+		for (size_t i = 0; i < _server.size(); ++i)
+			FD_SET(_server[i]->getSocketFd(), &readFdSet);
+
+//		timeout.tv_sec = 0;
+//		timeout.tv_usec = 10;
 		std::cout << "Waiting for connection!" << std::endl;
 		for (int i = 0; i < _client.size(); ++i) {
 			//clients sockets
 			int fd = _client[i]->getSocketFd();
 			FD_SET(fd, &readFdSet);
-			if (_client[i]->getState() != Client::State::REQUEST_PARSE)
+			if (_client[i]->getState() != Client::State::REQUEST_PARSE){
 				FD_SET(fd, &writeFdSet);
+			}
 			if (fd > _maxFdSize)
 				_maxFdSize = fd;
 		}
 
 		// todo check 5 param (timeout)
-		int r = select(_maxFdSize + 1, &readFdSet, NULL, NULL, NULL);
+		int r = select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
 
 		for (int i = 0; i < _server.size(); ++i) {
 			if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
 				Client *newClient = acceptNewConnection(i);
 				if (newClient == nullptr) {
 					std::cerr << "accept error!" << std::endl;
-					return (-1);
+					return (-1);// todo delete this
 				}
 				int clientSocket = newClient->getSocketFd();
 				FD_SET(clientSocket, &readFdSet);
@@ -77,15 +83,11 @@ int WebServer::testCycle() {
 				_client.push_back(newClient);
 				if (clientSocket > _maxFdSize)
 					_maxFdSize = clientSocket;
-				fcntl(clientSocket, F_SETFL, (fcntl(clientSocket, F_GETFL, 0)) | O_NONBLOCK);
+//				fcntl(clientSocket, F_SETFL, (fcntl(clientSocket, F_GETFL, 0)) | O_NONBLOCK);
 			}
 		}
-
-
 		for (int i = 0; i < _client.size(); ++i) {
 			int fd = _client[i]->getSocketFd();
-//			char buffer[BUFSIZ];
-//			int bytes_read = 0;
 
 			if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
 				readRequest(_client[i]);
@@ -96,23 +98,26 @@ int WebServer::testCycle() {
 
 			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
 				generateResponce(_client[i]);
-//				createResponse();
 			}
 
 			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
 				//sendResponce!
 
-				send(fd, "sdf\n\0", 5, 0);
-				// if all data send state = CLOSE
+				std::cout << "send!" << std::endl;
+				int s = send(fd, 	"HTTP/1.1 200 OK\r\n\r\n"
+			 				"fasd\r\n\r\n\0", strlen("HTTP/1.1 200 OK\r\n\r\nfasd\r\n\r\n"), 0);
+				std::cout << "s = " << s << std::endl;
 
-				_client[i]->setState(Client::State::REQUEST_PARSE);
-				FD_CLR(_client[i]->getSocketFd(), &writeFdSet);
+
+
+//				_client[i]->setState(Client::State::REQUEST_PARSE);
+//				_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
+				_client[i]->setState(Client::State::CLOSE);
 			}
 			if (_client[i]->getState() == Client::State::CLOSE) {
-				FD_CLR(fd, &writeFdSet);
-				FD_CLR(fd, &readFdSet);
 				std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
 				std::vector<Client *>::iterator it = _client.begin() + i;
+				close(fd);
 				_client.erase(it);
 			}
 		}
@@ -128,9 +133,11 @@ void WebServer::readRequest(Client *&client) {
 
 	int bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZ, 0);
-	if (bytes_read < 0) {
+	if (bytes_read <= 0) {
 		std::cerr << "recv error!" << std::endl;
-//		client->setState(Client::State::CLOSE);
+		client->setState(Client::State::CLOSE);
+//		close(client->getSocketFd());
+
 		free(buffer);
 		return;
 	}
@@ -147,7 +154,7 @@ void WebServer::readRequest(Client *&client) {
 	}
 
 
-	std::cout << "request:" << buffer << std::endl;
+	std::cout << "request:" << client->getRequest()->getBuffer() << std::endl;
 
 
 }
@@ -181,7 +188,9 @@ Client *WebServer::acceptNewConnection(int i) {
 }
 
 void WebServer::generateResponce(Client *&pClient) {
-	std::cout << "generate responce" << std::endl;
+
+	pClient->getResponse()->generate();
+
 
 	pClient->setState(Client::State::ACCEPT_RESPONSE);
 
