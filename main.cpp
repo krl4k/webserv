@@ -1,5 +1,4 @@
 #include <iostream>
-// http://localhost:8000
 
 #include "includes/WebServer.hpp"
 
@@ -7,6 +6,7 @@ int main(int argc, char **argv) {
 	if (argc <= 2){
 		try {
 			WebServer webServer(argv[1]);
+			webServer.start();
 		} catch (std::exception &exception) {
 			std::cerr << "Server dont started!" << std::endl;
 		}

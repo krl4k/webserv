@@ -4,13 +4,36 @@
 
 #include "../includes/Client.hpp"
 
+
+
+Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in &addr) :
+	_socketFd(fd), _host(host), _port(port), _addr(addr), _msgSize(0), _buffer(strdup("")){
+	_request = new HttpRequest();
+	_state = State::REQUEST_PARSE;
+//	_response = new HttpResponse();
+}
+
+
+Client::Client() {
+
+}
+
+int Client::getState() const {
+	return _state;
+}
+
 int Client::getSocketFd() const {
 	return _socketFd;
 }
 
-bool Client::isEmpty() const {
-	return _empty;
+void Client::setState(int state) {
+	_state = state;
 }
 
-Client::Client(int fd, const std::string host, const std::string port) : _socketFd(fd), _host(host), _port(port){
+HttpRequest *Client::getRequest() const {
+	return _request;
+}
+
+HttpResponse *Client::getResponse() const {
+	return _response;
 }

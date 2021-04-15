@@ -17,7 +17,7 @@
 class WebServer {
 public:
 
-	WebServer(const char *fileName, int countMaxFd = 1000);
+	WebServer(const char *fileName = "/configs/default.conf");
 	WebServer();
 
 	virtual ~WebServer();
@@ -26,14 +26,13 @@ public:
 
 	WebServer &operator=(const WebServer &other);
 
-
-
+	void start();
 
 private:
 	std::string 			_configFileName;
 	std::vector<Client *> 	_client;
 	std::vector<Server *> 	_server;
-	uint					_countMaxFd;
+	uint					_maxFdSize;
 
 	int test(std::vector<Server *> vector);
 	int lifeCycle();
@@ -43,7 +42,11 @@ private:
 
 	void handle_connection(int clientSocket);
 
-	int acceptNewConnection();
+	Client * acceptNewConnection(int i);
+
+	void readRequest(Client *&client);
+
+	void generateResponce(Client *&pClient);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP

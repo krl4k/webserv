@@ -3,44 +3,47 @@
 #include <string>
 #include <iostream>
 #include <dns_util.h>
-//#include <../include/HttpRequest.hpp>
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+
+
 
 class Client {
-
 public:
+	enum State{
+		CREATED,
+		REQUEST_PARSE,
+		CREATING_RESPONSE,
+		ACCEPT_RESPONSE,
+		CLOSE
+	};
+
+	Client(int fd, const std::string &host, uint16_t  port, const sockaddr_in &addr);
+
+
+	int getSocketFd() const;
+	int getState() const;
+
+	HttpRequest *getRequest() const;
+
+	HttpResponse *getResponse() const;
+
+	void setState(int state);
+
+private:
+	int				_socketFd;
+	HttpRequest* 	_request;
+	HttpResponse*	_response;
+	struct sockaddr_in _addr;
+	std::string		_host;
+	uint16_t 		_port;
+	int 			_state;
+
+	char	*_buffer;
+	size_t	_msgSize;
+
 	Client();
 	Client(Client const &other);
-
-	Client(int fd, const std::string host, const std::string port);
-
-	uint32_t getHost() const;
-	uint16_t getPort() const;
-
-	int loadData();
-	std::string *getData();
-	bool sendData(const char * buffer, const size_t size) const;
-
-
-private:
-//	enum state{
-//		WAITING,
-//		READY,
-//
-//	};
-	int				_socketFd;
-public:
-	int getSocketFd() const;
-
-private:
-	HttpRequest* 	_request;
-//	HttpResponse*	_response;
-	std::string		_host;
-	std::string		_port;
-	std::string		*_buffer;
-	bool 			_empty;
-public:
-	bool isEmpty() const;
 
 };
 

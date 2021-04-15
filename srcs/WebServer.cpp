@@ -6,12 +6,7 @@
 #include <fstream>
 #include "../includes/WebServer.hpp"
 
-WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMaxFd) {
-	if (!fileName)
-		_configFileName = "/configs/default.conf";
-	else
-		_configFileName = fileName;
-
+WebServer::WebServer(const char *fileName) : _configFileName(fileName){
 	Parser *parser;
 	try {
 		parser = new Parser(_configFileName);
@@ -20,158 +15,124 @@ WebServer::WebServer(const char *fileName, int countMaxFd) : _countMaxFd(countMa
 		throw std::exception();
 	}
 	_server = parser->getServers();
+	delete parser;
+	std::cout << "Server inited!" << std::endl;
+}
 
-
-
+void WebServer::start() {
 	for (int i = 0; i < _server.size(); ++i) {
 		if (_server[i]->createSocket() < 0){
+			std::cerr << "Socket dont creating!" << std::endl;
 			throw std::exception();
 		}
 	}
-	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
-
-//	test(_server);
-
-//	lifeCycle();
-//	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
-
 	testCycle();
 }
 
-WebServer::WebServer() : _configFileName("/configs/default.conf"), _countMaxFd(1000) {}//todo delete MN
 
-
-
-int WebServer::lifeCycle(){
-/*	while (1){
-		int fd;
-		fd_set readFds, writeFds;
-		int maxFd = _server[(_server.size() - 1)]->getSocketFd();
-
-		FD_ZERO(&readFds);
-		FD_ZERO(&writeFds);
-		for (size_t i = 0; i < _server.size(); ++i) {
-			FD_SET(_server[i]->getSocketFd(), &readFds);
-		}
-
-		for (size_t i = 0; i < _client.size(); ++i) {
-			fd = _client[i]->getSocketFd();
-			FD_SET(fd, &readFds);
-			if (_client[i]->isEmpty()){
-				FD_SET(fd, &writeFds);
-			}
-			if (fd > maxFd)
-				maxFd = fd;
-		}
-		*//* maybe timeout!!!!!!!!!!! *//*
-
-		int res = select(maxFd + 1, &readFds, NULL, NULL, NULL);
-		if (res < 1){
-			if (errno != EINTR){
-				std::cout << "error select!" << std::endl;
-			}else{
-				std::cout << "signal!" << std::endl;
-			}
-			continue;
-		}
-		if (res == 0){
-			std::cout << "time out handle" << std::endl;
-			continue;
-		}
-
-		socklen_t l = sizeof(_server[0]->getSocketAddr());
-		int fdClient = accept(_server[0]->getSocketFd(), (struct sockaddr *)&(_server[0]->getSocketAddr()), &l);
-
-		if (fdClient > 0)
-			_client.push_back(new Client(fdClient, _server[0]->getHost(), _server[0]->getPort()));
-
-		if (FD_ISSET(_client[0]->getSocketFd(), &readFds)) {
-//			http_request(_client[0]->getSocketFd());
-		}
-
-//
-
-	*//*	for (size_t i = 0; i < _server.size(); ++i) {
-			if (FD_ISSET(_server[i]->getSocketFd(), &readFds)){
-
-				socklen_t l = sizeof(_server[i]->getSocketAddr());
-				int fdClient = accept(_server[i]->getSocketFd(), (struct sockaddr *)&(_server[i]->getSocketAddr()), &l);
-//				fcntl()
-				if (fdClient > 0)
-					_client.push_back(new Client(fdClient, _server[i]->getHost(), _server[i]->getPort()));
-			}
-		}
-
-		for (size_t i = 0; i < _client.size(); ++i) {
-			if (FD_ISSET(_client[i]->getSocketFd(), &readFds)){
-				http_request(_client[i]->getSocketFd());
-			}
-		}*//*
-
-
-
-		if (_countMaxFd)
-			break;
-	}
-	return (0);*/
-	return (0);
-}
+WebServer::WebServer() : _configFileName("/configs/default.conf"){}
 
 WebServer::~WebServer() {
-
+	// todo !
 }
 
 
 int WebServer::testCycle() {
+	fd_set readFdSet, writeFdSet;
 
-	fd_set current_sockets, ready_sockets;
 
-	int maxSockSize = _server[0]->getSocketFd();
-//	int maxSockSize = FD_SETSIZE;
-	FD_ZERO(&current_sockets);
-//	for (size_t i = 0; i < _server.size(); ++i) {
-		FD_SET(_server[0]->getSocketFd(), &current_sockets);
-//		maxSockSize = _server[0]->getSocketFd();
-//	}
-	std::cout << "max sock size  = " << maxSockSize << std::endl;
+	_maxFdSize = _server[_server.size() - 1]->getSocketFd();
+	FD_ZERO(&readFdSet);
+	FD_ZERO(&writeFdSet);
+	
+	for (size_t i = 0; i < _server.size(); ++i)
+		FD_SET(_server[i]->getSocketFd(), &readFdSet);
 
-	while (true){
+	while (true) {
+
 		std::cout << "Waiting for connection!" << std::endl;
-		ready_sockets = current_sockets;
+		for (int i = 0; i < _client.size(); ++i) {
+			//clients sockets
+			int fd = _client[i]->getSocketFd();
+			FD_SET(fd, &readFdSet);
+			if (_client[i]->getState() != Client::State::REQUEST_PARSE)
+				FD_SET(fd, &writeFdSet);
+			if (fd > _maxFdSize)
+				_maxFdSize = fd;
+		}
 
 		// todo check 5 param (timeout)
-		if (select(maxSockSize + 1, &ready_sockets, NULL, NULL, NULL) < 0){
-			std::cerr << "select error" << std::endl;
-			return -1;
-		}
-		std::cout << "after select!" << std::endl;
-		for (int i = 0; i <= maxSockSize; ++i) {
-			if (FD_ISSET(i, &ready_sockets)) {
- 				for (size_t j = 0; j < _server.size(); ++j) {
- 					std::cout << "i = " << i << std::endl;
-					if (i == _server[0]->getSocketFd()) {
-						// new connection
-						int clientSocket = acceptNewConnection();
+		int r = select(_maxFdSize + 1, &readFdSet, NULL, NULL, NULL);
 
-						if (clientSocket < 0){
-							std::cerr << "bad client socket" << std::endl;
-							return -1;
-						}
-						FD_SET(clientSocket, &current_sockets);
-						std::cout << "Client connected = " << clientSocket << std::endl;
-						if (clientSocket > maxSockSize)
-							maxSockSize = clientSocket;
-						std::cout << "maxsocksize = " << maxSockSize << std::endl;
-					}
-					else {
-						handle_connection(i);
-						FD_CLR(i, &current_sockets);
-					}
+		for (int i = 0; i < _server.size(); ++i) {
+			if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
+				Client *newClient = acceptNewConnection(i);
+				if (newClient == nullptr) {
+					std::cerr << "accept error!" << std::endl;
+					return (-1);
 				}
+				int clientSocket = newClient->getSocketFd();
+				FD_SET(clientSocket, &readFdSet);
+				std::cout << "Client connected = " << clientSocket << std::endl;
+				_client.push_back(newClient);
+				if (clientSocket > _maxFdSize)
+					_maxFdSize = clientSocket;
+				fcntl(clientSocket, F_SETFL, (fcntl(clientSocket, F_GETFL, 0)) | O_NONBLOCK);
 			}
+		}
+
+		for (int i = 0; i < _client.size(); ++i) {
+			int fd = _client[i]->getSocketFd();
+//			char buffer[BUFSIZ];
+//			int bytes_read = 0;
+
+			if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
+				readRequest(_client[i]);
+			}
+
+			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
+				generateResponce(_client[i]);
+//				createResponse();
+			}
+
+			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
+				//sendResponce!
+
+				send(fd, "sdf\0", 10, 0);
+				FD_CLR(_client[i]->getSocketFd(), &writeFdSet);
+			}
+
 		}
 	}
 }
+
+void WebServer::readRequest(Client *&client) {
+	char *buffer = (char *)malloc((BUFSIZ + 1) * (sizeof(char)));
+	if (!buffer){
+		std::cerr << "Malloc error!" << std::endl;
+		exit(0);
+	}
+
+	int bytes_read;
+	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZ, 0);
+	if (bytes_read < 0) {
+		std::cerr << "recv error!" << std::endl;
+		client->setState(Client::State::CLOSE);
+		free(buffer);
+		return;
+	}
+	client->getRequest()->parse(buffer, bytes_read);
+
+	if (client->getRequest()->getState() == HttpRequest::State::FULL){
+		client->setState(Client::State::CREATING_RESPONSE);
+	}
+
+
+	std::cout << "request:" << buffer << std::endl;
+
+
+}
+
 
 std::string readFile(const std::string& fileName) {
 	std::ifstream f(fileName);
@@ -183,6 +144,39 @@ std::string readFile(const std::string& fileName) {
 	return s;
 }
 
+
+
+Client *WebServer::acceptNewConnection(int i) {
+	int clientSocket;
+	struct sockaddr_in clientAddr;
+//	char clientInfo[100];
+	socklen_t addrSize = sizeof(sockaddr_in);
+	clientSocket = accept(_server[i]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
+	if (clientSocket < 0){
+		std::cerr << "accept failed" << std::endl;
+		return nullptr;
+	}
+//	inet_ntop(AF_INET, &clientAddr, clientInfo, addrSize);
+	Client *client = new Client(clientSocket, _server[i]->getHost(), _server[i]->getPort(), clientAddr);
+	return client;
+}
+
+void WebServer::generateResponce(Client *&pClient) {
+	std::cout << "generate responce" << std::endl;
+
+	pClient->setState(Client::State::ACCEPT_RESPONSE);
+
+//	pClient->getResponse().
+
+
+//	send(pClient->getSocketFd(),"fuck u\n\0", 8, 0);
+}
+
+
+
+
+
+/*
 #define BUFSIZE 1024
 void WebServer::handle_connection(int clientSocket) {
 	char buffer[BUFSIZE];
@@ -229,98 +223,4 @@ void WebServer::handle_connection(int clientSocket) {
 	close(fileFd);
 	std::cout << "connnection close" << std::endl;
 }
-
-
-int WebServer::test(std::vector<Server *> vector) {
-	int listenFd;
-	struct sockaddr_in servaddr;
-
-//	std::cout << "server port = " << vector[0]->getPort() << std::endl;
-//	std::cout << "server host = " << vector[0]->getHost() << std::endl;
-
-	if ((listenFd = socket(PF_INET, SOCK_STREAM, 0)) < 0){
-		std::cerr << "fatal error! socket!" << std::endl;
-		return -1;
-	}
-
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-//	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_addr.s_addr = inet_addr(_server[0]->getHost().c_str());
-//	int port = std::stoi(_server[0]->getPort());
-	servaddr.sin_port = htons(_server[0]->getPort());
-
-	int yes = 1;
-	if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-	{
-		std::cerr << "error setsockopt" << std::endl;
-		close(listenFd);
-		return -2;
-	}
-
-	if ((bind(listenFd, (struct sockaddr * )&servaddr, sizeof servaddr)) < 0){
-		std::cerr << "bind error" << std::endl;
-		return -2;
-	}
-	if (listen(listenFd, 1000) < 0){
-		std::cerr << "listen error!" << std::endl;
-		return -3;
-	}
-
-
-	int connectFd;
-	const int MAXLINE = 1024;
-	char recvLine[MAXLINE];
-	char sendLine[MAXLINE];
-	int n;
-	for (;;) {
-		struct sockaddr_in clientAddr;
-		socklen_t clientAddrLen = sizeof clientAddr;
-		char client_info[MAXLINE];
-		std::cout << "waiting connection!" << std::endl;
-
-		connectFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-		inet_ntop(AF_INET, &clientAddr, client_info, MAXLINE);
-
-		std::cout << "Client connection: " << client_info << std::endl;
-
-		bzero(recvLine, MAXLINE);
-
-		while ((n = read(connectFd, recvLine, MAXLINE -1 )) > 0){
-			if (recvLine[n - 1] == '\n'){
-				break;
-			}
-			bzero(recvLine, MAXLINE);
-		}
-		if (n < 0){
-			std::cerr << "read error!!!" << std::endl;
-			return -3;
-		}
-
-		std::cout << "request:\n" << recvLine << std::endl;
-		strcpy(sendLine, "HTTP/1.1 200 OK\r\n\r\nlol pizda!!!");
-
-		std::cout << "response:\n" << sendLine << std::endl;
-
-		send(connectFd, sendLine, strlen(sendLine), 0);
-		close(connectFd);
-	}
-
-
-}
-
-int WebServer::acceptNewConnection() {
-	int clientSocket;
-	struct sockaddr_in clientAddr;
-	char clientInfo[100];
-	socklen_t addrSize = sizeof(sockaddr_in);
-	std::cout << "server socket = " << _server[0]->getSocketFd() << std::endl;
-	clientSocket = accept(_server[0]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
-	if (clientSocket < 0){
-		std::cerr << "accept failed" << std::endl;
-		return -1;
-	}
-	inet_ntop(AF_INET, &clientAddr, clientInfo, addrSize);
-	return clientSocket;
-}
-
+*/
