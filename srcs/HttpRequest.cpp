@@ -58,9 +58,10 @@ char *ft_strjoin(char *&s1, char *&s2) {
 
 
 void HttpRequest::parse(char *buffer, int bufSize) {
-	if (buffer[bufSize] == '\0')
+	if (buffer[bufSize - 1] == '\n')
 		_state = State::FULL;
 	buffer[bufSize] = '\0';
+//	_state = HttpRequest::State::FULL;
 	ft_strjoin(_buffer,buffer);
 //	if (strcmp(_buffer, "\r\n\r\n")) {
 //

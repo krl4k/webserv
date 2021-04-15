@@ -88,6 +88,9 @@ int WebServer::testCycle() {
 
 			if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
 				readRequest(_client[i]);
+				if (_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
+					FD_SET(fd, &writeFdSet);
+				}
 			}
 
 			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
@@ -117,7 +120,7 @@ void WebServer::readRequest(Client *&client) {
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZ, 0);
 	if (bytes_read < 0) {
 		std::cerr << "recv error!" << std::endl;
-		client->setState(Client::State::CLOSE);
+//		client->setState(Client::State::CLOSE);
 		free(buffer);
 		return;
 	}
