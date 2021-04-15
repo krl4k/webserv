@@ -20,6 +20,7 @@ public:
 
 	Client(int fd, const std::string &host, uint16_t  port, const sockaddr_in &addr);
 
+	virtual ~Client();
 
 	int getSocketFd() const;
 	int getState() const;

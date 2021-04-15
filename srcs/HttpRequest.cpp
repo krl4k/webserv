@@ -58,6 +58,9 @@ char *ft_strjoin(char *&s1, char *&s2) {
 
 
 void HttpRequest::parse(char *buffer, int bufSize) {
+	if (bufSize == 0) {
+		throw std::runtime_error("fd closed");
+	}
 	if (buffer[bufSize - 1] == '\n')
 		_state = State::FULL;
 	buffer[bufSize] = '\0';

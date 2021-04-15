@@ -41,7 +41,7 @@ int WebServer::testCycle() {
 	fd_set readFdSet, writeFdSet;
 
 
-	_maxFdSize = _server[_server.size() - 1]->getSocketFd();
+	_maxFdSize = _server.back()->getSocketFd();
 	FD_ZERO(&readFdSet);
 	FD_ZERO(&writeFdSet);
 	
@@ -81,6 +81,7 @@ int WebServer::testCycle() {
 			}
 		}
 
+
 		for (int i = 0; i < _client.size(); ++i) {
 			int fd = _client[i]->getSocketFd();
 //			char buffer[BUFSIZ];
@@ -101,10 +102,19 @@ int WebServer::testCycle() {
 			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
 				//sendResponce!
 
-				send(fd, "sdf\0", 10, 0);
+				send(fd, "sdf\n\0", 5, 0);
+				// if all data send state = CLOSE
+
+				_client[i]->setState(Client::State::REQUEST_PARSE);
 				FD_CLR(_client[i]->getSocketFd(), &writeFdSet);
 			}
-
+			if (_client[i]->getState() == Client::State::CLOSE) {
+				FD_CLR(fd, &writeFdSet);
+				FD_CLR(fd, &readFdSet);
+				std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
+				std::vector<Client *>::iterator it = _client.begin() + i;
+				_client.erase(it);
+			}
 		}
 	}
 }
@@ -124,7 +134,13 @@ void WebServer::readRequest(Client *&client) {
 		free(buffer);
 		return;
 	}
-	client->getRequest()->parse(buffer, bytes_read);
+	try {
+		client->getRequest()->parse(buffer, bytes_read);
+	} catch (std::exception &exception) {
+		std::cout << "Connection closed" << std::endl;
+		client->setState(Client::State::CLOSE);
+		return;
+	}
 
 	if (client->getRequest()->getState() == HttpRequest::State::FULL){
 		client->setState(Client::State::CREATING_RESPONSE);

@@ -2,6 +2,7 @@
 // Created by Magnemite Winter on 4/11/21.
 //
 
+#include <unistd.h>
 #include "../includes/Client.hpp"
 
 
@@ -36,4 +37,10 @@ HttpRequest *Client::getRequest() const {
 
 HttpResponse *Client::getResponse() const {
 	return _response;
+}
+
+Client::~Client() {
+	close(_socketFd);
+	delete _request;
+	delete _response;
 }
