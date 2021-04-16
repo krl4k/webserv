@@ -21,7 +21,7 @@ public:
 
 	void clean(){
 		//free(_buffer);
-		this->_bufferSize = 0;
+		//this->_bufferSize = 0;
 		this->_buffer = strdup("");
 	}
 

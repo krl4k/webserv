@@ -4,6 +4,7 @@
 
 
 #include <fstream>
+#include <sstream>
 #include "../includes/WebServer.hpp"
 
 WebServer::WebServer(const char *fileName) : _configFileName(fileName){
@@ -36,7 +37,7 @@ WebServer::~WebServer() {
 	// todo !
 }
 
-
+[[noreturn]]
 int WebServer::testCycle() {
 
 
@@ -44,87 +45,107 @@ int WebServer::testCycle() {
 	_maxFdSize = _server.back()->getSocketFd();
 
 	struct timeval timeout;
+
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	int a = 1;
 	while (true) {
-		FD_ZERO(&readFdSet);
-		FD_ZERO(&writeFdSet);
-
-		// listen fd
-		for (size_t i = 0; i < _server.size(); ++i)
-			FD_SET(_server[i]->getSocketFd(), &readFdSet);
-
 		std::cout << "\nWaiting for connection!" << std::endl;
-
-		for (int i = 0; i < _client.size(); ++i) {
-			//clients sockets
-//			int fd = _client[i]->getSocketFd();
-			FD_SET(_client[i]->getSocketFd(), &readFdSet);
-			if (_client[i]->getState() != Client::State::REQUEST_PARSE){
-				FD_SET(_client[i]->getSocketFd(), &writeFdSet);
-			}
-			if (_client[i]->getSocketFd() > _maxFdSize)
-				_maxFdSize = _client[i]->getSocketFd();
-		}
-
+		initSocketSet(readFdSet, writeFdSet);
 		// todo check 5 param (timeout)
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
+//		if (res < 0)//delete this
+//			return -1;
+		acceptNewClient(readFdSet);
 
-		for (int i = 0; i < _server.size(); ++i) {
-			if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
-				Client *newClient = acceptNewConnection(i);
-				if (newClient == nullptr) {
-					std::cerr << "accept error!" << std::endl;
-					return (-1); // todo delete this
-				}
-				std::cout << "Client connected = " << newClient->getSocketFd() << std::endl;
-				_client.push_back(newClient);
-				if (newClient->getSocketFd() > _maxFdSize)
-					_maxFdSize = newClient->getSocketFd();
-//				fcntl(newClient->getSocketFd(), F_SETFL, O_NONBLOCK);
+		requestHandler(readFdSet, writeFdSet);
+	}
+}
+
+void WebServer::initSocketSet(fd_set &readFdSet, fd_set &writeFdSet) {
+	FD_ZERO(&readFdSet);
+	FD_ZERO(&writeFdSet);
+	for (size_t i = 0; i < _server.size(); ++i)
+		FD_SET(_server[i]->getSocketFd(), &readFdSet);
+	for (int i = 0; i < _client.size(); ++i) {
+		FD_SET(_client[i]->getSocketFd(), &readFdSet);
+		if (_client[i]->getState() != Client::State::REQUEST_PARSE){
+			FD_SET(_client[i]->getSocketFd(), &writeFdSet);
+		}
+		if (_client[i]->getSocketFd() > _maxFdSize)
+			_maxFdSize = _client[i]->getSocketFd();
+	}
+}
+
+void WebServer::acceptNewClient(fd_set &readFdSet) {
+	for (int i = 0; i < _server.size(); ++i) {
+		if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
+			Client *newClient = acceptNewConnection(i);
+			if (newClient == nullptr) {
+				std::cerr << "accept error!" << std::endl;
+				return;
+			}
+			fcntl(newClient->getSocketFd(), F_SETFL, O_NONBLOCK);
+			std::cout << "Client connected = " << newClient->getSocketFd() << std::endl;
+			_client.push_back(newClient);
+			if (newClient->getSocketFd() > _maxFdSize)
+				_maxFdSize = newClient->getSocketFd();
+		}
+	}
+}
+
+void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
+	for (int i = 0; i < _client.size(); ++i) {
+		int fd = _client[i]->getSocketFd();
+
+		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
+			try {
+				readRequest(_client[i]);
+			} catch (std::exception &exception) {
+				std::cerr << exception.what() << std::endl;
+				_client[i]->setState(Client::State::CLOSE);
+			}
+			if (_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
+				FD_SET(fd, &writeFdSet);
 			}
 		}
-		for (int i = 0; i < _client.size(); ++i) {
-			int fd = _client[i]->getSocketFd();
 
-			if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
-				readRequest(_client[i]);
-				if (_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
-					FD_SET(fd, &writeFdSet);
-				}
-			}
+		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
+			generateResponce(_client[i]);
+		}
 
-			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
-				generateResponce(_client[i]);
-			}
+		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
 
-			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
+			sendResponce(_client[i]);
+			_client[i]->getRequest()->clean();
 
-				sendResponce(_client[i]);
-//				close(fd);
+//			close(fd);
 
-				_client[i]->setState(Client::State::REQUEST_PARSE);
-			}
-			if (_client[i]->getState() == Client::State::CLOSE) {
-				std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
+//			_client[i]->setState(Client::State::REQUEST_PARSE);
+			_client[i]->setState(Client::State::REQUEST_PARSE);
+		}
+		if (_client[i]->getState() == Client::State::CLOSE) {
+			std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
 
-				_client[i]->getRequest()->clean(); //todo really
-				_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
-				_client[i]->setState(Client::State::REQUEST_PARSE);
-				std::vector<Client *>::iterator it = _client.begin() + i;
-				_client.erase(it);
-			}
+			_client[i]->getRequest()->clean(); //todo really
+			_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
+			_client[i]->setState(Client::State::REQUEST_PARSE);
+			std::vector<Client *>::iterator it = _client.begin() + i;
+			_client.erase(it);
 		}
 	}
 }
 
 void WebServer::readRequest(Client *&client) {
+	std::cout << "Aaaaaaa" << std::endl;
 	char buffer[65534];
 	int bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, 65534, 0);
 	if (bytes_read <= 0) {
-		std::cerr << "recv error!" << std::endl;
+//		std::cerr << "Recv error!" << std::endl;
 		client->setState(Client::State::CLOSE);
-		close(client->getSocketFd());
-		return;
+//		close(client->getSocketFd());
+		throw std::runtime_error("Client socket close!");
 	}
 	try {
 		client->getRequest()->parse(buffer, bytes_read);
@@ -163,7 +184,6 @@ Client *WebServer::acceptNewConnection(int i) {
 	socklen_t addrSize = sizeof(sockaddr_in);
 	clientSocket = accept(_server[i]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
 	if (clientSocket < 0){
-		std::cerr << "accept failed" << std::endl;
 		return nullptr;
 	}
 //	inet_ntop(AF_INET, &clientAddr, clientInfo, addrSize);
@@ -197,7 +217,7 @@ void WebServer::sendResponce(Client *&pClient) {
 				   "<p>My first paragraph.</p>\n"
 				   "\n"
 				   "</body>\n"
-				   "</html>");
+				   "</html>\r\n\r\n");
 
 	int len = strlen(buffer);
 	int s = send(pClient->getSocketFd(), buffer, len, 0);
@@ -207,56 +227,3 @@ void WebServer::sendResponce(Client *&pClient) {
 	pClient->setState(Client::State::REQUEST_PARSE);
 
 }
-
-
-
-
-
-/*
-#define BUFSIZE 1024
-void WebServer::handle_connection(int clientSocket) {
-	char buffer[BUFSIZE];
-	size_t bytes_read;
-	size_t msgSize = 0;
-	std::string paths[3] = {"/srcs", "/", "includes"};
-
-	while ((bytes_read = read(clientSocket, buffer + msgSize, sizeof(buffer) - msgSize - 1)) > 0){
-		msgSize += bytes_read;
-		if (msgSize > BUFSIZE - 1 || buffer[msgSize - 1 ] == '\n')
-			break;
-	}
-	if (bytes_read < 0){
-		std::cerr << "recv error !" << std::endl;
-		return;
-	}
-	buffer[msgSize - 1] = '\0';
-
-	char actualPath[PATH_MAX];
-	std::cout << "buffer = " << buffer << std::endl;
-	if (realpath(buffer, actualPath) == 0){
-		std::cout << "bad path: " << actualPath << std::endl;
-		send(clientSocket, "bad path!!!", 10, 0);
-		close(clientSocket);
-		return;
-	}
-
-	std::cout << "actual path = " << actualPath << std::endl;
-	std::cout << "request:\n" << buffer << std::endl;
-	int fileFd = open(actualPath, O_RDONLY);
-	if (fileFd < 0) {
-		std::cerr << "file not found" << std::endl;
-		close(clientSocket);
-		return;
-	}
-
-//	sleep(1);
-
-	while ((bytes_read = read(fileFd, buffer, BUFSIZE)) > 0){
-//		std::cout << "sending " << bytes_read << " bytes" << std::endl;
-		send(clientSocket, buffer, bytes_read, 0);
-	}
-	close(clientSocket);
-	close(fileFd);
-	std::cout << "connnection close" << std::endl;
-}
-*/

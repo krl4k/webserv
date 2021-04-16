@@ -37,9 +37,9 @@ public:
 	int getState() const;
 
 	void clean(){
-//		free(_buffer);
-//		_buffer = strdup("");
-//		_bufferLen = 0;
+		free(_buffer);
+		_buffer = strdup("");
+		_bufferLen = 0;
 	}
 
 

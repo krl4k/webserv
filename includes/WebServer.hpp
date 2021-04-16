@@ -38,7 +38,7 @@ private:
 	int lifeCycle();
 
 
-	int testCycle();
+	[[noreturn]] int testCycle();
 
 	void handle_connection(int clientSocket);
 
@@ -49,6 +49,12 @@ private:
 	void generateResponce(Client *&pClient);
 
 	void sendResponce(Client *&pClient);
+
+	void initSocketSet(fd_set &, fd_set &);
+
+	void acceptNewClient(fd_set &);
+
+	void requestHandler(fd_set &readFdSet, fd_set &writeFdSet);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP

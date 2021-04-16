@@ -91,11 +91,15 @@ int Server::createSocket() {
 		std::cerr << "bind error" << std::endl;
 		return -2;
 	}
-	fcntl(listenFd, F_SETFL, O_NONBLOCK);
+//	if (fcntl(listenFd, F_SETFL, O_NONBLOCK) < 0) {
+//		std::cerr << "фыкыныкыцыыл error" << std::endl;
+//		return -3;
+//	}
+
 
 	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
-		return -3;
+		return -4;
 	}
 	_socketFd = listenFd;
 	_socketAddr = servaddr;
