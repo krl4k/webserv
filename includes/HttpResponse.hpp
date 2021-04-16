@@ -19,6 +19,12 @@ public:
 
 	void generate();
 
+	void clean(){
+		//free(_buffer);
+		this->_bufferSize = 0;
+		this->_buffer = strdup("");
+	}
+
 private:
 	char	*_buffer;
 	int		startMsg;

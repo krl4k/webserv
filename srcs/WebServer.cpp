@@ -38,52 +38,48 @@ WebServer::~WebServer() {
 
 
 int WebServer::testCycle() {
+
+
 	fd_set readFdSet, writeFdSet;
-
-
 	_maxFdSize = _server.back()->getSocketFd();
-//	FD_ZERO(&readFdSet);
-//	FD_ZERO(&writeFdSet);
 
 	struct timeval timeout;
 	while (true) {
 		FD_ZERO(&readFdSet);
 		FD_ZERO(&writeFdSet);
 
+		// listen fd
 		for (size_t i = 0; i < _server.size(); ++i)
 			FD_SET(_server[i]->getSocketFd(), &readFdSet);
 
-//		timeout.tv_sec = 0;
-//		timeout.tv_usec = 10;
-		std::cout << "Waiting for connection!" << std::endl;
+		std::cout << "\nWaiting for connection!" << std::endl;
+
 		for (int i = 0; i < _client.size(); ++i) {
 			//clients sockets
-			int fd = _client[i]->getSocketFd();
-			FD_SET(fd, &readFdSet);
+//			int fd = _client[i]->getSocketFd();
+			FD_SET(_client[i]->getSocketFd(), &readFdSet);
 			if (_client[i]->getState() != Client::State::REQUEST_PARSE){
-				FD_SET(fd, &writeFdSet);
+				FD_SET(_client[i]->getSocketFd(), &writeFdSet);
 			}
-			if (fd > _maxFdSize)
-				_maxFdSize = fd;
+			if (_client[i]->getSocketFd() > _maxFdSize)
+				_maxFdSize = _client[i]->getSocketFd();
 		}
 
 		// todo check 5 param (timeout)
-		int r = select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
+		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
 
 		for (int i = 0; i < _server.size(); ++i) {
 			if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
 				Client *newClient = acceptNewConnection(i);
 				if (newClient == nullptr) {
 					std::cerr << "accept error!" << std::endl;
-					return (-1);// todo delete this
+					return (-1); // todo delete this
 				}
-				int clientSocket = newClient->getSocketFd();
-				FD_SET(clientSocket, &readFdSet);
-				std::cout << "Client connected = " << clientSocket << std::endl;
+				std::cout << "Client connected = " << newClient->getSocketFd() << std::endl;
 				_client.push_back(newClient);
-				if (clientSocket > _maxFdSize)
-					_maxFdSize = clientSocket;
-//				fcntl(clientSocket, F_SETFL, (fcntl(clientSocket, F_GETFL, 0)) | O_NONBLOCK);
+				if (newClient->getSocketFd() > _maxFdSize)
+					_maxFdSize = newClient->getSocketFd();
+//				fcntl(newClient->getSocketFd(), F_SETFL, O_NONBLOCK);
 			}
 		}
 		for (int i = 0; i < _client.size(); ++i) {
@@ -101,23 +97,19 @@ int WebServer::testCycle() {
 			}
 
 			if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
-				//sendResponce!
 
-				std::cout << "send!" << std::endl;
-				int s = send(fd, 	"HTTP/1.1 200 OK\r\n\r\n"
-			 				"fasd\r\n\r\n\0", strlen("HTTP/1.1 200 OK\r\n\r\nfasd\r\n\r\n"), 0);
-				std::cout << "s = " << s << std::endl;
+				sendResponce(_client[i]);
+//				close(fd);
 
-
-
-//				_client[i]->setState(Client::State::REQUEST_PARSE);
-//				_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
-				_client[i]->setState(Client::State::CLOSE);
+				_client[i]->setState(Client::State::REQUEST_PARSE);
 			}
 			if (_client[i]->getState() == Client::State::CLOSE) {
 				std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
+
+				_client[i]->getRequest()->clean(); //todo really
+				_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
+				_client[i]->setState(Client::State::REQUEST_PARSE);
 				std::vector<Client *>::iterator it = _client.begin() + i;
-				close(fd);
 				_client.erase(it);
 			}
 		}
@@ -125,20 +117,13 @@ int WebServer::testCycle() {
 }
 
 void WebServer::readRequest(Client *&client) {
-	char *buffer = (char *)malloc((BUFSIZ + 1) * (sizeof(char)));
-	if (!buffer){
-		std::cerr << "Malloc error!" << std::endl;
-		exit(0);
-	}
-
+	char buffer[65534];
 	int bytes_read;
-	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZ, 0);
+	bytes_read = recv(client->getSocketFd(), buffer, 65534, 0);
 	if (bytes_read <= 0) {
 		std::cerr << "recv error!" << std::endl;
 		client->setState(Client::State::CLOSE);
-//		close(client->getSocketFd());
-
-		free(buffer);
+		close(client->getSocketFd());
 		return;
 	}
 	try {
@@ -153,8 +138,7 @@ void WebServer::readRequest(Client *&client) {
 		client->setState(Client::State::CREATING_RESPONSE);
 	}
 
-
-	std::cout << "request:" << client->getRequest()->getBuffer() << std::endl;
+//	std::cout << "request:" << client->getRequest()->getBuffer() << std::endl;
 
 
 }
@@ -198,6 +182,30 @@ void WebServer::generateResponce(Client *&pClient) {
 
 
 //	send(pClient->getSocketFd(),"fuck u\n\0", 8, 0);
+}
+
+void WebServer::sendResponce(Client *&pClient) {
+	std::cout << "send!" << std::endl;
+	char buffer[65000];
+
+	strcat(buffer, "HTTP/1.1 200 OK\r\n\r\n");
+	strcat(buffer, "<!DOCTYPE html>\n"
+				   "<html>\n"
+				   "<body>\n"
+				   "\n"
+				   "<h1>My First Heading</h1>\n"
+				   "<p>My first paragraph.</p>\n"
+				   "\n"
+				   "</body>\n"
+				   "</html>");
+
+	int len = strlen(buffer);
+	int s = send(pClient->getSocketFd(), buffer, len, 0);
+	std::cout << "send = " << s << std::endl;
+
+	bzero(buffer, len);
+	pClient->setState(Client::State::REQUEST_PARSE);
+
 }
 
 

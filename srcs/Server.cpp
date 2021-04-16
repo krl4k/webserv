@@ -3,6 +3,7 @@
 //
 
 
+#include <fcntl.h>
 #include "../includes/Server.hpp"
 
 Server::Server(){
@@ -90,6 +91,8 @@ int Server::createSocket() {
 		std::cerr << "bind error" << std::endl;
 		return -2;
 	}
+	fcntl(listenFd, F_SETFL, O_NONBLOCK);
+
 	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
 		return -3;

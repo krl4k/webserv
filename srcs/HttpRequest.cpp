@@ -67,8 +67,6 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 
 	_buffer = strdup(buffer);
 
-	free(buffer);
-
 //	_state = HttpRequest::State::FULL;
 //	ft_strjoin(_buffer,buffer);
 //	if (strcmp(_buffer, "\r\n\r\n")) {

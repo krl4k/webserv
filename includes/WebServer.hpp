@@ -47,6 +47,8 @@ private:
 	void readRequest(Client *&client);
 
 	void generateResponce(Client *&pClient);
+
+	void sendResponce(Client *&pClient);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP
