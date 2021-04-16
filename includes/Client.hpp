@@ -15,6 +15,7 @@ public:
 		CREATING_RESPONSE,
 		ACCEPT_RESPONSE,
 		CLOSE,
+		FINISHED
 	};
 
 	Client(int fd, const std::string &host, uint16_t  port, const sockaddr_in &addr);

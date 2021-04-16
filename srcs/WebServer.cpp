@@ -39,21 +39,16 @@ WebServer::~WebServer() {
 
 [[noreturn]]
 int WebServer::testCycle() {
-
-
 	fd_set readFdSet, writeFdSet;
 	_maxFdSize = _server.back()->getSocketFd();
 
-	struct timeval timeout;
-
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
-	int a = 1;
 	while (true) {
 		std::cout << "\nWaiting for connection!" << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
 		// todo check 5 param (timeout)
+		std::cout << "before select" << std::endl;
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
+		std::cout << "after select" << std::endl;
 //		if (res < 0)//delete this
 //			return -1;
 		acceptNewClient(readFdSet);
@@ -69,8 +64,11 @@ void WebServer::initSocketSet(fd_set &readFdSet, fd_set &writeFdSet) {
 		FD_SET(_server[i]->getSocketFd(), &readFdSet);
 	for (int i = 0; i < _client.size(); ++i) {
 		FD_SET(_client[i]->getSocketFd(), &readFdSet);
-		if (_client[i]->getState() != Client::State::REQUEST_PARSE){
+		if (_client[i]->getState() != Client::State::REQUEST_PARSE && _client[i]->getState() != Client::State::FINISHED ){
 			FD_SET(_client[i]->getSocketFd(), &writeFdSet);
+		}
+		if (_client[i]->getState() == Client::State::FINISHED){
+			_client[i]->setState(Client::State::REQUEST_PARSE);
 		}
 		if (_client[i]->getSocketFd() > _maxFdSize)
 			_maxFdSize = _client[i]->getSocketFd();
@@ -97,8 +95,8 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 	for (int i = 0; i < _client.size(); ++i) {
 		int fd = _client[i]->getSocketFd();
-
 		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
+			std::cout << "Tut epta" << std::endl;
 			try {
 				readRequest(_client[i]);
 			} catch (std::exception &exception) {
@@ -115,14 +113,11 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 		}
 
 		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
-
 			sendResponce(_client[i]);
 			_client[i]->getRequest()->clean();
-
 //			close(fd);
-
 //			_client[i]->setState(Client::State::REQUEST_PARSE);
-			_client[i]->setState(Client::State::REQUEST_PARSE);
+			_client[i]->setState(Client::State::FINISHED);
 		}
 		if (_client[i]->getState() == Client::State::CLOSE) {
 			std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
