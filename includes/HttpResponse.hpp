@@ -11,6 +11,7 @@
 #include "../includes/HttpRequest.hpp"
 #include <map>
 #define RN "\r\n"
+#define BUFSIZE 65534
 #include <sstream>
 #include <unistd.h>
 #include <string>
@@ -38,9 +39,7 @@ public:
 	std::string createHeader(HttpRequest * req);
 	void		setBody(std::string & body);
 
-	std::string &getFinalResponse(){
-		return (_req_to_send);
-	}
+	char *getFinalResponse() const;
 
 	void initResponse(HttpRequest *req, int code, std::string & path);
 
@@ -54,7 +53,7 @@ private:
 	std::string					_error;
 	int							_code;
 	std::string					_buffer;
-	std::string					_req_to_send;
+	char						*_req_to_send;
 
 };
 

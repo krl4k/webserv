@@ -14,13 +14,16 @@ public:
 		REQUEST_PARSE,
 		CREATING_RESPONSE,
 		ACCEPT_RESPONSE,
-		CLOSE,
-		FINISHED
+		CLOSE
 	};
 
 	Client(int fd, const std::string &host, uint16_t  port, const sockaddr_in &addr);
 
 	virtual ~Client();
+
+
+	char *getInfo() const;
+
 
 	int getSocketFd() const;
 	int getState() const;
@@ -36,6 +39,7 @@ private:
 	HttpRequest* 	_request;
 	HttpResponse*	_response;
 	struct sockaddr_in _addr;
+	char				*_clientInfo;
 	std::string		_host;
 	uint16_t 		_port;
 	int 			_state;

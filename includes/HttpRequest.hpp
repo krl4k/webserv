@@ -30,11 +30,13 @@ public:
 
 	HttpRequest &operator=(const HttpRequest &other);
 
-	void setState(int state);
 
 	char *getBuffer() const;
 
 	int getState() const;
+	void setState(int state);
+
+
 
 	void clean(){
 		free(_buffer);
@@ -45,8 +47,17 @@ public:
 private:
 	char	*_buffer;
 	size_t	_bufferLen;
-	bool 	_full;
 	int		_state;
+
+
+	std::string _body;
+	std::string _request;
+	std::string _method;
+	std::string _path;
+	std::string _protVersion;
+	std::string _queryString;
+	std::string _Host;
+
 };
 
 #endif //WEBSERV_HTTPREQUEST_HPP

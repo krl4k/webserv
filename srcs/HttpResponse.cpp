@@ -21,7 +21,13 @@ HttpResponse::~HttpResponse() {
 }
 
 void HttpResponse::generate() {
-	//
+	char buffer[BUFSIZE];
+	strcat(buffer, "HTTP/1.1 200 OK\n"
+				   "Server: myserv\n"
+				   "Content-Length: 5\n"
+				   "Connection: Keep-Alive\r\n\r\n");
+	strcat(buffer, "a\r\n\r\n");
+	_req_to_send = buffer;
 }
 
 void HttpResponse::setStatusMessages() {
@@ -103,19 +109,19 @@ void HttpResponse::setBody(std::string &body) {
 
 
 void HttpResponse::initResponse(HttpRequest *req, int code, std::string &path) {
-	std::string head;
-	_code = code;
-	if (code != 0) {
-		_error = getErrorPage(code, path);
-		_body_size = _error.length();
-	}
-	head = createHeader(req);
-	if (!_error.empty())
-		_body = _error;
-	_req_to_send.append(head);
-	_req_to_send.append("\r\n");
-	_req_to_send.append(_body);
-	_req_to_send.append("\r\n");
+//	std::string head;
+//	_code = code;
+//	if (code != 0) {
+//		_error = getErrorPage(code, path);
+//		_body_size = _error.length();
+//	}
+//	head = createHeader(req);
+//	if (!_error.empty())
+//		_body = _error;
+//	_req_to_send.append(head);
+//	_req_to_send.append("\r\n");
+//	_req_to_send.append(_body);
+//	_req_to_send.append("\r\n");
 }
 
 std::string &HttpResponse::getCurrentDate() const {
@@ -125,4 +131,8 @@ std::string &HttpResponse::getCurrentDate() const {
 	date = "11 11 11";
 
 	return date;
+}
+
+char *HttpResponse::getFinalResponse() const{
+	return (_req_to_send);
 }
