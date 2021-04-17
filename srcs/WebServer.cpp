@@ -116,8 +116,8 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 			sendResponce(_client[i]);
 			_client[i]->getRequest()->clean();
 //			close(fd);
-//			_client[i]->setState(Client::State::REQUEST_PARSE);
-			_client[i]->setState(Client::State::FINISHED);
+			_client[i]->setState(Client::State::REQUEST_PARSE);
+//			_client[i]->setState(Client::State::FINISHED);
 		}
 		if (_client[i]->getState() == Client::State::CLOSE) {
 			std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
@@ -149,14 +149,9 @@ void WebServer::readRequest(Client *&client) {
 		client->setState(Client::State::CLOSE);
 		return;
 	}
-
 	if (client->getRequest()->getState() == HttpRequest::State::FULL){
 		client->setState(Client::State::CREATING_RESPONSE);
 	}
-
-//	std::cout << "request:" << client->getRequest()->getBuffer() << std::endl;
-
-
 }
 
 
@@ -206,7 +201,7 @@ void WebServer::sendResponce(Client *&pClient) {
 	strcat(buffer, "HTTP/1.1 200 OK\n"
 				"Server: myserv\n"
 				"Content-Length: 5\n"
-				"Connection: Closed\r\n\r\n");
+				"Connection: Keep-Alive\r\n\r\n");
 	strcat(buffer, "a\r\n\r\n");
 
 	int len = strlen(buffer);
