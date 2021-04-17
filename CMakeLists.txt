@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
-project(webserv)
+project(webserv1)
 
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(/ /includes /srcs)
 link_directories(/ /includes /srcs)
 
-add_executable(webserv
+add_executable(webserv1
         main.cpp
         srcs/WebServer.cpp
         srcs/Client.cpp

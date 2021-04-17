@@ -203,16 +203,11 @@ void WebServer::sendResponce(Client *&pClient) {
 	std::cout << "send!" << std::endl;
 	char buffer[65000];
 
-	strcat(buffer, "HTTP/1.1 200 OK\r\n\r\n");
-	strcat(buffer, "<!DOCTYPE html>\n"
-				   "<html>\n"
-				   "<body>\n"
-				   "\n"
-				   "<h1>My First Heading</h1>\n"
-				   "<p>My first paragraph.</p>\n"
-				   "\n"
-				   "</body>\n"
-				   "</html>\r\n\r\n");
+	strcat(buffer, "HTTP/1.1 200 OK\n"
+				"Server: myserv\n"
+				"Content-Length: 5\n"
+				"Connection: Closed\r\n\r\n");
+	strcat(buffer, "a\r\n\r\n");
 
 	int len = strlen(buffer);
 	int s = send(pClient->getSocketFd(), buffer, len, 0);
