@@ -8,6 +8,7 @@ class HTTPRequest{};
 class Client {};
 //#include "Client.hpp"
 #include <string>
+#include <iostream>
 #include <vector>
 #include <map>
 #include <unistd.h>
@@ -21,14 +22,10 @@ public:
 
 	CGI(Client *client, char *path);
 	virtual ~CGI();
-	CGI(const CGI &other);
-
-	CGI &operator=(const CGI &other);
 
 	void 	setArguments();
-	void	getEnvironment() const;
-	void	executeCGI(HTTPResponse &response);
-	void	mapToString(std::map <std::string, std::string> env);
+	char	**getEnvironment() const;
+	void	executeCGI(Client &client);
 
 private:
 	char 			**_environment;
@@ -37,11 +34,14 @@ private:
 	char			*_path;
 	HTTPResponse	*_response;
 	HTTPRequest		*_request;
+	CGI(const CGI &other);
+	CGI &operator=(const CGI &other);
 
 	void 			setEnvironment();
 	char *strjoin(char *s1, char *s2);
 	void makeProccess();
-	char **mapToString(std::map<std::string, std::string> env);
+	void mapToString(std::map<std::string, std::string> env);
+	char **clone(char **other);
 };
 
 

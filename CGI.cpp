@@ -3,8 +3,9 @@
 CGI::CGI(Client *client, char *path) {
 	_request = client.getRequest();
 	_response = client.getResponse();
-	_path = path;
+	_path = strdup(path);
 	setEnvironment();
+	executeCGI(client);
 }
 
 CGI::~CGI() {
@@ -21,15 +22,36 @@ CGI::CGI(const CGI &other) {
 	*this = other;
 }
 
+char **CGI::clone(char **other) {
+	char **newString;
+
+	if (!(newString = (char **)calloc((sizeof(other) + 1), sizeof(char*))))
+		throw std::bad_alloc();
+	for (int i = 0; i < sizeof(other); i++)
+		if (!(newString[i] = strdup(other[i])))
+			throw std::bad_alloc();
+	return newString;
+
+}
+
 CGI &CGI::operator=(const CGI &other) {
 	if (this == &other)
 		return *this;
-	_environment.clear();
-	_arguments.clear();
-	_environment = other._environment;
-	_arguments = other._arguments;
+	for (int i = 0; i < sizeof(_environment); i++)
+		free(_environment[i]);
+	free(_environment);
+	for (int i = 0; i < sizeof(_arguments); i++)
+		free(_arguments[i]);
+	free(_arguments);
+	try {
+		_environment = clone(other._environment);
+		_arguments = clone(other._arguments);
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 	_environmentSize = other._environmentSize;
-	_path = other._path;
+	if (!(_path = strdup(other._path)))
+		throw std::bad_alloc();
 	_response = other._response;
 	_request = other._request;
 	return *this;
@@ -80,35 +102,23 @@ void CGI::setEnvironment() {
 	env.clear();
 }
 
-char *CGI::strjoin(char *s1, char *s2) {
-
-	char *res;
-	int i = 0;
-
-	if (!s1 || !s2)
-		return nullptr;
-	if (!(res = (char *)malloc(sizeof(char) * (strlen(s1) + strlen(s2) + 1))))
-		return nullptr;
-	while (*s1)
-		res[i++] = *s1++;
-	while (*s2)
-		res[i++] = *s2++;
-	res[i] = '\0';
-	return res;
-}
-
-bool CGI::checkAlloc() {
-	int i;
-
-	for (i = 0; _environment[i]; i++);
-	if (i != _environmentSize)
-		return false;
-	return true;
-}
-
 void CGI::setArguments() {
-	_arguments.push_back(_path);
-	_arguments.push_back(_path);
+	_arguments = (char **)calloc(3, sizeof(char *));
+	_arguments[0] = strdup(_path);
+	_arguments[1] = strdup(_path);
 }
 
 char **CGI::getEnvironment() const {return _environment;}
+
+void	executeCGI(Client &client) {
+	pid_t	pid;
+	int 	pipesFD[2];
+	int		fd;
+	if ((pid = fork()) == -1) {
+		throw std::runtime_error("Can't fork proccess");
+	} else if (pid == 0) {
+		pipe(pipesFD);
+		dup2(pipesFD[1], fd);
+		dup2(pipesFD[0], client.getSocketFd());
+	}
+}
