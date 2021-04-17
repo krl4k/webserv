@@ -5,6 +5,9 @@
 
 #ifndef WEBSERV_WEBSERVER_HPP
 #define WEBSERV_WEBSERVER_HPP
+#define closesocket(socket)  close(socket)
+#define SOCKET	int
+#define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
 #include <string>
 #include <iostream>

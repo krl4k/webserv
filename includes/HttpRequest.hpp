@@ -42,7 +42,6 @@ public:
 		_bufferLen = 0;
 	}
 
-
 private:
 	char	*_buffer;
 	size_t	_bufferLen;

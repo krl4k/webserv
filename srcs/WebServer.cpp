@@ -7,13 +7,17 @@
 #include <sstream>
 #include "../includes/WebServer.hpp"
 
-WebServer::WebServer(const char *fileName) : _configFileName(fileName){
+WebServer::WebServer(const char *fileName){
+	if (fileName)
+		_configFileName = fileName;
+	else
+		_configFileName = "./configs/default.conf";
+
 	Parser *parser;
 	try {
 		parser = new Parser(_configFileName);
 	} catch (std::exception &exception) {
-		std::cout << exception.what() << std::endl;
-		throw std::exception();
+		throw std::runtime_error(exception.what());
 	}
 	_server = parser->getServers();
 	delete parser;
@@ -80,10 +84,10 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 		if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
 			Client *newClient = acceptNewConnection(i);
 			if (newClient == nullptr) {
-				std::cerr << "accept error!" << std::endl;
+				std::cerr << "Accept error!" << std::endl;
 				return;
 			}
-			fcntl(newClient->getSocketFd(), F_SETFL, O_NONBLOCK);
+			SET_NONBLOCK(newClient->getSocketFd());
 			std::cout << "Client connected = " << newClient->getSocketFd() << std::endl;
 			_client.push_back(newClient);
 			if (newClient->getSocketFd() > _maxFdSize)
@@ -115,16 +119,16 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
 			sendResponce(_client[i]);
 			_client[i]->getRequest()->clean();
-//			close(fd);
 			_client[i]->setState(Client::State::REQUEST_PARSE);
 //			_client[i]->setState(Client::State::FINISHED);
 		}
 		if (_client[i]->getState() == Client::State::CLOSE) {
 			std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
 
-			_client[i]->getRequest()->clean(); //todo really
-			_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
-			_client[i]->setState(Client::State::REQUEST_PARSE);
+//			_client[i]->getRequest()->clean(); //todo really
+//			_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
+//			_client[i]->setState(Client::State::REQUEST_PARSE);
+			delete _client[i];
 			std::vector<Client *>::iterator it = _client.begin() + i;
 			_client.erase(it);
 		}
