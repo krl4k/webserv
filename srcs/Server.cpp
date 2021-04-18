@@ -33,6 +33,14 @@ void Server::setHost(const std::string &host) {
 	_host = host;
 }
 
+void Server::setPort(const std::string & port) {
+	try{
+		_port = std::stoi(port);}
+	catch (std::exception &e){
+		std::cout << "Port setting error" << std::endl;
+	}
+}
+
 void Server::setPort(uint16_t port) {
 	_port = port;
 }
@@ -61,11 +69,11 @@ void Server::setRoot(const std::string &root) {
 	_root = root;
 }
 
-const std::pair<std::string, std::string> &Server::getErrorPage() const {
+const std::string &Server::getErrorPage() const {
 	return _errorPage;
 }
 
-void Server::setErrorPage(const std::pair<std::string, std::string> &errorPage) {
+void Server::setErrorPage(const std::string  &errorPage) {
 	_errorPage = errorPage;
 }
 

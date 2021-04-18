@@ -14,8 +14,8 @@ class Client {};
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstring>
-#define RED "\x1B[31m"
-#define ENDC "\x1B[0m"
+#include <ios>
+#include "Colors.hpp"
 
 class CGI {
 public:
@@ -40,7 +40,6 @@ private:
 	void 			setEnvironment();
 	char *strjoin(char *s1, char *s2);
 	void makeProccess();
-	void mapToString(std::map<std::string, std::string> env);
 	char **clone(char **other);
 };
 

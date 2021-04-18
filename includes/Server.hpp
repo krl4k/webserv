@@ -27,40 +27,35 @@ public:
 	Server &operator=(const Server &other);
 
 	int createSocket();
-
 	int getSocketFd() const;
 
 	void setSocketFd(int socketFd);
-
 	const sockaddr_in &getSocketAddr() const;
 
 	void setSocketAddr(const sockaddr_in &socketAddr);
 
 	const std::string &getHost() const;
-
 	void setHost(const std::string &host);
 
 	uint16_t getPort() const;
 
 	const std::string &getServerName() const;
-
 	void setServerName(const std::string &serverName);
 
 	const std::map<std::string, Location> &getLocation() const;
-
 	void setLocation(const std::map<std::string, Location> &location);
 
 	const std::string &getRoot() const;
-
 	void setRoot(const std::string &root);
 
-	const std::pair<std::string, std::string> &getErrorPage() const;
+	const std::string &getErrorPage() const;
 
-	void setErrorPage(const std::pair<std::string, std::string> &errorPage);
+	void setErrorPage(const std::string &errorPage);
+
 	const std::vector<int> &getFds() const;
 
 	void setFds(const std::vector<int> &fds);
-
+	void setPort(const std::string & port);
 	void setPort(uint16_t port);
 
 private:
@@ -73,7 +68,7 @@ private:
 	std::string							_serverName;
 	std::map<std::string, Location>		_location;
 	std::string							_root;
-	std::pair<std::string, std::string>	_errorPage;
+	std::string	_errorPage;
 
 //	std::map<>
 
