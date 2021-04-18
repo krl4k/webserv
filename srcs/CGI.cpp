@@ -37,12 +37,19 @@ char **CGI::clone(char **other) {
 CGI &CGI::operator=(const CGI &other) {
 	if (this == &other)
 		return *this;
-	for (int i = 0; i < sizeof(_environment); i++)
-		free(_environment[i]);
-	free(_environment);
-	for (int i = 0; i < sizeof(_arguments); i++)
-		free(_arguments[i]);
-	free(_arguments);
+	if (_environment) {
+		for (int i = 0; i < sizeof(_environment); i++)
+			if (_environment[i])
+				free(_environment[i]);
+		free(_environment);
+	}
+	if (_arguments)
+	{
+		for (int i = 0; i < sizeof(_arguments); i++)
+			if (_arguments[i])
+				free(_arguments[i]);
+		free(_arguments);
+	}
 	try {
 		_environment = clone(other._environment);
 		_arguments = clone(other._arguments);
@@ -55,16 +62,6 @@ CGI &CGI::operator=(const CGI &other) {
 	_response = other._response;
 	_request = other._request;
 	return *this;
-}
-
-void CGI::mapToString(std::map <std::string, std::string> env) {
-	_environment = new char *[env.size() + 1]();
-
-	int i = 0;
-	for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); it++) {
-		std::string str = it->first + it->second;
-		_environment[i] = strdup(str.c_str());
-	}
 }
 
 /**
@@ -108,17 +105,33 @@ void CGI::setArguments() {
 	_arguments[1] = strdup(_path);
 }
 
-char **CGI::getEnvironment() const {return _environment;}
+char **CGI::getEnvironment() const {
+	_environment = new char *[env.size() + 1]();
+
+	int i = 0;
+	for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); it++) {
+		std::string str = it->first + it->second;
+		_environment[i] = strdup(str.c_str());
+	}
+	return _environment;
+}
+
 
 void	executeCGI(Client &client) {
+
+	char *currentPath;
+	int 	pipeFd[2];
+	int 	bodyFd;
 	pid_t	pid;
-	int 	pipesFD[2];
-	int		fd;
-	if ((pid = fork()) == -1) {
-		throw std::runtime_error("Can't fork proccess");
-	} else if (pid == 0) {
-		pipe(pipesFD);
-		dup2(pipesFD[1], fd);
-		dup2(pipesFD[0], client.getSocketFd());
+	if (!getcwd(currentPath, NULL)) {
+		_response->setStatusCode("404");
+		return;
 	}
+	if (pipes(pipeFd) == -1)
+		throw std::runtime_error(RED + std::string("Pipe fail") + RESET);
+	if ((pid = fork()
+		if ()) == -1)
+		throw std::runtime_error(RED + std::string("fork failure") + RESET);
+}	else if (!pid) { //child process:D It's fckng magic:D
+		char *buf[1024];
 }
