@@ -8,32 +8,52 @@
 
 #include <string>
 #include <iostream>
-
+#include "../includes/HttpRequest.hpp"
+#include <map>
+#define RN "\r\n"
+#define BUFSIZE 65534
+#include <sstream>
+#include <unistd.h>
+#include <string>
+#include <fcntl.h>
 
 class HttpResponse {
 public:
-
 	HttpResponse();
+
+	HttpResponse(const std::map<int, std::string> &statusMessages);
+
+	std::string &getCurrentDate() const;
+	void generate();
+
+	std::string & getStatusMessages(int n);
+	void          setStatusMessages();
 
 	virtual ~HttpResponse();
 
-	void generate();
+	HttpResponse(HttpResponse const &src);
 
-	void clean(){
-		//free(_buffer);
-		//this->_bufferSize = 0;
-		this->_buffer = strdup("");
-	}
+	HttpResponse &operator=(HttpResponse const &src);
+
+	std::string getErrorPage(int code, std::string & path);
+	std::string createHeader(HttpRequest * req);
+	void		setBody(std::string & body);
+
+	char *getFinalResponse() const;
+
+	void initResponse(HttpRequest *req, int code, std::string & path);
+
 
 private:
-	char	*_buffer;
-	int		startMsg;
-	size_t	_bufferSize;
-
-	HttpResponse(const HttpResponse &other);
-
-	HttpResponse &operator=(const HttpResponse &other);
-
+	std::map<int, std::string> _status_messages;
+	std::string 			   _body;
+	std::string 			    _headers_cgi;
+	int  						_body_size;
+	int 						_header_size;
+	std::string					_error;
+	int							_code;
+	std::string					_buffer;
+	char						*_req_to_send;
 
 };
 

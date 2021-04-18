@@ -5,6 +5,10 @@
 
 #ifndef WEBSERV_WEBSERVER_HPP
 #define WEBSERV_WEBSERVER_HPP
+#define closesocket(socket)  close(socket)
+#define SOCKET	int
+#define BUFSIZE 65534
+#define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
 #include <string>
 #include <iostream>
@@ -13,6 +17,7 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include <fcntl.h>
+#include "Colors.hpp"
 
 class WebServer {
 public:
@@ -34,11 +39,8 @@ private:
 	std::vector<Server *> 	_server;
 	uint					_maxFdSize;
 
-	int test(std::vector<Server *> vector);
-	int lifeCycle();
 
-
-	[[noreturn]] int testCycle();
+	[[noreturn]] int lifeCycle();
 
 	void handle_connection(int clientSocket);
 
