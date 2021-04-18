@@ -1,4 +1,4 @@
-//Created on 13.04.20 by
+ //Created on 13.04.20 by
 //Roman E. aka Magnemite Winter
 
 #ifndef WEBSERV_CGI_H

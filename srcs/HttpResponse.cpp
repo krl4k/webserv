@@ -21,13 +21,15 @@ HttpResponse::~HttpResponse() {
 }
 
 void HttpResponse::generate() {
-	char buffer[BUFSIZE];
+	char buffer[1234];
+	bzero(buffer, 1234);
 	strcat(buffer, "HTTP/1.1 200 OK\n"
 				   "Server: myserv\n"
 				   "Content-Length: 5\n"
 				   "Connection: Keep-Alive\r\n\r\n");
 	strcat(buffer, "a\r\n\r\n");
 	_req_to_send = buffer;
+
 }
 
 void HttpResponse::setStatusMessages() {
@@ -96,10 +98,10 @@ std::string HttpResponse::getErrorPage(int code, std::string &path) {
 std::string HttpResponse::createHeader(HttpRequest *req) {
 	std::stringstream header;
 
-	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << RN <<
-		   "Date: " << getCurrentDate() << RN <<
-		   "Server: " << "KiRoTa/6.9" << RN <<
-		   "Content-Length: " << _body_size << RN;
+	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
+		   "Date: " << getCurrentDate() << CRLF <<
+		   "Server: " << "KiRoTa/6.9" << CRLF <<
+		   "Content-Length: " << _body_size << CRLF;
 	return (header.str());
 }
 

@@ -92,11 +92,9 @@ int Server::createSocket() {
 		return -2;
 	}
 	if (fcntl(listenFd, F_SETFL, O_NONBLOCK) < 0) {
-		std::cerr << "фыкыныкыцыыл error" << std::endl;
+		std::cerr << "fcntl error" << std::endl;
 		return -3;
 	}
-
-
 	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
 		return -4;

@@ -1,7 +1,10 @@
 #ifndef WEBSERV_CLIENT_HPP
 #define WEBSERV_CLIENT_HPP
+
 #include <string>
 #include <iostream>
+#include <unistd.h>
+#include <netdb.h>
 #include <dns_util.h>
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
@@ -40,8 +43,8 @@ private:
 	HttpResponse*	_response;
 	struct sockaddr_in _addr;
 	char				*_clientInfo;
-	std::string		_host;
-	uint16_t 		_port;
+	std::string			_host;
+	uint16_t			_port;
 	int 			_state;
 
 	char	*_buffer;

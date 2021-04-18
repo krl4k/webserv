@@ -1,4 +1,4 @@
-#include "Users/fgrisell/CLionProjects/webserv/includes/CGI.hpp"
+#include "../includes/CGI.hpp"
 
 CGI::CGI(Client *client, char *path) {
 	_request = client.getRequest();

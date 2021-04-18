@@ -6,9 +6,11 @@
 #ifndef WEBSERV_HTTPREQUEST_HPP
 #define WEBSERV_HTTPREQUEST_HPP
 
+#include "Defines.hpp"
 #include <string>
 #include <iostream>
-
+#include <map>
+#include "Colors.hpp"
 
 class HttpRequest {
 public:
@@ -18,46 +20,55 @@ public:
 		NEED_INFO,
 	};
 
-	HttpRequest();
+	enum ParserState{
+		QUERY_STRING,
+		HEADERS,
+		BODY,
+		FINISHED
+	};
 
-	HttpRequest(char *buffer, size_t bufferLen);
+	HttpRequest();
 
 	void parse(char *buffer, int bufSize);
 
 	virtual ~HttpRequest();
 
+	char	*getBuffer() const;
+	int		getState() const;
+	void	setState(int state);
+
+
+
+	void clean() ;
+
+private:
+	char		*_cBuffer;
+	std::string	_sBuffer;
+	size_t		_bufferSize;
+	int			_state;
+	int 		_parserState;
+
+
+	std::string _method;
+	std::string _path;
+	std::map<std::string, std::string> _headers;
+	std::string _body;
+
+
+
+
+
 	HttpRequest(const HttpRequest &other);
 
 	HttpRequest &operator=(const HttpRequest &other);
 
+	std::pair<std::string, std::string> getPair(const std::string &line);
 
-	char *getBuffer() const;
+	void headersParse();
 
-	int getState() const;
-	void setState(int state);
+	void queryStringParse();
 
-
-
-	void clean(){
-		free(_buffer);
-		_buffer = strdup("");
-		_bufferLen = 0;
-	}
-
-private:
-	char	*_buffer;
-	size_t	_bufferLen;
-	int		_state;
-
-
-	std::string _body;
-	std::string _request;
-	std::string _method;
-	std::string _path;
-	std::string _protVersion;
-	std::string _queryString;
-	std::string _Host;
-
+	void bodyParse();
 };
 
 #endif //WEBSERV_HTTPREQUEST_HPP

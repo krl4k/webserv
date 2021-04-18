@@ -6,15 +6,13 @@
 #ifndef WEBSERV_HTTPRESPONSE_HPP
 #define WEBSERV_HTTPRESPONSE_HPP
 
+#include "Defines.hpp"
+#include "../includes/HttpRequest.hpp"
 #include <string>
 #include <iostream>
-#include "../includes/HttpRequest.hpp"
 #include <map>
-#define RN "\r\n"
-#define BUFSIZE 65534
 #include <sstream>
 #include <unistd.h>
-#include <string>
 #include <fcntl.h>
 
 class HttpResponse {

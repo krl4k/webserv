@@ -2,12 +2,12 @@
 // Created by Magnemite Winter on 4/11/21.
 //
 
-#include <unistd.h>
+
 #include "../includes/Client.hpp"
 
 
 Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in &addr) :
-	_socketFd(fd), _host(host), _port(port), _addr(addr), _msgSize(0), _buffer(strdup("")){
+	_socketFd(fd), _host(host), _port(port), _addr(addr){
 	_request = new HttpRequest();
 	_response = new HttpResponse();
 	_state = State::REQUEST_PARSE;
@@ -16,10 +16,17 @@ Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in
 	inet_ntop(AF_INET, &_addr, _clientInfo, addrSize);
 }
 
-
-Client::Client() {
-
+Client::~Client() {
+	std::cout << RED << "Close connection, FD = " << _socketFd << RESET << std::endl;
+	close(_socketFd);
+	delete _request;
+	delete _clientInfo;
+//	delete _response;
 }
+
+
+
+Client::Client() {}
 
 int Client::getState() const {
 	return _state;
@@ -39,15 +46,6 @@ HttpRequest *Client::getRequest() const {
 
 HttpResponse *Client::getResponse() const {
 	return _response;
-}
-
-Client::~Client() {
-	std::cout << RED << "Close connection, FD = " << _socketFd << RESET << std::endl;
-
-	close(_socketFd);
-	delete _request;
-	delete _clientInfo;
-//	delete _response;
 }
 
 char *Client::getInfo() const {

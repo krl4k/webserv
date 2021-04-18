@@ -48,7 +48,7 @@ int WebServer::lifeCycle() {
 
 	struct timeval timeout;
 	while (true) {
-		timeout.tv_sec = 21;
+		timeout.tv_sec = 10;
 		timeout.tv_usec = 1;
 		std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
@@ -95,7 +95,7 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 	for (int i = 0; i < _client.size(); ++i) {
 		int fd = _client[i]->getSocketFd();
-		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE){
+		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE) {
 			readRequest(_client[i]);
 			if (_client[i]->getState() != Client::State::CLOSE and \
 					_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
@@ -103,23 +103,22 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 			}
 		}
 
-		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::CREATING_RESPONSE){
+		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::CREATING_RESPONSE){
 			generateResponce(_client[i]);
 		}
 
-		if (FD_ISSET(fd, &writeFdSet) && _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
+		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
 			sendResponce(_client[i]);
 			_client[i]->getRequest()->clean();
 			_client[i]->setState(Client::State::REQUEST_PARSE);
-//			_client[i]->setState(Client::State::FINISHED);
 		}
-		if (_client[i]->getState() == Client::State::CLOSE) {
+		/**
+		 * todo add Connection: close check! and timeout check
+		 */
+		if (_client[i]->getState() == Client::State::CLOSE ) {
 
-//			_client[i]->getRequest()->clean(); //todo really
-//			_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
-//			_client[i]->setState(Client::State::REQUEST_PARSE);
-			delete _client[i];
 			std::vector<Client *>::iterator it = _client.begin() + i;
+			delete _client[i];
 			_client.erase(it);
 		}
 	}
@@ -127,21 +126,21 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 
 void WebServer::readRequest(Client *&client) {
 	char buffer[BUFSIZE];
+	bzero(&buffer, BUFSIZE);
 	int bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZE, 0);
-	std::cout << "request:\n" << buffer << std::endl;
+
+#if DEBUG == 1
+	std::cout << "bytes read = " << bytes_read << std::endl;
+	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
+#endif
 	if (bytes_read <= 0) {
 		client->setState(Client::State::CLOSE);
 		return;
 	}
-	try {
-		client->getRequest()->parse(buffer, bytes_read);
-	} catch (std::exception &exception) {
-		std::cout << "Connection closed" << std::endl;
-		client->setState(Client::State::CLOSE);
-		return;
-	}
+	client->getRequest()->parse(buffer, bytes_read);
 	if (client->getRequest()->getState() == HttpRequest::State::FULL){
+		std::cout << MAGENTA<< "full" << RESET<< std::endl;
 		client->setState(Client::State::CREATING_RESPONSE);
 	}
 }

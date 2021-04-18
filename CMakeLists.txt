@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(webserv1)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 
 include_directories(/ /includes /srcs)
 link_directories(/ /includes /srcs)
@@ -19,5 +19,5 @@ add_executable(webserv1
         #        includes/Client.hpp
         #        includes/Location.hpp
         #        includes/Server.hpp
-        #        includes/Parser.hpp
+        #        includes/ParserState.hpp
         )
