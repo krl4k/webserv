@@ -24,7 +24,7 @@ Parser::Parser(const std::string &fileName) {
 	if (!file.is_open()){
 		throw std::runtime_error("file corrupted");
 	}
-		bigLine = this->readFile(file);
+	bigLine = this->readFile(file);
 	file.close();
 
 }
