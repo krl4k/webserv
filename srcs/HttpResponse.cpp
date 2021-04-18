@@ -4,6 +4,7 @@
 
 
 #include "../includes/HttpResponse.hpp"
+#include <sys/time.h>
 
 
 HttpResponse::HttpResponse(){
@@ -128,9 +129,23 @@ void HttpResponse::initResponse(HttpRequest *req, int code, std::string &path) {
 
 std::string &HttpResponse::getCurrentDate() const {
 	std::string date;
+	struct timeval tv;
+	time_t t;
+	struct tm *info;
+	char buffer[64];
+
+	gettimeofday(&tv, NULL);
+	t = tv.tv_sec;
+
+	info = localtime(&t);
+	printf("%s",asctime (info));
+	strftime (buffer, sizeof buffer, "Today is %A, %B %d.\n", info);
+	printf("%s",buffer);
+	strftime (buffer, sizeof buffer, "The time is %I:%M %p.\n", info);
+	printf("%s",buffer);
 
 	//todo some shit
-	date = "11 11 11";
+	//date = "11 11 11";
 
 	return date;
 }
