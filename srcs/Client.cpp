@@ -6,7 +6,6 @@
 #include "../includes/Client.hpp"
 
 
-
 Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in &addr) :
 	_socketFd(fd), _host(host), _port(port), _addr(addr), _msgSize(0), _buffer(strdup("")){
 	_request = new HttpRequest();
@@ -43,7 +42,8 @@ HttpResponse *Client::getResponse() const {
 }
 
 Client::~Client() {
-	std::cout << "client clone connection" << std::endl;
+	std::cout << RED << "Close connection, FD = " << _socketFd << RESET << std::endl;
+
 	close(_socketFd);
 	delete _request;
 	delete _clientInfo;

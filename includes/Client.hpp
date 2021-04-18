@@ -5,7 +5,7 @@
 #include <dns_util.h>
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-
+#include "Colors.hpp"
 
 
 class Client {

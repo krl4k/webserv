@@ -48,9 +48,9 @@ int WebServer::lifeCycle() {
 
 	struct timeval timeout;
 	while (true) {
-		timeout.tv_sec = 2;
+		timeout.tv_sec = 21;
 		timeout.tv_usec = 1;
-		std::cout << GREEN << "\nWaiting for connection!" << RESET << std::endl;
+		std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
 
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, &timeout);
@@ -85,7 +85,6 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 				return;
 			}
 			SET_NONBLOCK(newClient->getSocketFd());
-			std::cout << MAGENTA << "Client connected = " << newClient->getSocketFd() << RESET << std::endl;
 			_client.push_back(newClient);
 			if (newClient->getSocketFd() > _maxFdSize)
 				_maxFdSize = newClient->getSocketFd();
@@ -115,7 +114,6 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 //			_client[i]->setState(Client::State::FINISHED);
 		}
 		if (_client[i]->getState() == Client::State::CLOSE) {
-			std::cout << "close connection, fd = " << _client[i]->getSocketFd() << std::endl;
 
 //			_client[i]->getRequest()->clean(); //todo really
 //			_client[i]->getRequest()->setState(HttpRequest::State::NEED_INFO);
@@ -131,6 +129,7 @@ void WebServer::readRequest(Client *&client) {
 	char buffer[BUFSIZE];
 	int bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZE, 0);
+	std::cout << "request:\n" << buffer << std::endl;
 	if (bytes_read <= 0) {
 		client->setState(Client::State::CLOSE);
 		return;
@@ -168,7 +167,8 @@ Client *WebServer::acceptNewConnection(int i) {
 		return nullptr;
 	}
 	Client *client = new Client(clientSocket, _server[i]->getHost(), _server[i]->getPort(), clientAddr);
-	std::cout << YELLOW << "Client with ip " << RED << client->getInfo() << YELLOW <<  " connected"<< RESET << std::endl;
+	std::cout 	<< YELLOW << "Client with ip " << RED << client->getInfo()
+				<< YELLOW <<  " connected! " << MAGENTA << "FD = " << clientSocket << RESET << std::endl;
 	return client;
 }
 
@@ -188,8 +188,7 @@ void WebServer::sendResponce(Client *&pClient) {
 	send(pClient->getSocketFd(), buffer, len, 0);
 
 	bzero(buffer, len);
-	pClient->setState(Client::State::REQUEST_PARSE);
-	std::cout << YELLOW << "sending a response to the user with ip " << pClient->getInfo() <<  RESET << std::endl;
-
-	std::cout << YELLOW << "Response sent" << RESET << std::endl;
+	pClient->setState(			Client::State::REQUEST_PARSE);
+	std::cout 	<< YELLOW << "Sending a response to the user with ip " << RED << pClient->getInfo() << "."
+				<< MAGENTA << " FD = " << pClient->getSocketFd() <<  RESET << std::endl;
 }
