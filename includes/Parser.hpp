@@ -23,6 +23,10 @@ public:
 
 	const std::vector<Server *> &getServers() const;
 
+	Server * separateServers(std::string &line, size_t i);
+	int initLocations(std::vector<std::string> &strings, int count, int i);
+	std::string readFile(std::ifstream &fd);
+
 private:
 	std::vector<Server *> _servers;
 };

@@ -11,7 +11,7 @@ WebServer::WebServer(const char *fileName){
 	if (fileName)
 		_configFileName = fileName;
 	else
-		_configFileName = "./configs/default.conf";
+		_configFileName = "../configs/default.conf";
 
 	Parser *parser;
 	try {

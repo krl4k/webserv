@@ -4,14 +4,14 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/mwinter/webserv/main.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/main.cpp.o"
-  "/Users/mwinter/webserv/srcs/Client.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Client.cpp.o"
-  "/Users/mwinter/webserv/srcs/HttpRequest.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/HttpRequest.cpp.o"
-  "/Users/mwinter/webserv/srcs/HttpResponse.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/HttpResponse.cpp.o"
-  "/Users/mwinter/webserv/srcs/Location.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Location.cpp.o"
-  "/Users/mwinter/webserv/srcs/Parser.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Parser.cpp.o"
-  "/Users/mwinter/webserv/srcs/Server.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Server.cpp.o"
-  "/Users/mwinter/webserv/srcs/WebServer.cpp" "/Users/mwinter/webserv/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/WebServer.cpp.o"
+  "/Users/itollett/webserv1/main.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/main.cpp.o"
+  "/Users/itollett/webserv1/srcs/Client.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Client.cpp.o"
+  "/Users/itollett/webserv1/srcs/HttpRequest.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/HttpRequest.cpp.o"
+  "/Users/itollett/webserv1/srcs/HttpResponse.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/HttpResponse.cpp.o"
+  "/Users/itollett/webserv1/srcs/Location.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Location.cpp.o"
+  "/Users/itollett/webserv1/srcs/Parser.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Parser.cpp.o"
+  "/Users/itollett/webserv1/srcs/Server.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/Server.cpp.o"
+  "/Users/itollett/webserv1/srcs/WebServer.cpp" "/Users/itollett/webserv1/cmake-build-debug/CMakeFiles/webserv1.dir/srcs/WebServer.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 
