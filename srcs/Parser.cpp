@@ -59,6 +59,8 @@ std::string Parser::readFile(std::ifstream &fd) {
 	if (temp.find("server:") != std::string::npos) {
 		separateServers(temp, i);
 	}
+	if (o.str().empty())
+		throw std::runtime_error("config: server line error");
 	return (o.str());
 }
 
