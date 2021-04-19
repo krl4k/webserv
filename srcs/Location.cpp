@@ -4,6 +4,8 @@
 
 
 #include "../includes/Location.hpp"
+#include <string>
+#include <sstream>
 
 Location::Location() {
 	_autoIndex = false;
@@ -26,15 +28,35 @@ void Location::setUrl(const std::string &url) {
 }
 
 void Location::setAllowMethods(const std::string &allowMethods) {
+	std::vector<std::string> strings;
+	std::string temp = allowMethods;
+	std::string s;
+	std::replace(temp.begin(), temp.end(), '\t', ' ');
+	std::istringstream f(temp);
+
+	while (getline(f, s, ' ')) {
+		strings.push_back(s);
+	}
 	std::vector<std::string> newVec;
-	if (allowMethods.find("GET") != std::string::npos)
-		newVec.push_back("GET");
-	if (allowMethods.find("PUT") != std::string::npos)
-		newVec.push_back("PUT");
-	if (allowMethods.find("POST") != std::string::npos)
-		newVec.push_back("POST");
-	if (allowMethods.find("HEAD") != std::string::npos)
-		newVec.push_back("HEAD");
+	for (size_t i = 0; i < strings.size(); ++i) {
+		if (!strings[i].compare("GET"))
+			newVec.push_back("GET");
+		else if (!strings[i].compare("PUT"))
+			newVec.push_back("PUT");
+		else if (!strings[i].compare("POST"))
+			newVec.push_back("POST");
+		else if (!strings[i].compare("HEAD"))
+			newVec.push_back("HEAD");
+		else if (!strings[i].compare("") || !strings[i].compare(" "))
+			;
+		else
+			throw std::runtime_error("Allow methods error");
+	}
+	for (size_t i = 0; i < newVec.size(); ++i){
+		for (size_t j = i + 1; j < newVec.size(); ++j)
+			if (newVec[i] == newVec[j] && i != j)
+				throw std::runtime_error("Allow methods error");
+	}
 	_allowMethods = newVec;
 }
 

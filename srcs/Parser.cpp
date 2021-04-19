@@ -26,6 +26,15 @@ Parser::Parser(const std::string &fileName) {
 	}
 	bigLine = this->readFile(file);
 	file.close();
+
+	for (size_t i = 0; i < _servers.size(); ++i){
+		if (_servers[i]->getServerName().empty())
+			throw std::runtime_error("there is no server name");
+		if (_servers[i]->getPort() < 1024 || _servers[i]->getPort() > 65535)
+			throw std::runtime_error("Port should be between 1024 and 65534");
+		if (_servers[i]->getLocation().empty())
+			throw std::runtime_error("There is no locations");
+	}
 }
 
 
@@ -45,8 +54,9 @@ std::string Parser::readFile(std::ifstream &fd) {
 		if (buf == "server:") {
 			if (!temp.empty()) {
 				separateServers(temp, i);
+				temp = "";
 				i++;
-				o.clear();
+				o.str("");
 			}
 		}
 		else if ((buf.find("server:") != std::string::npos && (buf.compare(0, 7, "server:")) && buf.size() != 7)) {
@@ -59,6 +69,8 @@ std::string Parser::readFile(std::ifstream &fd) {
 	if (temp.find("server:") != std::string::npos) {
 		separateServers(temp, i);
 	}
+	if (o.str().empty())
+		throw std::runtime_error("config: server line error");
 	return (o.str());
 }
 

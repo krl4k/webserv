@@ -35,10 +35,14 @@ void Server::setHost(const std::string &host) {
 
 void Server::setPort(const std::string & port) {
 	try{
-		_port = std::stoi(port);}
+		_port = std::stoi(port);
+		if (port.size() != std::to_string(_port).size())
+			throw std::exception();
+	}
 	catch (std::exception &e){
 		std::cout << "Port setting error" << std::endl;
 	}
+
 }
 
 void Server::setPort(uint16_t port) {
