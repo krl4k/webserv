@@ -15,9 +15,6 @@ add_executable(webserv1
         srcs/Parser.cpp
         srcs/HttpRequest.cpp
         srcs/HttpResponse.cpp
-        #        includes/WebServer.hpp
-        #        includes/Client.hpp
-        #        includes/Location.hpp
-        #        includes/Server.hpp
-        #        includes/ParserState.hpp
+
+#        tmp/testfiles/test.cpp
         )

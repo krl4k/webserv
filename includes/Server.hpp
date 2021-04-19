@@ -22,14 +22,9 @@ public:
 
 	virtual ~Server();
 
-	Server(const Server &other);
-
-	Server &operator=(const Server &other);
-
 	int createSocket();
 	int getSocketFd() const;
 
-	void setSocketFd(int socketFd);
 	const sockaddr_in &getSocketAddr() const;
 
 	void setSocketAddr(const sockaddr_in &socketAddr);
@@ -59,18 +54,24 @@ public:
 	void setPort(uint16_t port);
 
 private:
+
+	//todo rename this class like "VirtualHost"
 	int									_socketFd;
 	struct sockaddr_in					_socketAddr;
 
-//	std::vector<int>					_fds;
 	std::string							_host;
 	uint16_t							_port;
 	std::string							_serverName;
 	std::map<std::string, Location>		_location;
 	std::string							_root;
-	std::string	_errorPage;
+	std::string							_errorPage;
 
-//	std::map<>
+
+
+//	UNUSED
+	Server(const Server &other);
+	Server &operator=(const Server &other);
+
 
 
 };

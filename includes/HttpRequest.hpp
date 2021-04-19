@@ -42,15 +42,19 @@ public:
 	void clean();
 
 private:
-	char *_cBuffer;
+	//--
+	int it;
+	//--
+
+
+
 	std::string _sBuffer;
-	size_t _bufferSize;
 	int _state;
 	int _parserState;
 
-
 	std::string _method;
 	std::string _path;
+	std::string _queryString;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 

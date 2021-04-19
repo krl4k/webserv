@@ -21,7 +21,7 @@ public:
 
 	HttpResponse(const std::map<int, std::string> &statusMessages);
 
-	std::string &getCurrentDate() const;
+	std::string getCurrentDate() const;
 	void generate();
 
 	std::string & getStatusMessages(int n);
@@ -37,22 +37,23 @@ public:
 	std::string createHeader(HttpRequest * req);
 	void		setBody(std::string & body);
 
-	char *getFinalResponse() const;
+	const std::string &getToSend() const;
 
 	void initResponse(HttpRequest *req, int code, std::string & path);
 
+	void clean();
+
 
 private:
-	std::map<int, std::string> _status_messages;
-	std::string 			   _body;
+	std::string					_toSend;
+	std::map<int, std::string>	_status_messages;
+	std::string 			  	_body;
 	std::string 			    _headers_cgi;
 	int  						_body_size;
 	int 						_header_size;
 	std::string					_error;
 	int							_code;
 	std::string					_buffer;
-//	char						*_req_to_send;
-	std::string					_toSend;
 };
 
 

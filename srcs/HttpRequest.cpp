@@ -5,8 +5,10 @@
 
 #include "../includes/HttpRequest.hpp"
 
-HttpRequest::HttpRequest() :
-	_cBuffer(nullptr), _bufferSize(0), _state(State::NEED_INFO), _parserState(ParserState::QUERY_STRING) {
+HttpRequest::HttpRequest() : _sBuffer(),
+	 _state(State::NEED_INFO), _parserState(ParserState::QUERY_STRING),
+	 _method(), _path(), _queryString(), _headers(), _body() {
+	it =0;
 }
 
 HttpRequest::~HttpRequest() {}
@@ -17,13 +19,8 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	return *this;
 }
 
-
 int HttpRequest::getState() const {
 	return _state;
-}
-
-char *HttpRequest::getBuffer() const {
-	return _cBuffer;
 }
 
 void HttpRequest::setState(int state) {
@@ -31,38 +28,15 @@ void HttpRequest::setState(int state) {
 }
 
 void HttpRequest::clean() {
-	free(_cBuffer);
-	_cBuffer = strdup("");
-	_bufferSize = 0;
 	_sBuffer.clear();
-}
-
-
-/*
- * free s1
- * free s2
- * return concat s1 and s2
- * s1 = new str
- */
-
-char *ft_strjoin(char *&s1, char *&s2) {
-	char *res;
-	int i = 0;
-
-	if (!s1 || !s2)
-		return nullptr;
-	if (!(res = (char *)malloc(sizeof(char) * (strlen(s1) + strlen(s2) + 1))))
-		return nullptr;
-	while (*s1)
-		res[i++] = (*s1)++;
-	while (*s2)
-		res[i++] = (*s2)++;
-	free(s1);
-	free(s2);
-	res[i] = '\0';
-	s1 = res;
-	s2 = nullptr;
-	return res;
+	_method.clear();
+	_path.clear();
+	_queryString.clear();
+	_headers.clear();
+	_body.clear();
+	_parserState = ParserState::QUERY_STRING;
+	_state = State::NEED_INFO;
+	it = 0;
 }
 
 /*
@@ -70,22 +44,38 @@ char *ft_strjoin(char *&s1, char *&s2) {
 */
 
 void HttpRequest::parse(char *buffer, int bufSize) {
-	buffer[bufSize] = '\0';
+	it++;
+#if DEBUG == 1
+	std::cout << "it = " << it << std::endl;
+#endif
 	_sBuffer.append(buffer, bufSize);
-	if (_parserState == ParserState::QUERY_STRING)
+	if (_parserState == ParserState::QUERY_STRING){
 		queryStringParse();
-	if (_parserState == ParserState::HEADERS and _sBuffer.find(BODY_SEP) != std::string::npos)
+	}
+	if (_parserState == ParserState::HEADERS)
 		headersParse();
 	if (_parserState == ParserState::BODY)
 		bodyParse();
 	if (_parserState == ParserState::FINISHED)
 		_state = State::FULL;
-//	_state = State::FULL;
+#if HTTP_REQUEST_DEBUG >= 1
+	switch (_parserState) {
+		case 0:
+			std::cout << MAGENTA << "PARSE QUERY" << RESET << std::endl;
+		case 1:
+			std::cout << MAGENTA << "PARSE HEADERS" << RESET << std::endl;
+		case 2:
+			std::cout << MAGENTA << "PARSE BODY" << RESET << std::endl;
+		case 3:
+			std::cout << MAGENTA << "PARSE FINISHED" << RESET << std::endl;
+	}
+#endif
 
-#if DEBUG == 1
+#if HTTP_REQUEST_DEBUG == 1
 	std::cout << MAGENTA << "DEBUG INFO" << RESET << std::endl;
 	std::cout << "method = " << _method << std::endl;
 	std::cout << "path  = "	<< _path << std::endl;
+	std::cout << "query string  = "	<< _queryString << std::endl;
 	std::cout << "------------HEADERS------------" << std::endl;
 	std::cout << "HEADERS COUNT = " << _headers.size() << std::endl;
 	for (auto mapIterator = _headers.begin(); mapIterator != _headers.end(); ++mapIterator) {
@@ -99,10 +89,15 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 }
 
 void HttpRequest::queryStringParse() {
-	if (_sBuffer.find(CRLF)) {
+	if (_sBuffer.find(CRLF) != std::string::npos) {
 		_method = std::string(_sBuffer, 0, _sBuffer.find(" "));
 		_path = std::string(_sBuffer, _method.length() + 1, _sBuffer.find(" ", _method.length() + 1, 1) - _method.length());
-		// todo split  query string from path
+
+		size_t queryStringPos = 0;
+		if ((queryStringPos = _path.find('?')) != std::string::npos){
+			_queryString = std::string(_path, queryStringPos + 1);
+			_path.resize(queryStringPos);
+		}
 		_parserState = ParserState::HEADERS;
 	}
 }
@@ -112,13 +107,13 @@ void HttpRequest::headersParse() {
 		size_t _headersEndPos = _sBuffer.find(BODY_SEP) + 4;
 		for (size_t i = _sBuffer.find(CRLF) + 2;;) {
 			std::string line = std::string(_sBuffer, i, _sBuffer.find(CRLF, i) - i);
-//		std::cout << "line - " << line << std::endl;
 			if (i + line.size() + 2 < _headersEndPos)
 				i += line.size() + 2;
 			else
 				break;
 			_headers.insert(getPair(line));
 		}
+		//TODO rewrite
 		if (_method == "POST" or _method == "PUT")
 			_parserState = ParserState::BODY;
 		else
@@ -127,6 +122,7 @@ void HttpRequest::headersParse() {
 }
 
 void HttpRequest::bodyParse() {
+	// todo read content lenght
 	if (_headers["Transfer-Encoding"] == _headers.end()->second) {}
 
 	if (_headers["Transfer-Encoding"] != _headers.end()->second and \
@@ -145,6 +141,7 @@ void HttpRequest::bodyParse() {
 		if (_sBuffer.size() - bodyStart == contentLength) {
 			_body = std::string(_sBuffer, bodyStart);
 		} else {
+			//wait for the end of the request
 			return;
 		}
 		_parserState = ParserState::FINISHED;

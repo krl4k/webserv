@@ -21,17 +21,31 @@ HttpResponse::~HttpResponse() {
 
 }
 
+
+// what generate need???
+
+
+/**
+ * todo check this 
+ * void HttpResponse::generate(HttpRequest *&request) ???
+ * or
+ * void HttpResponse::generate(Client *&pClient) ???
+ *
+ */
 void HttpResponse::generate() {
+	size_t strBuf;
+//	char *buffer = (char *)calloc(BUFSIZE, sizeof (char));
+//	strBuf = strlen(buffer);
+	_toSend.append("HTTP/1.1 200 OK\n");
+	_toSend.append("Server: obserVER\n");
+	_toSend.append("Content-Length: 5\n");
+	_toSend.append("Connection: Keep-Alive\r\n\r\n");
 
-	char *buffer = (char *)calloc(BUFSIZE, sizeof (char));
-	strcat(buffer, "HTTP/1.1 200 OK\n"
-				   "Server: myserv\n"
-				   "Content-Length: 5\n"
-				   "Connection: Keep-Alive\r\n\r\n");
-	strcat(buffer, "a\r\n\r\n");
+	_toSend.append("a\r\n\r\n");
+//	_toSend.append(buffer);
+//	std::cout << "toSend = " << _toSend << std::endl;
 
-	_toSend.append(buffer);
-
+//	free(buffer);
 }
 
 void HttpResponse::setStatusMessages() {
@@ -128,8 +142,7 @@ void HttpResponse::initResponse(HttpRequest *req, int code, std::string &path) {
 //	_req_to_send.append("\r\n");
 }
 
-std::string &HttpResponse::getCurrentDate() const {
-	std::string date;
+std::string HttpResponse::getCurrentDate() const {
 	struct timeval tv;
 	time_t t;
 	struct tm *info;
@@ -146,11 +159,16 @@ std::string &HttpResponse::getCurrentDate() const {
 	printf("%s",buffer);
 
 	//todo some shit
-	//date = "11 11 11";
+	std::string date = std::string("11: 11:qwe 11");
 
 	return date;
 }
 
-char *HttpResponse::getFinalResponse() const{
-	return (_req_to_send);
+const std::string &HttpResponse::getToSend() const {
+	return _toSend;
 }
+
+void HttpResponse::clean() {
+	_toSend.clear();
+}
+

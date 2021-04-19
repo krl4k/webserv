@@ -13,9 +13,6 @@ int Server::getSocketFd() const {
 	return _socketFd;
 }
 
-void Server::setSocketFd(int socketFd) {
-	_socketFd = socketFd;
-}
 
 const sockaddr_in &Server::getSocketAddr() const {
 	return _socketAddr;
@@ -118,6 +115,8 @@ int Server::createSocket() {
 
 
 Server::~Server() {
+	close(_socketFd);
+	_location.clear();
 }
 
 uint16_t Server::getPort() const {

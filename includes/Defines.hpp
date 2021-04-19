@@ -8,12 +8,13 @@
 
 #define CRLF "\r\n"
 #define BODY_SEP "\r\n\r\n"
-#define BUFSIZE 65
+#define BUFSIZE 1000000
 #define closesocket(socket)  close(socket)
 #define SOCKET	int
 #define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
 #define DEBUG 0
+#define HTTP_REQUEST_DEBUG 0
 
 
 

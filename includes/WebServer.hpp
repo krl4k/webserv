@@ -18,16 +18,21 @@
 
 class WebServer {
 public:
-
+	/**
+	 * @brief create Webserver
+	 * @param fileName
+	 */
 	WebServer(const char *fileName = "/configs/default.conf");
-	WebServer();
 
+	/**
+	 * delete clients and Virtual Host
+	 */
 	virtual ~WebServer();
 
-	WebServer(const WebServer &other);
 
-	WebServer &operator=(const WebServer &other);
-
+	/**
+	 * starting Server
+	 */
 	void start();
 
 private:
@@ -37,23 +42,61 @@ private:
 	uint					_maxFdSize;
 
 
+	/**
+	 * \brief Main Webserver cycle
+	 *
+	 */
 	[[noreturn]] int lifeCycle();
 
-	void handle_connection(int clientSocket);
+	/**
+	 * @brief Create and accept new client
+	 * @param serverNumber
+	 * @return new connected client
+	 */
+	Client * acceptNewConnection(int serverNumber);
 
-	Client * acceptNewConnection(int i);
+	/**
+	 *
+	 * @param readFdSet
+	 * @param writeFdSet
+	 */
+	void initSocketSet(fd_set &readFdSet, fd_set &writeFdSet);
 
+	/**
+	 * @param readFdSet
+	 */
+	void acceptNewClient(fd_set &readFdSet);
+
+	/**
+	 *
+	 * @param readFdSet
+	 * @param writeFdSet
+	 */
+	void handler(fd_set &readFdSet, fd_set &writeFdSet);
+
+	/**
+	 *
+	 * @param client
+	 */
 	void readRequest(Client *&client);
 
-	void generateResponce(Client *&pClient);
+	/**
+	 *
+	 * @param client
+	 */
+	void generateResponce(Client *&client);
 
-	void sendResponce(Client *&pClient);
+	/**
+	 *
+	 * @param client
+	 */
+	void sendResponce(Client *&client);
 
-	void initSocketSet(fd_set &, fd_set &);
+//	UNUSED
+	WebServer();
+	WebServer(const WebServer &other);
+	WebServer &operator=(const WebServer &other);
 
-	void acceptNewClient(fd_set &);
-
-	void requestHandler(fd_set &readFdSet, fd_set &writeFdSet);
 };
 
 #endif //WEBSERV_WEBSERVER_HPP
