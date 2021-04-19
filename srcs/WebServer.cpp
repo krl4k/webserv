@@ -108,14 +108,13 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 
 		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE) {
 			sendResponce(_client[i]);
-			_client[i]->getRequest()->clean();
 			_client[i]->setState(Client::State::REQUEST_PARSE);
+			_client[i]->getRequest()->clean();
 		}
 		/**
 		 * todo add Connection: close check! and timeout check
 		 */
-		if (_client[i]->getState() == Client::State::CLOSE ) {
-
+		if (_client[i]->getState() == Client::State::CLOSE) {
 			std::vector<Client *>::iterator it = _client.begin() + i;
 			delete _client[i];
 			_client.erase(it);
@@ -144,18 +143,6 @@ void WebServer::readRequest(Client *&client) {
 	}
 }
 
-std::string readFile(const std::string& fileName) {
-	std::ifstream f(fileName);
-	f.seekg(0, std::ios::end);
-	size_t size = f.tellg();
-	std::string s(size, ' ');
-	f.seekg(0);
-	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
-	return s;
-}
-
-
-
 Client *WebServer::acceptNewConnection(int i) {
 	int clientSocket;
 	struct sockaddr_in clientAddr;
@@ -173,20 +160,27 @@ Client *WebServer::acceptNewConnection(int i) {
 void WebServer::generateResponce(Client *&pClient) {
 
 	pClient->getResponse()->generate();
-
 	pClient->setState(Client::State::ACCEPT_RESPONSE);
 }
 
 void WebServer::sendResponce(Client *&pClient) {
 	char *buffer;
-
 	buffer = pClient->getResponse()->getFinalResponse();
 
-	int len = strlen(buffer);
+	size_t len = strlen(buffer);
 	send(pClient->getSocketFd(), buffer, len, 0);
 
-	bzero(buffer, len);
 	pClient->setState(			Client::State::REQUEST_PARSE);
 	std::cout 	<< YELLOW << "Sending a response to the user with ip " << RED << pClient->getInfo() << "."
 				<< MAGENTA << " FD = " << pClient->getSocketFd() <<  RESET << std::endl;
+}
+
+std::string readFile(const std::string& fileName) {
+	std::ifstream f(fileName);
+	f.seekg(0, std::ios::end);
+	size_t size = f.tellg();
+	std::string s(size, ' ');
+	f.seekg(0);
+	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
+	return s;
 }

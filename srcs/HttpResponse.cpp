@@ -22,14 +22,15 @@ HttpResponse::~HttpResponse() {
 }
 
 void HttpResponse::generate() {
-	char buffer[1234];
-	bzero(buffer, 1234);
+
+	char *buffer = (char *)calloc(BUFSIZE, sizeof (char));
 	strcat(buffer, "HTTP/1.1 200 OK\n"
 				   "Server: myserv\n"
 				   "Content-Length: 5\n"
 				   "Connection: Keep-Alive\r\n\r\n");
 	strcat(buffer, "a\r\n\r\n");
-	_req_to_send = buffer;
+
+	_toSend.append(buffer);
 
 }
 

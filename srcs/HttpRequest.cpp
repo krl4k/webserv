@@ -71,7 +71,7 @@ char *ft_strjoin(char *&s1, char *&s2) {
 
 void HttpRequest::parse(char *buffer, int bufSize) {
 	buffer[bufSize] = '\0';
-	_sBuffer.append(buffer);
+	_sBuffer.append(buffer, bufSize);
 	if (_parserState == ParserState::QUERY_STRING)
 		queryStringParse();
 	if (_parserState == ParserState::HEADERS and _sBuffer.find(BODY_SEP) != std::string::npos)

@@ -51,8 +51,8 @@ private:
 	std::string					_error;
 	int							_code;
 	std::string					_buffer;
-	char						*_req_to_send;
-
+//	char						*_req_to_send;
+	std::string					_toSend;
 };
 
 
