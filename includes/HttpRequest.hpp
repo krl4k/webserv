@@ -15,12 +15,12 @@
 class HttpRequest {
 public:
 
-	enum State{
+	enum State {
 		FULL,
 		NEED_INFO,
 	};
 
-	enum ParserState{
+	enum ParserState {
 		QUERY_STRING,
 		HEADERS,
 		BODY,
@@ -33,29 +33,26 @@ public:
 
 	virtual ~HttpRequest();
 
-	char	*getBuffer() const;
-	int		getState() const;
-	void	setState(int state);
+	char *getBuffer() const;
 
+	int getState() const;
 
+	void setState(int state);
 
-	void clean() ;
+	void clean();
 
 private:
-	char		*_cBuffer;
-	std::string	_sBuffer;
-	size_t		_bufferSize;
-	int			_state;
-	int 		_parserState;
+	char *_cBuffer;
+	std::string _sBuffer;
+	size_t _bufferSize;
+	int _state;
+	int _parserState;
 
 
 	std::string _method;
 	std::string _path;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-
-
-
 
 
 	HttpRequest(const HttpRequest &other);

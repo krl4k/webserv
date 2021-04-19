@@ -12,7 +12,6 @@ WebServer::WebServer(const char *fileName){
 		_configFileName = fileName;
 	else
 		_configFileName = "../configs/default.conf";
-
 	Parser *parser;
 	try {
 		parser = new Parser(_configFileName);
@@ -107,7 +106,7 @@ void WebServer::requestHandler(fd_set &readFdSet, fd_set &writeFdSet) {
 			generateResponce(_client[i]);
 		}
 
-		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE){
+		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE) {
 			sendResponce(_client[i]);
 			_client[i]->getRequest()->clean();
 			_client[i]->setState(Client::State::REQUEST_PARSE);

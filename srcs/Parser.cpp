@@ -26,7 +26,6 @@ Parser::Parser(const std::string &fileName) {
 	}
 	bigLine = this->readFile(file);
 	file.close();
-
 }
 
 
