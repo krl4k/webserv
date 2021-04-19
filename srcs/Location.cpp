@@ -52,6 +52,11 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 		else
 			throw std::runtime_error("Allow methods error");
 	}
+	for (size_t i = 0; i < newVec.size(); ++i){
+		for (size_t j = i + 1; j < newVec.size(); ++j)
+			if (newVec[i] == newVec[j] && i != j)
+				throw std::runtime_error("Allow methods error");
+	}
 	_allowMethods = newVec;
 }
 
