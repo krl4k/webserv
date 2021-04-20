@@ -31,7 +31,8 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 	std::vector<std::string> strings;
 	std::string temp = allowMethods;
 	std::string s;
-	std::replace(temp.begin(), temp.end(), '\t', ' ');
+//	std::replace(temp.begin(), temp.end(), '\t', ' ');
+	temp.replace(temp.begin(), temp.end(), '\t', ' ');
 	std::istringstream f(temp);
 
 	while (getline(f, s, ' ')) {

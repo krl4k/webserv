@@ -3,8 +3,9 @@
 //
 
 
-#include <fcntl.h>
 #include "../includes/Server.hpp"
+#include <string.h>
+
 
 Server::Server(){
 }
@@ -86,6 +87,7 @@ int Server::createSocket() {
 		return -1;
 	}
 	bzero(&servaddr, sizeof(servaddr));
+
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = inet_addr(_host.c_str());
 	servaddr.sin_port = htons(_port);

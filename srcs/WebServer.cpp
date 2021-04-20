@@ -3,9 +3,8 @@
 //
 
 
-#include <fstream>
-#include <sstream>
 #include "../includes/WebServer.hpp"
+
 
 WebServer::WebServer(const char *fileName){
 	if (fileName)

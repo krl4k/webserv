@@ -14,6 +14,9 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include <fcntl.h>
+#include <fstream>
+#include <sstream>
+#include <string.h>
 #include "Colors.hpp"
 
 class WebServer {
