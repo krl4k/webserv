@@ -161,6 +161,10 @@ void HttpResponse::setStatusMessages() {
 	_status_messages[501] = "Not Implemented";
 }
 
+void	HttpResponse::setStatusCode(int code) {
+	_code = code;
+}
+
 std::string & HttpResponse::getStatusMessages(int n) {
 	std::map<int, std::string>::iterator it = _status_messages.find(n);
 	if (it == _status_messages.end())
