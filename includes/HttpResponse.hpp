@@ -7,7 +7,12 @@
 #define WEBSERV_HTTPRESPONSE_HPP
 
 #include "Defines.hpp"
+class Client;
+class Server;
 #include "../includes/HttpRequest.hpp"
+#include "../includes/Client.hpp"
+#include "../includes/Server.hpp"
+
 #include <string>
 #include <iostream>
 #include <map>
@@ -16,6 +21,7 @@
 #include <fcntl.h>
 #include <ctime>
 
+
 class HttpResponse {
 public:
 	HttpResponse();
@@ -23,7 +29,7 @@ public:
 	HttpResponse(const std::map<int, std::string> &statusMessages);
 
 	std::string getCurrentDate() const;
-	void generate();
+	void generate(Client *client, Server *server);
 
 	std::string & getStatusMessages(int n);
 	void          setStatusMessages();
@@ -34,7 +40,7 @@ public:
 
 	HttpResponse &operator=(HttpResponse const &src);
 
-	std::string getErrorPage(int code, std::string & path);
+	std::string getBody(int code, std::string & path);
 	std::string createHeader(HttpRequest * req);
 	void		setBody(std::string & body);
 

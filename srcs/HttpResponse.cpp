@@ -4,6 +4,7 @@
 
 
 #include "../includes/HttpResponse.hpp"
+#include "../includes/Client.hpp"
 #include <sys/time.h>
 
 
@@ -32,20 +33,57 @@ HttpResponse::~HttpResponse() {
  * void HttpResponse::generate(Client *&pClient) ???
  *
  */
-void HttpResponse::generate() {
-	size_t strBuf;
+
+bool checkMethod(std::vector<std::string> vec, std::string meth){
+	for (size_t i = 0; i < vec.size(); ++i){
+		if (meth == vec[i])
+			return (true);
+	}
+	return (false);
+}
+
+void HttpResponse::generate(Client *client, Server *server) {
+//	size_t strBuf;
 //	char *buffer = (char *)calloc(BUFSIZE, sizeof (char));
 //	strBuf = strlen(buffer);
-	_toSend.append("HTTP/1.1 200 OK\n");
-	_toSend.append("Server: obserVER\n");
-	_toSend.append("Content-Length: 5\n");
-	_toSend.append("Connection: Keep-Alive\r\n\r\n");
-
-	_toSend.append("a\r\n\r\n");
+//	_toSend.append("HTTP/1.1 200 OK\n");
+//	_toSend.append("Server: obserVER\n");
+//	_toSend.append("Content-Length: 5\n");
+//	_toSend.append("Connection: Keep-Alive\r\n\r\n");
+//
+//	_toSend.append("a\r\n\r\n");
 //	_toSend.append(buffer);
 //	std::cout << "toSend = " << _toSend << std::endl;
-
+//
 //	free(buffer);
+//	initResponse();
+
+	std::string path = client->getRequest()->getPath();
+	std::map<std::string, Location>::const_iterator it;
+	it = server->getLocation().find(path);
+	if (it == server->getLocation().end())
+		_code = 404;
+	Location ourLoc = it->second;
+	std::string locName = it->first;
+
+	if (!checkMethod(ourLoc.getAllowMethods(), client->getRequest()->getMethod())){
+		_code = 405;
+	}
+
+	std::string root = ourLoc.getRoot();
+	if (root[root.size() - 1] == '/')
+		root.erase(root.size() - 1, 1);
+
+	std::string mergedPath = root;
+	if (locName[0] != '/'){
+		locName = "";
+	}
+	mergedPath = root + '/' + locName;
+
+	if (ourLoc.getClientMaxBodySize() > _body_size){
+		_code = 413;
+	}
+
 }
 
 void HttpResponse::setStatusMessages() {
@@ -85,7 +123,7 @@ std::string & HttpResponse::getStatusMessages(int n) {
 	return (it->second);
 }
 
-std::string HttpResponse::getErrorPage(int code, std::string &path) {
+std::string HttpResponse::getBody(int code, std::string &path) {
 	std::stringstream buf;
 	if (code < 400){
 		char temp;
@@ -117,7 +155,8 @@ std::string HttpResponse::createHeader(HttpRequest *req) {
 	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/6.9" << CRLF <<
-		   "Content-Length: " << _body_size << CRLF;
+		   "Content-type: " << req->getContentType() << CRLF <<
+		   "Content-Length: " << _body_size;
 	return (header.str());
 }
 
@@ -127,19 +166,19 @@ void HttpResponse::setBody(std::string &body) {
 
 
 void HttpResponse::initResponse(HttpRequest *req, int code, std::string &path) {
-//	std::string head;
-//	_code = code;
-//	if (code != 0) {
-//		_error = getErrorPage(code, path);
-//		_body_size = _error.length();
-//	}
-//	head = createHeader(req);
-//	if (!_error.empty())
-//		_body = _error;
-//	_req_to_send.append(head);
-//	_req_to_send.append("\r\n");
-//	_req_to_send.append(_body);
-//	_req_to_send.append("\r\n");
+	std::string head;
+	_code = code;
+	if (code != 0) {
+		_error = getBody(code, path);
+		_body_size = _error.length();
+	}
+	head = createHeader(req);
+	if (!_error.empty())
+		_body = _error;
+	_toSend.append(head);
+	_toSend.append("\r\n\r\n");
+	_toSend.append(_body);
+	_toSend.append("\r\n\r\n");
 }
 
 std::string HttpResponse::getCurrentDate() const {

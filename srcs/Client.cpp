@@ -51,3 +51,23 @@ HttpResponse *Client::getResponse() const {
 char *Client::getInfo() const {
 	return _clientInfo;
 }
+
+const std::string &Client::getHost() const
+{
+	return _host;
+}
+
+void Client::setHost(const std::string &host)
+{
+	_host = host;
+}
+
+uint16_t Client::getPort() const
+{
+	return _port;
+}
+
+void Client::setPort(uint16_t port)
+{
+	_port = port;
+}

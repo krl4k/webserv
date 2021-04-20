@@ -91,7 +91,7 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 void HttpRequest::queryStringParse() {
 	if (_sBuffer.find(CRLF) != std::string::npos) {
 		_method = std::string(_sBuffer, 0, _sBuffer.find(" "));
-		_path = std::string(_sBuffer, _method.length() + 1, _sBuffer.find(" ", _method.length() + 1, 1) - _method.length());
+		_path = std::string(_sBuffer, _method.length() + 1, _sBuffer.find(" ", _method.length() + 1, 1) - _method.length() - 1);
 
 		size_t queryStringPos = 0;
 		if ((queryStringPos = _path.find('?')) != std::string::npos){
@@ -159,4 +159,40 @@ std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line
 	std::string key = std::string(line, 0,line.find(" ") - 1);
 	std::string value = std::string(line, key.size() + 2);
 	return std::pair<std::string, std::string>(key, value);
+}
+
+std::string HttpRequest::getContentType() const {
+	if (_headers.find("Content-Type") == _headers.end())
+		return "text/plain";
+	return _headers.at("Content-Type");
+}
+
+int HttpRequest::getParserState() const
+{
+	return _parserState;
+}
+
+const std::string &HttpRequest::getMethod() const
+{
+	return _method;
+}
+
+const std::string &HttpRequest::getPath() const
+{
+	return _path;
+}
+
+const std::string &HttpRequest::getQueryString() const
+{
+	return _queryString;
+}
+
+const std::map<std::string, std::string> &HttpRequest::getHeaders() const
+{
+	return _headers;
+}
+
+const std::string &HttpRequest::getBody() const
+{
+	return _body;
 }

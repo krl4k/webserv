@@ -119,6 +119,9 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				else if (strings[count].find("cgi_path:") != std::string::npos){
 					newLoc->setCgiPath(getmyline(strings[count], "cgi_path:",3));
 				}
+				else if (strings[count].find("client_max_body_size:") != std::string::npos){
+					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
+				}
 				else{
 					throw std::runtime_error("Config parser error");
 				}

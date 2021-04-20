@@ -44,6 +44,12 @@ private:
 	std::string					_url;
 	std::vector<std::string>	_allowMethods;
 	std::string 				_cgiPath;
+	size_t 						_clientMaxBodySize;
+public:
+	size_t getClientMaxBodySize() const;
+
+	void setClientMaxBodySize(std::string clientMaxBodySize);
+
 public:
 	const std::string &getCgiPath() const;
 

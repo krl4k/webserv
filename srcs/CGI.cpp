@@ -94,7 +94,7 @@ void CGI::setEnvironment() {
 	env["SERVER_PORT="] = _request.getPort();			 // - The port number to which the request was sent.
 	env["SERVER_PROTOCOL="] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
-	env["SERVER_SOFTWARE="] = "MwintersMagic/0.1";
+	env["SERVER_SOFTWARE="] = "KiRoTaMagic/6.9";
 	mapToString(env);
 	env.clear();
 }

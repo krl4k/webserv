@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <dns_util.h>
+class HttpResponse;
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Colors.hpp"
@@ -45,6 +46,16 @@ private:
 	char				*_clientInfo;
 	std::string			_host;
 	uint16_t			_port;
+public:
+	const std::string &getHost() const;
+
+	void setHost(const std::string &host);
+
+	uint16_t getPort() const;
+
+	void setPort(uint16_t port);
+
+private:
 	int 			_state;
 
 	char	*_buffer;

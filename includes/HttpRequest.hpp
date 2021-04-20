@@ -41,6 +41,8 @@ public:
 
 	void clean();
 
+	std::string getContentType() const;
+
 private:
 	//--
 	int it;
@@ -53,6 +55,20 @@ private:
 	int _parserState;
 
 	std::string _method;
+public:
+	int getParserState() const;
+
+	const std::string &getMethod() const;
+
+	const std::string &getPath() const;
+
+	const std::string &getQueryString() const;
+
+	const std::map<std::string, std::string> &getHeaders() const;
+
+	const std::string &getBody() const;
+
+private:
 	std::string _path;
 	std::string _queryString;
 	std::map<std::string, std::string> _headers;
@@ -66,6 +82,7 @@ private:
 	std::pair<std::string, std::string> getPair(const std::string &line);
 
 	void headersParse();
+
 
 	void queryStringParse();
 
