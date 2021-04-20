@@ -13,20 +13,49 @@
 #include <sstream>
 #include <ios>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#if __APPLE__
+#ifdef TARGET_OS_MAC
+		#include <dns_util.h>
+	#endif
+#elif __linux__
+#include <arpa/inet.h>
+
+#endif
+
+
+
 
 class DirectoryContent{
 public:
-	DirectoryContent(const std::string &name, const std::string&dirRoot) : _name(name), _dirRoot(dirRoot){
+	DirectoryContent(const std::string &name, const std::string &dirRoot) : _name(name), _dirRoot(dirRoot){
 		struct stat structstat;
 
 		std::string path(_dirRoot + name);
 		if (stat(path.c_str(), &structstat) < 0)
 		{
-			std::cout << strerror(errno) << std::endl;
+			std::cout << "error" << std::endl;
+//			std::cout << patherror(errno) << std::endl;
 			return;
 		}
 
-		time_t time = (time_t)structstat.st_mtimespec.tv_sec;
+
+
+//		time_t time = (time_t)structstat.st_mtimespec.tv_sec;
+//		time_t time = (time_t)structstat.st_atim.tv_sec;
+
+#if __APPLE__
+		#ifdef TARGET_OS_MAC
+				time_t time = (time_t)structstat.st_mtimespec.tv_sec;
+		#endif
+#elif __linux__
+//		time_t time = (time_t)structstat.st_atim.tv_sec;
+#endif
+		time_t time = (time_t)structstat.st_atim.tv_sec;
+
 		_lastMode = ctime(&time);
 		if (S_ISDIR(structstat.st_mode)){
 			_size = -1;
@@ -56,11 +85,11 @@ std::vector<DirectoryContent> getDirectory() {
 
 	DIR *dir;
 	struct dirent *dent;
-	dir = opendir("/Users/fgrisell/CLionProjects/webserv");
+	dir = opendir("../../");
 	if(dir!=NULL)
 	{
 		while((dent=readdir(dir))!=NULL){
-			directoryContent.push_back(DirectoryContent(dent->d_name, "/Users/fgrisell/CLionProjects/webserv/"));
+			directoryContent.push_back(DirectoryContent(dent->d_name, "webserv/"));
 		}
 	}
 	closedir(dir);
@@ -80,12 +109,12 @@ std::stringstream genPart(std::vector<DirectoryContent> dirCont){
 	str <<"<td height=\"20px\">";
 	str <<"<p>";
 	str <<"<a href=\"";
-	str <<"https://github.com/\">";
-	str <<"<img src=\"/Users/fgrisell/CLionProjects/webserv/html/autoIndexPage/icons/back.png\" width=\"15px\" height=\"15px\">";
+	str <<"https://github.com/krl4k/\">";
+	str << "<img src=\"../../html/autoIndexPage/icons/back.png\" width=\"15px\" height=\"15px\">";
 	str <<"</a>";
 	str <<"</p>";
 	str <<"</td>";
-	str <<"</t";
+	str <<"</tr>";
 
 	for (int i = 0; i < dirCont.size(); ++i) {
 		if (dirCont[i]._name[0] == '.')
@@ -97,8 +126,11 @@ std::stringstream genPart(std::vector<DirectoryContent> dirCont){
 		str << 	"\" ";
 		str << 	"width=\"15px\" height=\"15px\">";
 		str << 	"<a href=\"https://github.com/\">";
-//		if (dirCont[i]._name[0] != '.')
-			str <<  dirCont[i]._name;
+
+//		if (dirCont[i]._size != -1)
+			str << "<img src=\"../../html/autoIndexPage/icons/folder.png\" width=\"15px\" height=\"15px\">";
+
+		str <<  dirCont[i]._name;
 		str <<  "</a>";
 		str << 	"</td>";
 		str << 	"<td>";
@@ -161,7 +193,7 @@ int main()
 				   "</body>"
 				   "</html>";
 
-		 	std::ofstream file("/Users/fgrisell/CLionProjects/webserv/test_scripts/testCpp/test.html");
+		 	std::ofstream file("test.html");
 
 		 	file << str.str();
 
@@ -194,12 +226,13 @@ void testStat() {
 	struct stat structstat;
 	int r = stat("/Users/fgrisell/CLionProjects/webserv", &structstat);
 
-	std::cout << "webserv last mod = " << structstat.st_mtimespec.tv_sec << std::endl;
+//linux not work
+//	std::cout << "webserv last mod = " << structstat.st_mtimespec.tv_sec << std::endl;
 	std::cout << "webserv size = " << structstat.st_size << "B" << std::endl;
 
 	std::string date;
-	time_t time = (time_t)structstat.st_mtimespec.tv_sec;
-	date = ctime(&time);
+//	time_t time = (time_t)structstat.st_mtimespec.tv_sec;
+//	date = ctime(&time);
 
 	std::cout << "data = " << date << std::endl;
 }
