@@ -47,7 +47,7 @@ public:
 	const std::string &getToSend() const;
 
 	void initResponse(HttpRequest *req, int code, std::string & path);
-
+	void	setStatusCode(int code);
 	void clean();
 
 

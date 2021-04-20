@@ -1,6 +1,6 @@
 #include "../includes/CGI.hpp"
 
-CGI::CGI(Client *client, char *path) {
+CGI::CGI(Client *client,const char *path) {
 	_request = client.getRequest();
 	_response = client.getResponse();
 	_path = strdup(path);
@@ -117,21 +117,47 @@ char **CGI::getEnvironment() const {
 }
 
 
-void	executeCGI(Client &client) {
+void	CGI::executeCGI(Client &client) {
 
-	char *currentPath;
+	char	*currentPath;
 	int 	pipeFd[2];
-	int 	bodyFd;
+	int 	fileFd;
 	pid_t	pid;
-	if (!getcwd(currentPath, NULL)) {
-		_response->setStatusCode("404");
-		return;
-	}
-	if (pipes(pipeFd) == -1)
+	char	*buffer;
+	char	*responseResult;
+
+	if (pipes(pipeFd) == -1) {
+		_response->setStatusCode(500);
 		throw std::runtime_error(RED + std::string("Pipe fail") + RESET);
-	if ((pid = fork()
-		if ()) == -1)
+	}
+	if ((fileFd = open("file", O_CREAT | O_RDWR | O_TRUNC, 0666)) == -1)
+		throw std::runtime_error(RED + std::string("can't open file in executCGI") + RESET);
+	if ((pid = fork()) == -1)
 		throw std::runtime_error(RED + std::string("fork failure") + RESET);
-}	else if (!pid) { //child process:D It's fckng magic:D
-		char *buf[1024];
+	else if (!pid) { 															//child process:D It's fckng magic:D
+		close(pipeFd[1]);
+		dup2(pipeFd[0], 0);
+		close(pipeFd[0]);
+		dup2(fileFd, 1);
+		close(fileFd);
+		exit(execve(_arguments[0], _arguments, _environment));
+	} else if ((wait()) != -1){
+		send(pipeFd[1], _request->getBody(), _request->getBody().length(), 0);
+		close(pipeFd[1]);
+		close(pipeFd[0]);
+		char *responseBody;
+		lseek(fileFd, SEEK_SET, SEEK_SET);
+		if (!(buffer = (char *)calloc(2, sizeof(char))))
+			throw std::bad_alloc;
+		for (int bytes; bytes > 0; bytes = read(fileFd, buffer, 1)) {
+			int size = strlen(buffer);
+			if (!(buffer = (char *)realloc(buffer, size + 2)))
+				throw std::bad_alloc;
+			buffer[size + 2] = '\0';
+		}
+		_response->setBody(std::string::substr(strnstr(buffer, BODY_SEP,
+												 strlen(buffer)) + 4, strlen(afterCRLFPosition));
+		_response->setStatusCode(200);
+		close(fileFd);
+	}
 }

@@ -3,9 +3,8 @@
 
 #ifndef WEBSERV_CGI_H
 #define WEBSERV_CGI_H
-class HTTPResponse{};
-class HTTPRequest{};
-class Client {};
+#include "../includes/HttpRequest.hpp"
+#include "../includes/HttpResponse.hpp"
 //#include "Client.hpp"
 #include <string>
 #include <iostream>
@@ -20,7 +19,7 @@ class Client {};
 class CGI {
 public:
 
-	CGI(Client *client, char *path);
+	CGI(Client *client, const char *path);
 	virtual ~CGI();
 
 	void 	setArguments();
@@ -32,8 +31,8 @@ private:
 	char			**_arguments;
 	size_t			_environmentSize;
 	char			*_path;
-	HTTPResponse	*_response;
-	HTTPRequest		*_request;
+	HttpResponse	*_response;
+	HttpRequest		*_request;
 	CGI(const CGI &other);
 	CGI &operator=(const CGI &other);
 
