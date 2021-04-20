@@ -45,6 +45,12 @@ private:
 	std::vector<std::string>	_allowMethods;
 	std::string 				_cgiPath;
 	size_t 						_clientMaxBodySize;
+	std::string 				_index;
+public:
+	const std::string &getIndex() const;
+
+	void setIndex(const std::string &index);
+
 public:
 	size_t getClientMaxBodySize() const;
 

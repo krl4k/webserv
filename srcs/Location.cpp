@@ -96,7 +96,15 @@ void Location::setClientMaxBodySize(std:: string clientMaxBodySize)
 	try{
 		_clientMaxBodySize = std::stoi(clientMaxBodySize);
 	}
-	catch {
+	catch (std::exception &e){
 		throw std::runtime_error("setClientMaxBodySize error");
 	}
+}
+
+const std::string &Location::getIndex() const {
+	return _index;
+}
+
+void Location::setIndex(const std::string &index) {
+	_index = index;
 }
