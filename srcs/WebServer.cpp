@@ -109,7 +109,10 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 		}
 		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE) {
 			sendResponce(_client[i]);
-//			_client[i]
+//			if response sending all
+//			_client[i]->setState(Client::State::REQUEST_PARSE);
+//
+			//todo clint->clean
 			_client[i]->setState(Client::State::REQUEST_PARSE);
 			_client[i]->getRequest()->clean();
 			_client[i]->getResponse()->clean();
@@ -127,12 +130,10 @@ void WebServer::readRequest(Client *&client) {
 	bzero(&buffer, BUFSIZE);
 	int bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZE, 0);
-
 #if DEBUG == 1
 	std::cout << "bytes read = " << bytes_read << std::endl;
 	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
 #endif
-
 	if (bytes_read <= 0) {
 		client->setState(Client::State::CLOSE);
 		return;

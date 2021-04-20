@@ -1,30 +1,73 @@
+# import requests as req
+#
+# blocks = 1
+#
+# chunkSize = 10
+# sstr = "ab"
+#
+# chunkHexSize = str(hex(chunkSize * int(len(sstr))))
+#
+#
+# def chunkGenerator():
+#     for i in range(0, blocks):
+#         # print(i)
+#         v1 = str(hex(chunkSize)) + "\r\n"
+#         # print("hex = " + v1)
+#         v2 = (sstr * chunkSize) + "\r\n"
+#         yield v1.encode('utf8')
+#         yield v2.encode('utf8')
+#
+#     v3 = "0\r\n\r\n"
+#     # print("end")
+#     yield v3.encode('utf8')
+#
+# url = 'http://localhost:8000/'
+#
+# # count user
+# counUser = 1
+# for i in range(0, counUser):
+#     print("chunkSize = " + str(chunkSize * 2))
+#     r = req.post(url, data=chunkGenerator())
+#     print("==============================================================")
+#     print(r.text)
+#     print(i)
+
 import requests as req
+# blocks = 1
+# def generator():
+#     for i in range(0, blocks):
+#         print(i)
+#         v1="10\r\n"
+#         print("v1 = " + v1)
+#         v2= ("ab" * 8) + "\r\n"
+#         print("v2 = " + v2)
+#         v3 = v1 + v2
+#         print("v3 = " + v3)
+#         yield v3.encode('utf8')
+#
+#     v3="0\r\n\r\n"
+#     print("end")
+#     yield v3.encode('utf8')
 
-blocks = 1
 
-cunkSize = 16384;
-hexSize = str(hex(cunkSize * 2))
 
-def generator():
-    for i in range(0, blocks):
-        print (i)
-        v1= hexSize + "\r\n"
-        print("hex = " + v1)
-        v2= ("ab" * 16384) + "\r\n"
-        yield v1.encode('utf8')
-        yield v2.encode('utf8')
+import time
 
-    v3="0\r\n\r\n"
-    print("end")
-    yield v3.encode('utf8')
 
 url =  'http://localhost:8000/'
 
 
-# count user
-counUser = 2
-for i in range(0, counUser):
-    r = req.post(url, data=generator())
+def gen():
+    yield "This is the data in the first chunk"
+    # time.sleep(1.0)
+    yield "and this is the second one"
+    # time.sleep(1.0)
+    yield "con"
+
+
+for i in range(0, 1):
+    r = req.post(url, data=gen())
     print("==============================================================")
+    # print(i)
+    print(r)
     print(r.text)
-    print(i)

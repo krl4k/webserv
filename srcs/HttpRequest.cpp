@@ -6,8 +6,9 @@
 #include "../includes/HttpRequest.hpp"
 
 HttpRequest::HttpRequest() : _sBuffer(),
-	 _state(State::NEED_INFO), _parserState(ParserState::QUERY_STRING),
-	 _method(), _path(), _queryString(), _headers(), _body() {
+							 _state(State::NEED_INFO), _parserState(ParserState::QUERY_STRING),
+							 _method(), _path(), _queryString(), _headers(), _body(), _chunk(), _bodyStart(0),
+							 _chunkPoint(0){
 	it =0;
 }
 
@@ -36,6 +37,8 @@ void HttpRequest::clean() {
 	_body.clear();
 	_parserState = ParserState::QUERY_STRING;
 	_state = State::NEED_INFO;
+	_bodyStart = 0;
+	_chunkPoint = 0;
 	it = 0;
 }
 
@@ -105,7 +108,7 @@ void HttpRequest::queryStringParse() {
 void HttpRequest::headersParse() {
 	if (_sBuffer.find(BODY_SEP) != std::string::npos) {
 		size_t _headersEndPos = _sBuffer.find(BODY_SEP) + 4;
-		for (size_t i = _sBuffer.find(CRLF) + 2;;) {
+		for (size_t i = _sBuffer.find(CRLF) + 2; ; ) {
 			std::string line = std::string(_sBuffer, i, _sBuffer.find(CRLF, i) - i);
 			if (i + line.size() + 2 < _headersEndPos)
 				i += line.size() + 2;
@@ -114,8 +117,10 @@ void HttpRequest::headersParse() {
 			_headers.insert(getPair(line));
 		}
 		//TODO rewrite
-		if (_method == "POST" or _method == "PUT")
+		if (_method == "POST" or _method == "PUT"){
 			_parserState = ParserState::BODY;
+			_bodyStart = _headersEndPos;
+		}
 		else
 			_parserState = ParserState::FINISHED;
 	}
@@ -123,19 +128,27 @@ void HttpRequest::headersParse() {
 
 void HttpRequest::bodyParse() {
 	// todo read content lenght
-	if (_headers["Transfer-Encoding"] == _headers.end()->second) {}
 
-	if (_headers["Transfer-Encoding"] != _headers.end()->second and \
-		_headers["Transfer-Encoding"] == "chunked") {
-		// todo do some fucking magic with chunk`s
+	/*
+	if (_headers["Transfer-Encoding"] == _headers.end()->second) {
+
+	}
+	*/
+
+	//_headers["Transfer-Encoding"] != _headers.end()->second and
+	if (_headers["TRANSFER-ENCODING"] == "chunked") {
+		// todo do some magic with chunk`s
 		std::cout << CYAN << "CHUNKED!!!" << RESET << std::endl;
+		chunkParse();
 	}
 	else {
 		size_t contentLength = 0;
 		try {
-			contentLength = std::stoi(_headers["Content-Length"]);
+			contentLength = std::stoi(_headers["CONTENT-LENGTH"]);
 		} catch (std::exception &exception) {
-			std::cout << exception.what() << std::endl;
+			std::cerr << exception.what() << std::endl;
+			_parserState = ParserState::FINISHED;
+			return;
 		}
 		size_t bodyStart = _sBuffer.find(BODY_SEP) + 4;
 		if (_sBuffer.size() - bodyStart == contentLength) {
@@ -147,16 +160,54 @@ void HttpRequest::bodyParse() {
 		_parserState = ParserState::FINISHED;
 	}
 	_parserState = ParserState::FINISHED;
-
-
-
-
-
 }
 
 
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
 	std::string key = std::string(line, 0,line.find(" ") - 1);
-	std::string value = std::string(line, key.size() + 2);
+	std::string value = std::string(line, key.size() + 2, line.find(" "));
+	for (int i = 0; i < key.size(); ++i) {
+		key[i] = static_cast<char>(toupper(key[i]));
+	}
 	return std::pair<std::string, std::string>(key, value);
 }
+
+void HttpRequest::chunkParse() {
+	if (_chunk.empty() or _chunk.back().isFull()) {
+		_chunk.push_back(ChunkedRequest());
+	}
+	std::string chunkBuffer(_sBuffer, _bodyStart + _chunkPoint);
+	std::cout << "chunk size = " << chunkBuffer.size() << std::endl;
+
+	for (int i = 0; i < chunkBuffer.size(); ++i) {
+		if (!_chunk.back().isFull()) {
+
+			_bodyStart += _chunk.back().getSize();
+		}
+	}
+
+	std::string sizeChunk(_sBuffer, _bodyStart, _sBuffer.find(CRLF, _bodyStart));
+
+
+	std::cout << "chunk:\n" << chunkBuffer;
+	std::cout << "----------------------------" << std::endl;
+
+	unsigned int x;
+	try {
+		x = std::stoul(sizeChunk, nullptr, 16);
+	}catch (std::exception &exception){
+		std::cout << exception.what() << std::endl;
+	}
+}
+
+
+//POST / HTTP/1.1
+//Host: localhost:8000
+//Connection: keep-alive
+//		Accept-Encoding: gzip, deflate
+//		Accept: */*
+//User-Agent: python-requests/2.25.1
+//Transfer-Encoding: chunked
+//
+//0xa
+//abababababababababab

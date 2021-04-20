@@ -15,6 +15,13 @@ add_executable(webserv1
         srcs/Parser.cpp
         srcs/HttpRequest.cpp
         srcs/HttpResponse.cpp
+        srcs/ChunkedRequest.cpp
 
-#        tmp/testfiles/test.cpp
+#        tmp/testfiles/testCpp.cpp
+        )
+
+
+
+add_executable(test_cpp
+        test_scripts/testCpp/testOpenDir.cpp
         )
