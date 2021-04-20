@@ -14,6 +14,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ctime>
 
 class HttpResponse {
 public:
