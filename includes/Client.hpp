@@ -5,7 +5,17 @@
 #include <iostream>
 #include <unistd.h>
 #include <netdb.h>
-#include <dns_util.h>
+#if __APPLE__
+	#ifdef TARGET_OS_MAC
+		#include <dns_util.h>
+	#endif
+#elif __linux__
+	#include <arpa/inet.h>
+#endif
+//todo check this on MacOs
+
+//#include <arpa/inet.h>
+//#include <dns_util.h>
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Colors.hpp"
