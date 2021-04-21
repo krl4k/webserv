@@ -22,21 +22,23 @@ public:
 //
 //	Location &operator=(const Location &other);
 
-	void setRoot(const std::string &root);
+	void setRoot(const std::string & root);
 
-	void setAutoIndex(bool autoIndex);
+	bool getAutoIndex() const { return _autoIndex;}
 
-	void setUrl(const std::string &url);
+	void setAutoIndex(std::string autoIndex);
 
-	void setAllowMethods(const std::string &allowMethods);
+	void setUrl(const std::string & url);
+
+	void setAllowMethods(const std::string & allowMethods);
 
 	const std::string &getRoot() const;
 
 	bool isAutoIndex() const;
 
-	const std::string &getUrl() const;
+	const std::string & getUrl() const;
 
-	const std::vector<std::string> &getAllowMethods() const;
+	const std::vector<std::string> & getAllowMethods() const;
 
 private:
 	std::string					_root;
@@ -47,7 +49,7 @@ private:
 	size_t 						_clientMaxBodySize;
 	std::string 				_index;
 public:
-	const std::string &getIndex() const;
+	const std::string & getIndex() const;
 
 	void setIndex(const std::string &index);
 

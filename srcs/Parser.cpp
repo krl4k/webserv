@@ -91,7 +91,7 @@ std::string getmyline(std::string& str, std::string com, int n){
 	if (str[i] == '\0')
 		throw std::runtime_error("Config file error");
 	temp = str.substr(i + com.size() + 1, str.size() - i);
-	if (temp.find(com.c_str(), 0, com.size() - 1)){
+	if (str.find(com.c_str(), 0, com.size() - 1)){
 		return (temp);
 	}
 	else{
@@ -125,6 +125,9 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				}
 				else if (strings[count].find("client_max_body_size:") != std::string::npos){
 					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
+				}
+				else if (strings[count].find("autoindex:") != std::string::npos){
+					newLoc->setAutoIndex(getmyline(strings[count], "autoindex:",3));
 				}
 				else{
 					throw std::runtime_error("Config parser error");

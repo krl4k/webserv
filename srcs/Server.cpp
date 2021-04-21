@@ -75,7 +75,15 @@ const std::string &Server::getErrorPage() const {
 }
 
 void Server::setErrorPage(const std::string  &errorPage) {
-	_errorPage = errorPage;
+	std::string code = errorPage.substr(0, 3);
+	std::string file = errorPage.substr(4, errorPage.size() - 4);
+	_errorPage = file;
+	try {
+		_errorPageCode = std::stoi(code);
+	}
+	catch (std::exception &e){
+		std::cerr << "Error page line error" << std::endl;
+	}
 }
 
 int Server::createSocket() {
@@ -121,4 +129,8 @@ Server::~Server() {
 
 uint16_t Server::getPort() const {
 	return _port;
+}
+
+int Server::getErrorPageCode() const {
+	return _errorPageCode;
 }

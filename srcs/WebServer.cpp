@@ -202,6 +202,7 @@ Server *WebServer::findServer(Client *client){
 		if (client->getHost() == _server[i]->getHost() && client->getPort() == _server[i]->getPort())
 			return (_server[i]);
 	}
+	return (nullptr);
 }
 
 

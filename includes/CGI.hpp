@@ -7,12 +7,12 @@
 #include <sys/stat.h>
 
  class HTTPResponse{
-	 void checkFile(Location &ourLoc, std::string &mergedPath, stat *fileInfo);
+	 void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
 
-	 void createPutResponse(Client *client, Location *ourLoc, stat fileInfo, std::string &mergedPath);
+	 void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath);
  };
-class HTTPRequest{};
-class Client {};
+class HTTPRequest;
+class Client ;
 //#include "Client.hpp"
 #include <string>
 #include <iostream>

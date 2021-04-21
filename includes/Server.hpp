@@ -65,7 +65,11 @@ private:
 	std::map<std::string, Location>		_location;
 	std::string							_root;
 	std::string							_errorPage;
+	int 								_errorPageCode;
+public:
+	int getErrorPageCode() const;
 
+private:
 
 
 //	UNUSED
