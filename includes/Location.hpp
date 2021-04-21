@@ -42,7 +42,7 @@ public:
 
 private:
 	std::string					_root;
-	bool						_autoIndex;
+	bool						_autoIndex = true;
 	std::string					_url;
 	std::vector<std::string>	_allowMethods;
 	std::string 				_cgiPath;

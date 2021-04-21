@@ -8,7 +8,8 @@
 #include <sstream>
 
 Location::Location() {
-	_autoIndex = false;
+	_autoIndex = true;
+	_clientMaxBodySize = 0;
 }
 
 Location::~Location() {

@@ -117,6 +117,9 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				else if (strings[count].find("access-control-allow-methods:") != std::string::npos){
 					newLoc->setAllowMethods(getmyline(strings[count], "access-control-allow-methods:", 3));
 				}
+				else if (strings[count].find("autoindex:") != std::string::npos){
+					newLoc->setAutoIndex(getmyline(strings[count], "autoindex:",3));
+				}
 				else if (strings[count].find("index:") != std::string::npos){
 					newLoc->setIndex(getmyline(strings[count], "index:", 3));
 				}
@@ -126,9 +129,7 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				else if (strings[count].find("client_max_body_size:") != std::string::npos){
 					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
 				}
-				else if (strings[count].find("autoindex:") != std::string::npos){
-					newLoc->setAutoIndex(getmyline(strings[count], "autoindex:",3));
-				}
+
 				else{
 					throw std::runtime_error("Config parser error");
 				}

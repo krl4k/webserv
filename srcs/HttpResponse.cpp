@@ -70,23 +70,22 @@ void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct st
 
 std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
 	std::string buff;
-	std::stringstream out;
 	int fd = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))){ std::cerr << "Can't open file" << std::endl;}
-	while (read(fd, &buff, 65534) > 0){	out << buff;}
-	close(fd);
-	buff = out.str();
+	while (read(fd, &buff, 65534) > 0){
+		buff.append(buff);
+	}
 	return (buff);
 }
 
 
-void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location *ourLoc, std::string &mergedPath, Server *server){
+void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location *ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode){
 	size_t n;
 
 	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode)) && client->getRequest()->getMethod() == "GET") {
 		std::string temp = bodyResponceInit(mergedPath);
-		client->getResponse()->setBody(temp);
+		this->setBody(temp);
 	}
 	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc->getAutoIndex()){ _code = 404;}
 	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc->getAutoIndex()){
@@ -94,10 +93,10 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 	}
 	else{ _code = 404;}
 
-	if (_code == server->getErrorPageCode()){
+	if (_code == errorPageCode){
 		int status = 0;
 		int n = mergedPath.rfind('/');
-		std::string tempPath = mergedPath.substr(0, n) + '/' +  server->getErrorPage();
+		std::string tempPath = mergedPath.substr(0, n) + '/' +  errorPage;
 		mergedPath = tempPath;
 		status = stat(mergedPath.c_str(), &fileInfo);
 		_isThereErrorPage = (status != -1) ? 1 : 2;
@@ -163,7 +162,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			}
 		}
 		if (client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD"){
-			createGetOrHead(client, fileInfo, &ourLoc, mergedPath, server);
+			createGetOrHead(client, fileInfo, &ourLoc, mergedPath, server->getErrorPage(), server->getErrorPageCode());
 		}
 		else if (client->getRequest()->getMethod() == "PUT"){
 			createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);

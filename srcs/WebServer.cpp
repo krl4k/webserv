@@ -59,7 +59,7 @@ int WebServer::lifeCycle() {
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
 
 		acceptNewClient(readFdSet);
-		handler(readFdSet, writeFdSet);
+			handler(readFdSet, writeFdSet);
 	}
 }
 
