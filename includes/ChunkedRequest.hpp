@@ -19,21 +19,30 @@ public:
 	ChunkedRequest(const ChunkedRequest &other);
 	ChunkedRequest &operator=(const ChunkedRequest &other);
 
+	void setBuffer(const std::string &buffer);
 
+	void setSize(const std::string &size);
 
-	bool isFull() const;
+	void setBufferFull(bool bufferFull);
+
+	void setSizeFull(bool sizeFull);
+
+	int getIntSize() const;
+
+	bool isBufferFull() const;
+
+	bool isSizeFull() const;
 
 	const std::string &getBuffer() const;
 
-	int getSize() const;
 
 private:
 	std::string _buffer;
-	int 		_size;
-	bool 		_full;
+	bool 		_bufferFull;
+	std::string _size;
+	bool 		_sizeFull;
 
-
-
+	int			_intSize;
 };
 
 

@@ -5,16 +5,13 @@
 
 #include "../includes/ChunkedRequest.hpp"
 
-ChunkedRequest::ChunkedRequest() {
+ChunkedRequest::ChunkedRequest() : _bufferFull(false) , _sizeFull(false){
 
 }
 
 ChunkedRequest::~ChunkedRequest() {
 }
 
-bool ChunkedRequest::isFull() const {
-	return _full;
-}
 
 ChunkedRequest::ChunkedRequest(const ChunkedRequest &other) {
 	*this = other;
@@ -23,9 +20,6 @@ ChunkedRequest::ChunkedRequest(const ChunkedRequest &other) {
 ChunkedRequest &ChunkedRequest::operator=(const ChunkedRequest &other) {
 	if (this == &other)
 		return *this;
-	_buffer = other._buffer;
-	_full = other._full;
-	_size = other._size;
 	return *this;
 }
 
@@ -33,6 +27,40 @@ const std::string &ChunkedRequest::getBuffer() const {
 	return _buffer;
 }
 
-int ChunkedRequest::getSize() const {
-	return _size;
+
+bool ChunkedRequest::isBufferFull() const {
+	return _bufferFull;
 }
+
+bool ChunkedRequest::isSizeFull() const {
+	return _sizeFull;
+}
+
+void ChunkedRequest::setBuffer(const std::string &buffer) {
+	_buffer.append(buffer);
+}
+
+void ChunkedRequest::setSize(const std::string &size) {
+	_size.append(size);
+}
+
+void ChunkedRequest::setBufferFull(bool bufferFull) {
+	_bufferFull = bufferFull;
+}
+
+void ChunkedRequest::setSizeFull(bool sizeFull) {
+	_sizeFull = sizeFull;
+	if (_sizeFull == true) {
+		try {
+			_intSize = std::stoul(_size, nullptr, 16);
+		}catch (std::exception &exception){
+			std::cout << exception.what() << std::endl;
+		}
+	}
+}
+
+int ChunkedRequest::getIntSize() const {
+	return _intSize;
+}
+
+

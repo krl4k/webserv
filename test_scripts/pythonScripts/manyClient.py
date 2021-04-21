@@ -8,7 +8,7 @@ def generator():
 url = 'http://localhost:8000/'
 
 # count user
-counUser = 20
+counUser = 200
 for i in range(0, counUser):
     print("==============================================================")
     r = req.post(url)

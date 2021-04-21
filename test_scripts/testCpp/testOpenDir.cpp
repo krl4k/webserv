@@ -16,14 +16,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 #if __APPLE__
-#ifdef TARGET_OS_MAC
-		#include <dns_util.h>
-	#endif
-#elif __linux__
+//	#include <dns_util.h>
 #include <arpa/inet.h>
 
+#elif __linux__
+	#include <arpa/inet.h>
 #endif
 
 
@@ -34,11 +32,11 @@ public:
 	DirectoryContent(const std::string &name, const std::string &dirRoot) : _name(name), _dirRoot(dirRoot){
 		struct stat structstat;
 
+		std::cout << "dir root = " << dirRoot << name << std::endl;
 		std::string path(_dirRoot + name);
 		if (stat(path.c_str(), &structstat) < 0)
 		{
 			std::cout << "error" << std::endl;
-//			std::cout << patherror(errno) << std::endl;
 			return;
 		}
 
@@ -48,13 +46,10 @@ public:
 //		time_t time = (time_t)structstat.st_atim.tv_sec;
 
 #if __APPLE__
-		#ifdef TARGET_OS_MAC
-				time_t time = (time_t)structstat.st_mtimespec.tv_sec;
-		#endif
+		time_t time = (time_t)structstat.st_mtimespec.tv_sec;
 #elif __linux__
-//		time_t time = (time_t)structstat.st_atim.tv_sec;
-#endif
 		time_t time = (time_t)structstat.st_atim.tv_sec;
+#endif
 
 		_lastMode = ctime(&time);
 		if (S_ISDIR(structstat.st_mode)){
@@ -85,11 +80,11 @@ std::vector<DirectoryContent> getDirectory() {
 
 	DIR *dir;
 	struct dirent *dent;
-	dir = opendir("../../");
+	dir = opendir("/Users/fgrisell/CLionProjects/webserv/");
 	if(dir!=NULL)
 	{
 		while((dent=readdir(dir))!=NULL){
-			directoryContent.push_back(DirectoryContent(dent->d_name, "webserv/"));
+			directoryContent.push_back(DirectoryContent(dent->d_name, "/Users/fgrisell/CLionProjects/webserv/"));
 		}
 	}
 	closedir(dir);
@@ -127,16 +122,17 @@ std::stringstream genPart(std::vector<DirectoryContent> dirCont){
 		str << 	"width=\"15px\" height=\"15px\">";
 		str << 	"<a href=\"https://github.com/\">";
 
-//		if (dirCont[i]._size != -1)
+		if (dirCont[i]._size != -1)
 			str << "<img src=\"../../html/autoIndexPage/icons/folder.png\" width=\"15px\" height=\"15px\">";
-
+		else
+			str << "<img src=\"../../html/autoIndexPage/icons/file.png\" width=\"15px\" height=\"15px\">";
 		str <<  dirCont[i]._name;
 		str <<  "</a>";
 		str << 	"</td>";
 		str << 	"<td>";
 		str <<	"<a>";
 		if (dirCont[i]._size != -1)
-			str << 	dirCont[i]._size;
+			str << 	dirCont[i]._size << " B";
 	 	str <<	"</a>";
 	 	str <<	"</td>";
 		str << 	"<td>";
@@ -158,19 +154,21 @@ int main()
 		   "<html lang=\"en\">"
 		   "<head>"
 		   "    <meta charset=\"UTF-8\">"
-		   "    <title>DirectoryContent of _PATH_</title>"
+	 //todo add path
+		   "    <title>DirectoryContent of _PATH_";
+	str << "</title>"
 		   "</head>"
 		   "<body>"
 		   "<center>"
 		   "    <div>"
 		   "        <table>"
-		   "            <!--        title-->"
 		   "            <tr>"
 		   "                <th height=\"20px\" >Name</th>"
 		   "                <th height=\"20px\">Size</th>"
 		   "                <th height=\"20px\">Date</th>"
-		   "            </tr>"
-		   "            <!--        back button-->"
+		   "            </tr>";
+
+		   str <<
 		   "            <tr>"
 		   "                <td height=\"20px\">"
 		   "                    <p>"
@@ -179,21 +177,17 @@ int main()
 		   "                        </a>"
 		   "                    </p>"
 		   "                </td>"
-		   "            </tr>"
-		   "            <!--        directory content-->";
-
-
+		   "            </tr>";
 
 		 	str << genPart(directoryContent).str();
 
 		 	str << "   </table>"
 				   "    </div>"
-				   ""
 				   "</center>"
 				   "</body>"
 				   "</html>";
 
-		 	std::ofstream file("test.html");
+		 	std::ofstream file("/Users/fgrisell/CLionProjects/webserv/test_scripts/testCpp/test.html");
 
 		 	file << str.str();
 

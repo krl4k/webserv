@@ -59,7 +59,7 @@ private:
 	std::string _body;
 	int			_bodyStart;
 	int			_chunkPoint;
-	std::vector<ChunkedRequest> _chunk;
+	std::vector<ChunkedRequest *> _chunk;
 
 	HttpRequest(const HttpRequest &other);
 

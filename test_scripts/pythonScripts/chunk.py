@@ -51,21 +51,18 @@ import requests as req
 
 
 
-import time
-
-
 url =  'http://localhost:8000/'
 
 
 def gen():
-    yield "This is the data in the first chunk"
+    yield "one".encode('utf8')
     # time.sleep(1.0)
-    yield "and this is the second one"
+    yield "two".encode('utf8')
     # time.sleep(1.0)
-    yield "con"
+    yield "three".encode('utf8')
 
 
-for i in range(0, 1):
+for i in range(0, 25):
     r = req.post(url, data=gen())
     print("==============================================================")
     # print(i)
