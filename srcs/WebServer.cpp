@@ -160,7 +160,7 @@ Client *WebServer::acceptNewConnection(int serverNumber) {
 }
 
 void WebServer::generateResponce(Client *&client) {
-	client->getResponse()->generate();
+	client->getResponse()->generate(client, findServer(client));
 	client->setState(Client::State::ACCEPT_RESPONSE);
 }
 
@@ -187,17 +187,25 @@ void WebServer::sendResponce(Client *&client) {
 }
 
 
-std::string readFile(const std::string& fileName) {
-	std::ifstream f(fileName);
-	f.seekg(0, std::ios::end);
-	size_t size = f.tellg();
-	std::string s(size, ' ');
-	f.seekg(0);
-	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
-	return s;
+//std::string readFile(const std::string& fileName) {
+//	std::ifstream f(fileName);
+//	f.seekg(0, std::ios::end);
+//	size_t size = f.tellg();
+//	std::string s(size, ' ');
+//	f.seekg(0);
+//	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
+//	return s;
+//}
+
+Server *WebServer::findServer(Client *client){
+	for (size_t i = 0; i < _server.size();++i){
+		if (client->getHost() == _server[i]->getHost() && client->getPort() == _server[i]->getPort())
+			return (_server[i]);
+	}
 }
 
 
 WebServer::WebServer() {
 
 }
+

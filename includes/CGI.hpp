@@ -3,7 +3,14 @@
 
 #ifndef WEBSERV_CGI_H
 #define WEBSERV_CGI_H
-class HTTPResponse{};
+
+#include <sys/stat.h>
+
+ class HTTPResponse{
+	 void checkFile(Location &ourLoc, std::string &mergedPath, stat *fileInfo);
+
+	 void createPutResponse(Client *client, Location *ourLoc, stat fileInfo, std::string &mergedPath);
+ };
 class HTTPRequest{};
 class Client {};
 //#include "Client.hpp"
@@ -20,7 +27,7 @@ class Client {};
 class CGI {
 public:
 
-	CGI(Client *client, char *path);
+	CGI(Client *client, const char *path);
 	virtual ~CGI();
 
 	void 	setArguments();

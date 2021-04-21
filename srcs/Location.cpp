@@ -52,6 +52,8 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 		else
 			throw std::runtime_error("Allow methods error");
 	}
+	if (newVec.empty())
+		throw std::runtime_error("Allow methods error");
 	for (size_t i = 0; i < newVec.size(); ++i){
 		for (size_t j = i + 1; j < newVec.size(); ++j)
 			if (newVec[i] == newVec[j] && i != j)
@@ -82,4 +84,27 @@ const std::string &Location::getCgiPath() const {
 
 void Location::setCgiPath(const std::string &cgiPath) {
 	_cgiPath = cgiPath;
+}
+
+size_t Location::getClientMaxBodySize() const
+{
+	return _clientMaxBodySize;
+}
+
+void Location::setClientMaxBodySize(std:: string clientMaxBodySize)
+{
+	try{
+		_clientMaxBodySize = std::stoi(clientMaxBodySize);
+	}
+	catch (std::exception &e){
+		throw std::runtime_error("setClientMaxBodySize error");
+	}
+}
+
+const std::string &Location::getIndex() const {
+	return _index;
+}
+
+void Location::setIndex(const std::string &index) {
+	_index = index;
 }

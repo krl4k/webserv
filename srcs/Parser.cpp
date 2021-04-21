@@ -86,6 +86,10 @@ std::string getmyline(std::string& str, std::string com, int n){
 	if (str[i + 1] && str.compare(i, com.size(), com)){
 		throw std::runtime_error("Config file error");
 	}
+	while (str[i] == ' ' || str[i] == '\t')
+		i++;
+	if (str[i] == '\0')
+		throw std::runtime_error("Config file error");
 	temp = str.substr(i + com.size() + 1, str.size() - i);
 	if (temp.find(com.c_str(), 0, com.size() - 1)){
 		return (temp);
@@ -114,10 +118,13 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 					newLoc->setAllowMethods(getmyline(strings[count], "access-control-allow-methods:", 3));
 				}
 				else if (strings[count].find("index:") != std::string::npos){
-					newLoc->setRoot(getmyline(strings[count], "index:", 3));
+					newLoc->setIndex(getmyline(strings[count], "index:", 3));
 				}
 				else if (strings[count].find("cgi_path:") != std::string::npos){
 					newLoc->setCgiPath(getmyline(strings[count], "cgi_path:",3));
+				}
+				else if (strings[count].find("client_max_body_size:") != std::string::npos){
+					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
 				}
 				else{
 					throw std::runtime_error("Config parser error");

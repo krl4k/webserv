@@ -96,6 +96,7 @@ private:
 	WebServer();
 	WebServer(const WebServer &other);
 	WebServer &operator=(const WebServer &other);
+	Server * findServer(Client *client);
 
 };
 

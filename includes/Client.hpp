@@ -16,6 +16,7 @@
 
 //#include <arpa/inet.h>
 //#include <dns_util.h>
+class HttpResponse;
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Colors.hpp"

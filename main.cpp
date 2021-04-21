@@ -9,10 +9,16 @@ int main(int argc, char **argv) {
 			webServer.start();
 		} catch (std::exception &exception) {
 			std::cerr << "Server dont started!" << std::endl;
+			return -1;
 		}
 	} else {
-		std::cerr << "Wrong arguments!" << std::endl;
-		return (-1);
+		try {
+			WebServer webServer("./configs/default.conf");
+			webServer.start();
+		} catch (std::exception &exception) {
+			std::cerr << "Server dont started!2" << std::endl;
+			return -1;
+		}
 	}
 	return (0);
 }
