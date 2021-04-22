@@ -6,16 +6,11 @@
 #include <unistd.h>
 #include <netdb.h>
 #if __APPLE__
-	#ifdef TARGET_OS_MAC
 		#include <dns_util.h>
-	#endif
 #elif __linux__
 	#include <arpa/inet.h>
 #endif
-//todo check this on MacOs
 
-//#include <arpa/inet.h>
-//#include <dns_util.h>
 class HttpResponse;
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
@@ -35,6 +30,13 @@ public:
 
 	virtual ~Client();
 
+	const std::string &getHost() const;
+
+	void setHost(const std::string &host);
+
+	uint16_t getPort() const;
+
+	void setPort(uint16_t port);
 
 	char *getInfo() const;
 

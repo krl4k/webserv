@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		try {
-			WebServer webServer("./configs/default.conf");
+			WebServer webServer("../configs/default.conf");
 			webServer.start();
 		} catch (std::exception &exception) {
 			std::cerr << "Server dont started!2" << std::endl;

@@ -126,7 +126,7 @@ void	CGI::executeCGI(Client *client) {
 	char	*buffer;
 	char	*responseResult;
 
-	if (pipes(pipeFd) == -1) {
+	if (pipe(pipeFd) == -1) {
 		_response->setStatusCode(500);
 		throw std::runtime_error(RED + std::string("Pipe fail") + RESET);
 	}
@@ -148,11 +148,11 @@ void	CGI::executeCGI(Client *client) {
 		char *responseBody;
 		lseek(fileFd, SEEK_SET, SEEK_SET);
 		if (!(buffer = (char *)calloc(2, sizeof(char))))
-			throw std::bad_alloc;
+			throw std::bad_alloc();
 		for (int bytes; bytes > 0; bytes = read(fileFd, buffer, 1)) {
 			int size = strlen(buffer);
 			if (!(buffer = (char *)realloc(buffer, size + 2)))
-				throw std::bad_alloc;
+				throw std::bad_alloc();
 			buffer[size + 2] = '\0';
 		}
 		_response->setBody(std::string::substr(strnstr(buffer, BODY_SEP,

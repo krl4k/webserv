@@ -156,7 +156,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 						int i = 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
-						CGI newCGI(client, temp.c_str());
+//						CGI newCGI(client, temp.c_str());
 					}
 				} else {
 					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);

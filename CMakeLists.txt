@@ -15,7 +15,7 @@ add_executable(webserv1
         srcs/Parser.cpp
         srcs/HttpRequest.cpp
         srcs/HttpResponse.cpp
-        srcs/CGI.cpp
+#        srcs/CGI.cpp
 
 #        tmp/testfiles/test.cpp
         )
