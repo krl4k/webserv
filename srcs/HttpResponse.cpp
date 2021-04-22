@@ -40,9 +40,9 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 		close(fd);
 		stat(mergedPath.c_str(), fileInfo);
 	}
-	else{	std::cout << "File access error" << std::endl;
+	/*else{	std::cout << "File access error" << std::endl;
 		_code = 500;
-	}
+	}*/
 }
 
 void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag){
@@ -216,7 +216,7 @@ std::string & HttpResponse::getStatusMessages(int n) {
 
 std::string HttpResponse::getPage(std::string &path) {
 	std::stringstream buf;
-	if (_isThereErrorPage >= 0){
+	if ((_code > 400 && _isThereErrorPage != 0) || _isThereErrorPage >= 0){
 		char temp;
 		int cor_fd = open(path.c_str(), O_RDONLY);
 		if (!cor_fd)
