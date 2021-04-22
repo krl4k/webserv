@@ -59,7 +59,7 @@ int WebServer::lifeCycle() {
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
 
 		acceptNewClient(readFdSet);
-		handler(readFdSet, writeFdSet);
+			handler(readFdSet, writeFdSet);
 	}
 }
 
@@ -202,6 +202,7 @@ Server *WebServer::findServer(Client *client){
 		if (client->getHost() == _server[i]->getHost() && client->getPort() == _server[i]->getPort())
 			return (_server[i]);
 	}
+	return (nullptr);
 }
 
 

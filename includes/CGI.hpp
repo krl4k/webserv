@@ -5,15 +5,12 @@
 #define WEBSERV_CGI_H
 
 #include <sys/stat.h>
-
- class HTTPResponse{
-	 void checkFile(Location &ourLoc, std::string &mergedPath, stat *fileInfo);
-
-	 void createPutResponse(Client *client, Location *ourLoc, stat fileInfo, std::string &mergedPath);
- };
-class HTTPRequest{};
-class Client {};
-//#include "Client.hpp"
+class HttpResponse;
+class HttpRequest;
+class Client ;
+#include "../includes/Client.hpp"
+#include "../includes/HttpRequest.hpp"
+#include "../includes/HttpResponse.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -32,15 +29,15 @@ public:
 
 	void 	setArguments();
 	char	**getEnvironment() const;
-	void	executeCGI(Client &client);
+	void	executeCGI(Client *client);
 
 private:
 	char 			**_environment;
 	char			**_arguments;
 	size_t			_environmentSize;
 	char			*_path;
-	HTTPResponse	*_response;
-	HTTPRequest		*_request;
+	HttpResponse	*_response;
+	HttpRequest		*_request;
 	CGI(const CGI &other);
 	CGI &operator=(const CGI &other);
 

@@ -163,7 +163,7 @@ std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line
 
 std::string HttpRequest::getContentType() const {
 	if (_headers.find("Content-Type") == _headers.end())
-		return "text/plain";
+		return "text/html";
 	return _headers.at("Content-Type");
 }
 

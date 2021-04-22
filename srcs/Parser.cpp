@@ -91,7 +91,7 @@ std::string getmyline(std::string& str, std::string com, int n){
 	if (str[i] == '\0')
 		throw std::runtime_error("Config file error");
 	temp = str.substr(i + com.size() + 1, str.size() - i);
-	if (temp.find(com.c_str(), 0, com.size() - 1)){
+	if (str.find(com.c_str(), 0, com.size() - 1)){
 		return (temp);
 	}
 	else{
@@ -109,13 +109,16 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 			count++;
 			Location *newLoc = new Location();
 			while(strings[count].find("location:") == std::string::npos && count < strings.size()){
-				if (strings[count] == "\n" || strings[count] == "")
+				if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#')
 					;
 				else if (strings[count].find("root:") != std::string::npos){
 					newLoc->setRoot(getmyline(strings[count], "root:", 3));
 				}
 				else if (strings[count].find("access-control-allow-methods:") != std::string::npos){
 					newLoc->setAllowMethods(getmyline(strings[count], "access-control-allow-methods:", 3));
+				}
+				else if (strings[count].find("autoindex:") != std::string::npos){
+					newLoc->setAutoIndex(getmyline(strings[count], "autoindex:",3));
 				}
 				else if (strings[count].find("index:") != std::string::npos){
 					newLoc->setIndex(getmyline(strings[count], "index:", 3));
@@ -126,6 +129,7 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				else if (strings[count].find("client_max_body_size:") != std::string::npos){
 					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
 				}
+
 				else{
 					throw std::runtime_error("Config parser error");
 				}
@@ -150,11 +154,12 @@ Server * Parser::separateServers(std::string &line, size_t i) {
 	Server *newServ = new Server();
 
 	while (getline(f, s, '\n')) {
+		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
 	int count = 1;
 	while (strings[count].find("location:") == std::string::npos && count != strings.size()){
-		if (strings[count] == "\n" || strings[count] == "")
+		if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#')
 			;
 		else if (strings[count].find("host:") != std::string::npos){
 			newServ->setHost(getmyline(strings[count], "host:", 1));

@@ -8,7 +8,8 @@
 #include <sstream>
 
 Location::Location() {
-	_autoIndex = false;
+	_autoIndex = true;
+	_clientMaxBodySize = 0;
 }
 
 Location::~Location() {
@@ -19,8 +20,11 @@ void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-void Location::setAutoIndex(bool autoIndex) {
-	_autoIndex = autoIndex;
+void Location::setAutoIndex(std::string autoIndex) {
+	if (autoIndex == "on"){	_autoIndex = true;	}
+	else if (autoIndex == "off"){ _autoIndex = false;}
+	else
+		throw std::runtime_error("autoindex error in config file");
 }
 
 void Location::setUrl(const std::string &url) {
@@ -35,6 +39,7 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 	std::istringstream f(temp);
 
 	while (getline(f, s, ' ')) {
+		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
 	std::vector<std::string> newVec;

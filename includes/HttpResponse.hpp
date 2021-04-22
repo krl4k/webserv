@@ -26,6 +26,9 @@ class CGI;
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define RESOURCES_PATH "../resources/"
+#define ERROR_PAGE_PATH "../resources/error.html"
+
 
 
 class HttpResponse {
@@ -40,25 +43,28 @@ public:
 	std::string & getStatusMessages(int n);
 	void          setStatusMessages();
 
+	void	setStatusCode(int code);
 	virtual ~HttpResponse();
 
 	HttpResponse(HttpResponse const &src);
 
 	HttpResponse &operator=(HttpResponse const &src);
 
-	std::string getPage(std::string &path, int isThereErrorPage);
+	std::string getPage(std::string &path);
 	std::string createHeader(HttpRequest * req);
 	void		setBody(std::string & body);
 
 	const std::string &getToSend() const;
 
-	void initResponse(HttpRequest *req, std::string &path, int isThereErrorPage);
+	void initResponse(HttpRequest *req, std::string &path);
 
 	void clean();
 
 
 	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
-	void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath);
+	void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag);
+	void createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode);
+	std::string bodyResponceInit(std::string &mergedPath);
 
 
 private:
@@ -74,6 +80,13 @@ private:
 	int 						_header_size;
 	std::string					_error;
 	int							_code;
+	int 						_isThereErrorPage;
+public:
+	int getCode() const;
+
+	void setCode(int code);
+
+private:
 	std::string					_buffer;
 };
 

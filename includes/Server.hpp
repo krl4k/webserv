@@ -43,7 +43,7 @@ public:
 	const std::string &getRoot() const;
 	void setRoot(const std::string &root);
 
-	const std::string &getErrorPage() const;
+	const std::string getErrorPage() const;
 
 	void setErrorPage(const std::string &errorPage);
 
@@ -65,7 +65,11 @@ private:
 	std::map<std::string, Location>		_location;
 	std::string							_root;
 	std::string							_errorPage;
+	int 								_errorPageCode;
+public:
+	int getErrorPageCode() const;
 
+private:
 
 
 //	UNUSED
