@@ -121,14 +121,9 @@ void HttpRequest::headersParse() {
 				break;
 			_headers.insert(getPair(line));
 		}
-		//TODO rewrite
 		if (_headers["CONTENT-LENGTH"] != _headers.end()->second or _headers["TRANSFER-ENCODING"] == "chunked") {
-			//todo remove this
-			if (_method == "POST" or _method == "PUT") {
 				_parserState = ParserState::BODY;
 				_bodyStart = _headersEndPos;
-			} else
-				_parserState = ParserState::FINISHED;
 		}else {
 			_parserState = ParserState::FINISHED;
 		}
@@ -159,7 +154,14 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 	size_t endBody = 0;
 	if ((endBody = _sBuffer.find("0\r\n\r\n", bodyStart)) != std::string::npos){
 		_body.append(_sBuffer, bodyStart, (endBody - bodyStart + 3));
+		//todo errors checker
 		createChunkContainer();
+		//concatenate chunks
+		_body.clear();
+		for (size_t i = 0; i < _chunk.size(); ++i) {
+			_body.append(_chunk[i]->getBuffer(), 0, _chunk[i]->getIntSize());
+		}
+		std::cout << "body:\n" << _body << std::endl;
 	}
 }
 
@@ -177,26 +179,14 @@ void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 		_body = std::string(_sBuffer, bodyStart);
 		_parserState = ParserState::FINISHED;
 	}
-//	else {
-//		//wait for the end of the request
-//		return;
-//	}
-//	_parserState = ParserState::FINISHED;
 }
 
 void HttpRequest::createChunkContainer() {
 	std::cout << "chunk:\n" << _body << std::endl;
 
-
-	//create first chunk!
-//	_chunk.push_back(new ChunkedRequest());
-
-
 	for (size_t i = 0; i < _body.size();) {
 		size_t crlfPos = 0;
-		std::string str = std::string(_body, i);
 		_chunk.push_back(new ChunkedRequest());
-
 		// read size chunk
 		if ((crlfPos = _body.find(CRLF, i)) != std::string::npos) {
 			if (!_chunk.back()->isSizeFull()) {
@@ -205,17 +195,17 @@ void HttpRequest::createChunkContainer() {
 					_chunk.back()->setSizeFull(true);
 				} catch (std::exception &exception) {
 					std::cerr << "Chunk size error!!!" << std::endl;
+//					_parserState = ParserState::ERROR; TODO change this
 					_parserState = ParserState::FINISHED;
 					return;
 				}
 				if (_chunk.back()->getIntSize() == 0) {
 					_chunk.back()->setBufferFull(true);
-					std::cout << MAGENTA << "finish" << RESET << std::endl;
 					_parserState = ParserState::FINISHED;
 					return;
 				}
+				// + 2(CRLF), - i (position)
 				i += crlfPos + 2 - i;
-				str = std::string(_body, i);
 			}
 		}
 		// read buffer chunk
@@ -224,81 +214,7 @@ void HttpRequest::createChunkContainer() {
 				_chunk.back()->setBuffer(std::string(_body, i, _chunk.back()->getIntSize()));
 				_chunk.back()->setBufferFull(true);
 				i += _chunk.back()->getBuffer().size() + 2;
-				str = std::string(_body, i);
 			}
 		}
 	}
 }
-
-/*
-
-void chunkParse1(){
-	if (_chunk.empty() or _chunk.back()->isBufferFull()) {
-		_chunk.push_back(new ChunkedRequest());
-	}
-	std::string chunkBuffer(_sBuffer, _bodyStart + _chunkPoint);
-	std::cout << "chunk size = " << chunkBuffer.size() << std::endl;
-
-//	std::string sizeChunk(_sBuffer, _bodyStart, _sBuffer.find(CRLF, _bodyStart));
-	std::cout << "chunk:\n" << chunkBuffer;
-	std::cout << "----------------------------" << std::endl;
-
-	for (size_t i = 0; i < chunkBuffer.size();) {
-		size_t crlfPos = 0;
-		std::string str = std::string(chunkBuffer, i);
-		if (_chunk.back()->isBufferFull() and _chunk.back()->isSizeFull()) {
-			_chunk.push_back(new ChunkedRequest());
-		}
-		// read size chunk
-		if ((crlfPos = chunkBuffer.find(CRLF, i)) != std::string::npos) {
-			if (!_chunk.back()->isSizeFull()) {
-				_chunk.back()->setSize(std::string(chunkBuffer, i, crlfPos - i));
-				try {
-					_chunk.back()->setSizeFull(true);
-				} catch (std::exception &exception) {
-					std::cerr << "Chunk size error!!!" << std::endl;
-					_parserState = ParserState::FINISHED;
-					return;
-				}
-				if (_chunk.back()->getIntSize() == 0) {
-					_chunk.back()->setBufferFull(true);
-					std::cout << MAGENTA << "finish" << RESET << std::endl;
-					_parserState = ParserState::FINISHED;
-					return;
-				}
-				i += crlfPos + 2 - i;
-				str = std::string(chunkBuffer, i);
-			}
-		}
-		// read buffer chunk
-		if ((crlfPos = chunkBuffer.find(CRLF, i)) != std::string::npos) {
-			if (!_chunk.back()->isBufferFull()) {
-				_chunk.back()->setBuffer(std::string(chunkBuffer, i, _chunk.back()->getIntSize()));
-				_chunk.back()->setBufferFull(true);
-				i += _chunk.back()->getBuffer().size() + 2;
-				str = std::string(chunkBuffer, i);
-			}
-		}
-		if (!_chunk.back()->isSizeFull()) {
-			_chunk.back()->setSize(std::string(chunkBuffer, i));
-			break;
-		}
-		if (!_chunk.back()->isBufferFull()) {
-			_chunk.back()->setBuffer(std::string(chunkBuffer, i));
-			break;
-		}
-
-	}
-}
-*/
-
-//POST / HTTP/1.1
-//Host: localhost:8000
-//Connection: keep-alive
-//		Accept-Encoding: gzip, deflate
-//		Accept: */*
-//User-Agent: python-requests/2.25.1
-//Transfer-Encoding: chunked
-//
-//0xa
-//abababababababababab

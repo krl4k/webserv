@@ -26,7 +26,8 @@ public:
 		QUERY_STRING,
 		HEADERS,
 		BODY,
-		FINISHED
+		FINISHED,
+		ERROR
 	};
 
 	HttpRequest();
