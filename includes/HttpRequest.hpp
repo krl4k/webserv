@@ -73,7 +73,11 @@ private:
 
 	void bodyParse();
 
-	void chunkParse();
+	void parseChunk(size_t  bodyStart);
+
+	void parseContentWithLength(size_t  bodyStart);
+
+	void createChunkContainer();
 };
 
 #endif //WEBSERV_HTTPREQUEST_HPP

@@ -54,7 +54,8 @@ void ChunkedRequest::setSizeFull(bool sizeFull) {
 		try {
 			_intSize = std::stoul(_size, nullptr, 16);
 		}catch (std::exception &exception){
-			std::cout << exception.what() << std::endl;
+			std::cerr << exception.what() << std::endl;
+			std::cerr << "str = " << _size << std::endl;
 		}
 	}
 }

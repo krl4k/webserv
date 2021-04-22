@@ -55,14 +55,14 @@ url =  'http://localhost:8000/'
 
 
 def gen():
-    yield "one".encode('utf8')
+    yield ("one" * 1000).encode('utf8')
     # time.sleep(1.0)
-    yield "two".encode('utf8')
+    yield ("two" * 2000).encode('utf8')
     # time.sleep(1.0)
-    yield "three".encode('utf8')
+    yield ("three" * 3000).encode('utf8')
 
 
-for i in range(0, 25):
+for i in range(0, 1):
     r = req.post(url, data=gen())
     print("==============================================================")
     # print(i)
