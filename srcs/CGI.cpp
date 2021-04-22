@@ -95,7 +95,7 @@ void CGI::setEnvironment() {
 	env["SERVER_PROTOCOL="] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
 	env["SERVER_SOFTWARE="] = "KiRoTaMagic/6.9";
-	mapToString(env);
+	setEnvToString(env);
 	env.clear();
 }
 
@@ -105,7 +105,7 @@ void CGI::setArguments() {
 	_arguments[1] = strdup(_path);
 }
 
-char **CGI::getEnvironment() const {
+char **CGI::setEnvToString(std::map<std::string, std::string> env) const {
 	_environment = new char *[env.size() + 1]();
 
 	int i = 0;
@@ -116,6 +116,7 @@ char **CGI::getEnvironment() const {
 	return _environment;
 }
 
+char **CGI::getEnvironment() const {return _environment;}
 
 void	CGI::executeCGI(Client *client) {
 
@@ -126,7 +127,7 @@ void	CGI::executeCGI(Client *client) {
 	char	*buffer;
 	char	*responseResult;
 
-	if (pipes(pipeFd) == -1) {
+	if (pipe(pipeFd) == -1) {
 		_response->setStatusCode(500);
 		throw std::runtime_error(RED + std::string("Pipe fail") + RESET);
 	}

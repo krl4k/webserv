@@ -29,6 +29,7 @@ public:
 
 	void 	setArguments();
 	char	**getEnvironment() const;
+	char **setEnvToString(std::map<std::string, std::string> env) const;
 	void	executeCGI(Client *client);
 
 private:
