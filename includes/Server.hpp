@@ -43,7 +43,7 @@ public:
 	const std::string &getRoot() const;
 	void setRoot(const std::string &root);
 
-	const std::string &getErrorPage() const;
+	const std::string getErrorPage() const;
 
 	void setErrorPage(const std::string &errorPage);
 

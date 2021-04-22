@@ -70,7 +70,7 @@ void Server::setRoot(const std::string &root) {
 	_root = root;
 }
 
-const std::string &Server::getErrorPage() const {
+const std::string Server::getErrorPage() const {
 	return _errorPage;
 }
 

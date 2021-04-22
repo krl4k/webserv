@@ -69,27 +69,33 @@ void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct st
 }
 
 std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
-	std::string buff;
+	char buff[10000];
 	int fd = 0;
+	std::stringstream temp;
+	int res = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))){ std::cerr << "Can't open file" << std::endl;}
-	while (read(fd, &buff, 65534) > 0){
-		buff.append(buff);
+	while (read(fd, &buff, 10000) > 0){
+		buff[res] = '\0';
+		temp << buff;
 	}
-	return (buff);
+	close(fd);
+	return (temp.str());
 }
 
 
-void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location *ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode){
+void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode){
 	size_t n;
 
-	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode)) && client->getRequest()->getMethod() == "GET") {
-		std::string temp = bodyResponceInit(mergedPath);
-		this->setBody(temp);
+	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
+		if (client->getRequest()->getMethod() == "GET") {
+			std::string temp = bodyResponceInit(mergedPath);
+			this->setBody(temp);
+		}
 	}
-	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc->getAutoIndex()){ _code = 404;}
-	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc->getAutoIndex()){
-		/**client->getResponse()->setBody(getAutoIndexPage(mergedPath));*/
+	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){ _code = 404;}
+	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc.getAutoIndex()){
+		//client->getResponse()->setBody(getAutoIndexPage(mergedPath));
 	}
 	else{ _code = 404;}
 
@@ -162,7 +168,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			}
 		}
 		if (client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD"){
-			createGetOrHead(client, fileInfo, &ourLoc, mergedPath, server->getErrorPage(), server->getErrorPageCode());
+			createGetOrHead(client, fileInfo, ourLoc, mergedPath, server->getErrorPage(), server->getErrorPageCode());
 		}
 		else if (client->getRequest()->getMethod() == "PUT"){
 			createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
@@ -275,6 +281,7 @@ std::string HttpResponse::getCurrentDate() const {
 	time_t rawtime;
 	time(&rawtime);
 	date = ctime(&rawtime);
+	date.erase(date.size() - 1);
 	return date;
 }
 
