@@ -61,7 +61,6 @@ std::string Parser::readFile(std::ifstream &fd) {
 		}
 		else if ((buf.find("server:") != std::string::npos && (buf.compare(0, 7, "server:")) && buf.size() != 7)) {
 			throw std::runtime_error("config: server line error");
-			//std::cout << "hello mfc " << std::endl;
 		}
 		o << buf << std::endl;
 		temp = o.str();

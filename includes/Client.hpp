@@ -10,6 +10,7 @@
 #elif __linux__
 	#include <arpa/inet.h>
 #endif
+class HttpResponse;
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Colors.hpp"
