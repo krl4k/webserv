@@ -109,7 +109,7 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 			count++;
 			Location *newLoc = new Location();
 			while(strings[count].find("location:") == std::string::npos && count < strings.size()){
-				if (strings[count] == "\n" || strings[count] == "")
+				if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#')
 					;
 				else if (strings[count].find("root:") != std::string::npos){
 					newLoc->setRoot(getmyline(strings[count], "root:", 3));
@@ -158,7 +158,7 @@ Server * Parser::separateServers(std::string &line, size_t i) {
 	}
 	int count = 1;
 	while (strings[count].find("location:") == std::string::npos && count != strings.size()){
-		if (strings[count] == "\n" || strings[count] == "")
+		if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#')
 			;
 		else if (strings[count].find("host:") != std::string::npos){
 			newServ->setHost(getmyline(strings[count], "host:", 1));

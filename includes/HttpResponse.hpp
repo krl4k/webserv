@@ -26,6 +26,9 @@ class CGI;
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define RESOURCES_PATH "../resources/"
+#define ERROR_PAGE_PATH "../resources/error.html"
+
 
 
 class HttpResponse {

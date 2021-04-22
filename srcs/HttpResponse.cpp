@@ -22,18 +22,6 @@ HttpResponse::~HttpResponse() {
 
 }
 
-
-// what generate need???
-
-
-/**
- * todo check this 
- * void HttpResponse::generate(HttpRequest *&request) ???
- * or
- * void HttpResponse::generate(Client *&pClient) ???
- *
- */
-
 bool checkMethod(std::vector<std::string> vec, std::string meth){
 	for (size_t i = 0; i < vec.size(); ++i){
 		if (meth == vec[i])
@@ -52,7 +40,9 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 		close(fd);
 		stat(mergedPath.c_str(), fileInfo);
 	}
-	else{	std::cout << "File access error" << std::endl; }
+	else{	std::cout << "File access error" << std::endl;
+		_code = 500;
+	}
 }
 
 void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag){
@@ -110,22 +100,10 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 }
 
 void HttpResponse::generate(Client *client, Server *server) {
-/*	size_t strBuf;
-	char *buffer = (char *)calloc(BUFSIZE, sizeof (char));
-	strBuf = strlen(buffer);
-	_toSend.append("HTTP/1.1 200 OK\n");
-	_toSend.append("Server: obserVER\n");
-	_toSend.append("Content-Length: 5\n");
-	_toSend.append("Connection: Keep-Alive\r\n\r\n");
-
-	_toSend.append("a\r\n\r\n");
-	_toSend.append(buffer);
-	std::cout << "toSend = " << _toSend << std::endl;
-
-	free(buffer);
-	initResponse();*/
 	struct stat fileInfo;
 	int flag = 0;
+	std::string mergedPath;
+	std::string root;
 
 	std::string path = client->getRequest()->getPath();
 	std::map<std::string, Location>::const_iterator it;
@@ -133,45 +111,62 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 	_code = 200;
 
-	if (it == server->getLocation().end()) {_code = 404;}
-	Location ourLoc = it->second;
-	std::string locName = it->first;
+	Location ourLoc;
 
-	if (!checkMethod(ourLoc.getAllowMethods(), client->getRequest()->getMethod())){ _code = 405;}
+	if (it == server->getLocation().end()) {
+		_code = 404;
+		path = "";
+		mergedPath = server->getErrorPage();
+		if (mergedPath.empty()){
+			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
+		}
+		else if (server->getErrorPageCode() != 404){
+			mergedPath = ERROR_PAGE_PATH;
+			_isThereErrorPage = -1;
+		}
+		else{
+			//mergedPath = RESOURCES_PATH + mergedPath;
+			_isThereErrorPage = 1;
+		}
+	}
+	else {
+		ourLoc = it->second;
+		std::string locName = it->first;
 
-	std::string root = ourLoc.getRoot();
-	if (root[root.size() - 1] == '/')
-		root.erase(root.size() - 1, 1);
+		if (!checkMethod(ourLoc.getAllowMethods(), client->getRequest()->getMethod())) { _code = 405; }
 
-	std::string mergedPath = root;
-	if (locName[0] != '/'){	locName = "";}
-	mergedPath = root + locName;
+		root = ourLoc.getRoot();
+		if (root[root.size() - 1] == '/')
+			root.erase(root.size() - 1, 1);
 
-	if (ourLoc.getClientMaxBodySize() > _body_size){ _code = 413;}
+		mergedPath = root;
+		if (locName[0] != '/') { locName = ""; }
+		mergedPath = root + locName;
 
-	flag = stat(mergedPath.c_str(), &fileInfo);
-	if (_code < 400){
-		checkFile(ourLoc, mergedPath, &fileInfo);
-		if (client->getRequest()->getMethod() == "POST"){
-			if (!ourLoc.getCgiPath().empty()){
-				std::cout << "---CGI---" << std::endl;
-				std::string cgi = ourLoc.getCgiPath();
-				if (cgi.find(".php", 0, 4) != std::string::npos){
-					int i = 4;
-					for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
-					std::string temp = cgi.substr(i, cgi.size() - i);
-					//CGI newCGI(client, temp.c_str());
+		if (ourLoc.getClientMaxBodySize() > _body_size) { _code = 413; }
+
+		flag = stat(mergedPath.c_str(), &fileInfo);
+		if (_code < 400) {
+			checkFile(ourLoc, mergedPath, &fileInfo);
+			if (client->getRequest()->getMethod() == "POST") {
+				if (!ourLoc.getCgiPath().empty()) {
+					std::cout << "---CGI---" << std::endl;
+					std::string cgi = ourLoc.getCgiPath();
+					if (cgi.find(".php", 0, 4) != std::string::npos) {
+						int i = 4;
+						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
+						std::string temp = cgi.substr(i, cgi.size() - i);
+						//CGI newCGI(client, temp.c_str());
+					}
+				} else {
+					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
 				}
 			}
-			else{
+			if (client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD") {
+				createGetOrHead(client, fileInfo, ourLoc, mergedPath, server->getErrorPage(), server->getErrorPageCode());
+			} else if (client->getRequest()->getMethod() == "PUT") {
 				createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
 			}
-		}
-		if (client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD"){
-			createGetOrHead(client, fileInfo, ourLoc, mergedPath, server->getErrorPage(), server->getErrorPageCode());
-		}
-		else if (client->getRequest()->getMethod() == "PUT"){
-			createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
 		}
 	}
 	initResponse(client->getRequest(), mergedPath);
@@ -240,7 +235,7 @@ std::string HttpResponse::getPage(std::string &path) {
 			   "  <title>Пример веб-страницы</title>\n"
 			   " </head>\n"
 			   " <body>\n"
-			   "  <h1>" << getStatusMessages(_code) <<"</h1>\n"
+			   "  <h1>" << getStatusMessages(_code) <<"</h1>\n" << "_____________________" <<
 													 " <h2>" << _code << "</h2>\n"
 																		" </body>\n"
 																		"</html>";
