@@ -118,6 +118,7 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 			std::vector<Client *>::iterator it = _client.begin() + i;
 				delete _client[i];
 			_client.erase(it);
+
 		}
 	}
 }
