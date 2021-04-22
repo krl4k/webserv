@@ -11,6 +11,8 @@
 #include <iostream>
 #include <map>
 #include "Colors.hpp"
+#include "ChunkedRequest.hpp"
+#include <vector>
 
 class HttpRequest {
 public:
@@ -24,7 +26,8 @@ public:
 		QUERY_STRING,
 		HEADERS,
 		BODY,
-		FINISHED
+		FINISHED,
+		ERROR
 	};
 
 	HttpRequest();
@@ -47,8 +50,6 @@ private:
 	//--
 	int it;
 	//--
-
-
 
 	std::string _sBuffer;
 	int _state;
@@ -73,7 +74,9 @@ private:
 	std::string _queryString;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-
+	int			_bodyStart;
+	int			_chunkPoint;
+	std::vector<ChunkedRequest *> _chunk;
 
 	HttpRequest(const HttpRequest &other);
 
@@ -87,6 +90,12 @@ private:
 	void queryStringParse();
 
 	void bodyParse();
+
+	void parseChunk(size_t  bodyStart);
+
+	void parseContentWithLength(size_t  bodyStart);
+
+	void createChunkContainer();
 };
 
 #endif //WEBSERV_HTTPREQUEST_HPP

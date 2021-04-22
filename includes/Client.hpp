@@ -6,12 +6,10 @@
 #include <unistd.h>
 #include <netdb.h>
 #if __APPLE__
-		#include <dns_util.h>
+	#include <dns_util.h>
 #elif __linux__
 	#include <arpa/inet.h>
 #endif
-
-class HttpResponse;
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Colors.hpp"

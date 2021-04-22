@@ -14,6 +14,9 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <vector>
+#include <fcntl.h>
+#include <string.h>
+
 
 class Server {
 public:
