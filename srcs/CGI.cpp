@@ -1,10 +1,10 @@
 #include "../includes/CGI.hpp"
 
-CGI::CGI(Client *client,const char *path) {
+CGI::CGI(Server *server, Client *client, const char *path) {
 	_request = client->getRequest();
 	_response = client->getResponse();
 	_path = strdup(path);
-	setEnvironment();
+	setEnvironment(server, client);
 	executeCGI(client);
 }
 
@@ -67,7 +67,7 @@ CGI &CGI::operator=(const CGI &other) {
 /**
  * Check http://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html for environments.
  */
-void CGI::setEnvironment() {
+void CGI::setEnvironment(Server *server, Client *client) {
 	std::map<std::string, std::string> env;
 
 	env["AUTH_TYPE="] = "";								 //use to check user
@@ -79,9 +79,9 @@ void CGI::setEnvironment() {
 														 //This information should be decoded by the server if it comes from a URL
 	env["PATH_TRANSLATED="] = "";						 // - The server provides a translated version of PATH_INFO,
 														 // which takes the path and does any virtual-to-physical mapping to it
-	env["QUERY_STRING="] = _request->getQuery();			 // - The information which follows the ? in the URL,
+	env["QUERY_STRING="] = _request->getQueryString();			 // - The information which follows the ? in the URL,
 											   			 // It should not be decoded in any fashion
-	env["REMOTE_ADDR="] = client->getIP();				 // - The IP address of the remote host making the request
+	env["REMOTE_ADDR="] = server->getHost();			 // - The IP address of the remote host making the request
 	env["REMOTE_IDENT="] = "";							 // - name for remote user retrieved by server
 														 // (server need supports RFC 931)
 	env["REMOTE_USER="] = "";							 // - if server supports auth(login)
@@ -90,12 +90,14 @@ void CGI::setEnvironment() {
 	env["REQUEST_URI="] = _request->getUri();
 	env["SCRIPT_NAME="] = _request->getPath();			 // - A virtual path to the script being executed,
 														 // used for self-referencing URLs
-	env["SERVER_NAME="] = _request->getServeName();
-	env["SERVER_PORT="] = _request->getPort();			 // - The port number to which the request was sent.
+	env["SERVER_NAME="] = server->getServerName();
+	std::stringstream ss;
+	ss << server->getPort();
+	env["SERVER_PORT="] = std::string(ss.str());			 // - The port number to which the request was sent.
 	env["SERVER_PROTOCOL="] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
 	env["SERVER_SOFTWARE="] = "KiRoTaMagic/6.9";
-	mapToString(env);
+	setEnvToString(env);
 	env.clear();
 }
 
@@ -105,7 +107,7 @@ void CGI::setArguments() {
 	_arguments[1] = strdup(_path);
 }
 
-char **CGI::getEnvironment() const {
+char **CGI::setEnvToString(std::map<std::string, std::string> env) const {
 	_environment = new char *[env.size() + 1]();
 
 	int i = 0;
@@ -116,6 +118,7 @@ char **CGI::getEnvironment() const {
 	return _environment;
 }
 
+char **CGI::getEnvironment() const {return _environment;}
 
 void	CGI::executeCGI(Client *client) {
 
