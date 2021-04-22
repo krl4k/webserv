@@ -154,6 +154,7 @@ Server * Parser::separateServers(std::string &line, size_t i) {
 	Server *newServ = new Server();
 
 	while (getline(f, s, '\n')) {
+		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
 	int count = 1;

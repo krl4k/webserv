@@ -39,6 +39,7 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 	std::istringstream f(temp);
 
 	while (getline(f, s, ' ')) {
+		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
 	std::vector<std::string> newVec;
