@@ -109,10 +109,6 @@ void HttpResponse::generate(Client *client, Server *server) {
 	std::map<std::string, Location>::const_iterator it;
 	it = server->getLocation().find(path);
 
-	for (;it != server->getLocation().end();++it){
-		std::cout << (it->second).getRoot() << std::endl;
-	}
-
 	_code = 200;
 
 	Location ourLoc;
