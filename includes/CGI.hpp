@@ -11,6 +11,7 @@ class Client ;
 #include "../includes/Client.hpp"
 #include "../includes/HttpRequest.hpp"
 #include "../includes/HttpResponse.hpp"
+#include "../includes/Server.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -20,11 +21,12 @@ class Client ;
 #include <cstring>
 #include <ios>
 #include "Colors.hpp"
+#include <stdlib.h>
 
 class CGI {
 public:
 
-	CGI(Client *client, const char *path);
+	CGI(Server *server, Client *client, const char *path);
 	virtual ~CGI();
 
 	void 	setArguments();
@@ -42,9 +44,7 @@ private:
 	CGI(const CGI &other);
 	CGI &operator=(const CGI &other);
 
-	void 			setEnvironment();
-	char *strjoin(char *s1, char *s2);
-	void makeProccess();
+	void 			setEnvironment(Server *server, Client *client);
 	char **clone(char **other);
 };
 
