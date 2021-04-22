@@ -1,8 +1,8 @@
 #include "../includes/CGI.hpp"
 
 CGI::CGI(Client *client,const char *path) {
-	_request = client.getRequest();
-	_response = client.getResponse();
+	_request = client->getRequest();
+	_response = client->getResponse();
 	_path = strdup(path);
 	setEnvironment();
 	executeCGI(client);
@@ -71,27 +71,27 @@ void CGI::setEnvironment() {
 	std::map<std::string, std::string> env;
 
 	env["AUTH_TYPE="] = "";								 //use to check user
-	env["CONTENT_LENGTH="] = _request.getContentLength();// - The length of the said
+	env["CONTENT_LENGTH="] = _request->getContentLength();// - The length of the said
 														 // content as given by the client.
-	env["CONTENT_TYPE"] = _request.getContentType();	 // - POST, GET, PUT
+	env["CONTENT_TYPE"] = _request->getContentType();	 // - POST, GET, PUT
 	env["GATEWAY_INTERFACE="] = "CGI/1.1";
-	env["PATH_INFO="] = _request.getPath();				 // - The extra path information, as given by the client
+	env["PATH_INFO="] = _request->getPath();				 // - The extra path information, as given by the client
 														 //This information should be decoded by the server if it comes from a URL
 	env["PATH_TRANSLATED="] = "";						 // - The server provides a translated version of PATH_INFO,
 														 // which takes the path and does any virtual-to-physical mapping to it
-	env["QUERY_STRING="] = _request.getQuery();			 // - The information which follows the ? in the URL,
+	env["QUERY_STRING="] = _request->getQuery();			 // - The information which follows the ? in the URL,
 											   			 // It should not be decoded in any fashion
-	env["REMOTE_ADDR="] = client.getIP();				 // - The IP address of the remote host making the request
+	env["REMOTE_ADDR="] = client->getIP();				 // - The IP address of the remote host making the request
 	env["REMOTE_IDENT="] = "";							 // - name for remote user retrieved by server
 														 // (server need supports RFC 931)
 	env["REMOTE_USER="] = "";							 // - if server supports auth(login)
-	env["REQUEST_METHOD="] = _request.getMethod();		 // - The method with which the request was made.
+	env["REQUEST_METHOD="] = _request->getMethod();		 // - The method with which the request was made.
 														 // For HTTP, this is "GET", "HEAD", "POST", etc.
-	env["REQUEST_URI="] = _request.getUri();
-	env["SCRIPT_NAME="] = _request.getPath();			 // - A virtual path to the script being executed,
+	env["REQUEST_URI="] = _request->getUri();
+	env["SCRIPT_NAME="] = _request->getPath();			 // - A virtual path to the script being executed,
 														 // used for self-referencing URLs
-	env["SERVER_NAME="] = _request.getServeName();
-	env["SERVER_PORT="] = _request.getPort();			 // - The port number to which the request was sent.
+	env["SERVER_NAME="] = _request->getServeName();
+	env["SERVER_PORT="] = _request->getPort();			 // - The port number to which the request was sent.
 	env["SERVER_PROTOCOL="] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
 	env["SERVER_SOFTWARE="] = "KiRoTaMagic/6.9";
@@ -117,7 +117,7 @@ char **CGI::getEnvironment() const {
 }
 
 
-void	CGI::executeCGI(Client &client) {
+void	CGI::executeCGI(Client *client) {
 
 	char	*currentPath;
 	int 	pipeFd[2];

@@ -106,13 +106,14 @@ void HttpResponse::generate(Client *client, Server *server) {
 	std::string root;
 
 	std::string path = client->getRequest()->getPath();
+	if (path[path.size() - 1] == '/' && path.size() > 1)
+		path.erase(path.size() - 1, 1);
 	std::map<std::string, Location>::const_iterator it;
 	it = server->getLocation().find(path);
 
 	_code = 200;
 
 	Location ourLoc;
-
 	if (it == server->getLocation().end()) {
 		_code = 404;
 		path = "";
@@ -138,7 +139,6 @@ void HttpResponse::generate(Client *client, Server *server) {
 		root = ourLoc.getRoot();
 		if (root[root.size() - 1] == '/')
 			root.erase(root.size() - 1, 1);
-
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
 		mergedPath = root + locName;
@@ -156,7 +156,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 						int i = 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
-						//CGI newCGI(client, temp.c_str());
+						CGI newCGI(client, temp.c_str());
 					}
 				} else {
 					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
@@ -265,9 +265,9 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	_body_size = _body.length();
 	head = createHeader(req);
 	_toSend.append(head);
-	_toSend.append("\r\n\r\n");
+	_toSend.append(BODY_SEP);
 	_toSend.append(_body);
-	_toSend.append("\r\n\r\n");
+	_toSend.append(BODY_SEP);
 }
 
 std::string HttpResponse::getCurrentDate() const {
