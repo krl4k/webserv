@@ -85,7 +85,7 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 	}
 	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){ _code = 404;}
 	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc.getAutoIndex()){
-		//client->getResponse()->setBody(getAutoIndexPage(mergedPath));
+//		client->getResponse()->setBody(getAutoIndexPage(mergedPath));
 	}
 	else{ _code = 404;}
 
