@@ -132,7 +132,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			_isThereErrorPage = -1;
 		}
 		else{
-			//mergedPath = RESOURCES_PATH + mergedPath;
+			mergedPath = RESOURCES_PATH + mergedPath;
 			_isThereErrorPage = 1;
 		}
 	}
