@@ -35,7 +35,10 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 
 	/** Checking access mode */
 	if (S_ISDIR(fileInfo->st_mode)){
-		if (!ourLoc.getIndex().empty()) { mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
+		if (!ourLoc.getIndex().empty() && ourLoc.getAutoIndex()){ mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
+		if (!ourLoc.getAutoIndex()){
+			_code = 403;
+		}
 		if (!(fd = open(mergedPath.c_str(), O_RDONLY))) { std::cout << "File openning error" << std::endl;}
 		close(fd);
 		stat(mergedPath.c_str(), fileInfo);
@@ -88,7 +91,7 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 		}
 	}
 	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){
-		_code = 404;
+		_code = 403;
 	}
 	else{
 		_code = 404;
@@ -222,6 +225,9 @@ std::string & HttpResponse::getStatusMessages(int n) {
 
 std::string HttpResponse::getPage(std::string &path) {
 	std::stringstream buf;
+	if (_isThereErrorPage > 0){
+		path = ERROR_PAGE + path;
+	}
 	if ((_code > 400 && _isThereErrorPage != 0) || _isThereErrorPage >= 0){
 		char temp;
 		int cor_fd = open(path.c_str(), O_RDONLY);

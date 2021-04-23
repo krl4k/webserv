@@ -30,6 +30,7 @@ class CGI;
 
 #define RESOURCES_PATH "../resources/"
 #define ERROR_PAGE_PATH "../resources/error.html"
+#define ERROR_PAGE		"../html/"
 
 class HttpResponse {
 public:
