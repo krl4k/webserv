@@ -17,6 +17,7 @@ add_executable(webserv1
         srcs/HttpResponse.cpp
         srcs/ChunkedRequest.cpp
         srcs/AutoIndexGenerate.cpp
+        srcs/base64.cpp
 
 #        tmp/testfiles/testCpp.cpp
         )

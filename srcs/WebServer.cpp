@@ -18,6 +18,7 @@ WebServer::WebServer(const char *fileName){
 		throw std::runtime_error(exception.what());
 	}
 	_server = parser->getServers();
+
 	delete parser;
 	std::cout << BLUE << "Server inited!" << RESET << std::endl;
 }
@@ -99,7 +100,7 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE) {
 			readRequest(_client[i]);
 			if (_client[i]->getState() != Client::State::CLOSE and \
-					_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
+					_client[i]->getRequest()->getState() == HttpRequest::State::FULL) {
 				FD_SET(fd, &writeFdSet);
 			}
 		}

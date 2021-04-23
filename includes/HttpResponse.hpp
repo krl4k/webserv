@@ -14,6 +14,7 @@ class CGI;
 #include "../includes/Client.hpp"
 #include "../includes/Server.hpp"
 #include "../includes/CGI.hpp"
+#include "../includes/base64.h"
 
 #include <string>
 #include <iostream>
@@ -91,6 +92,8 @@ private:
 	std::string					_buffer;
 
 	std::string getAutoIndexPage(std::string &path);
+
+	bool isAuthClient(Client *pClient, Server *pServer);
 };
 
 

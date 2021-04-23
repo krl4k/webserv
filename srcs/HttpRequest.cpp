@@ -51,11 +51,11 @@ void HttpRequest::clean() {
 */
 
 void HttpRequest::parse(char *buffer, int bufSize) {
-	it++;
-#if DEBUG == 1
-	std::cout << "it = " << it << std::endl;
-#endif
+
 	_sBuffer.append(buffer, bufSize);
+
+	std::cout << "buffer:\n" << _sBuffer << std::endl;
+
 	if (_parserState == ParserState::QUERY_STRING)
 		queryStringParse();
 	if (_parserState == ParserState::HEADERS)
@@ -141,7 +141,7 @@ void HttpRequest::bodyParse() {
 
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
 	std::string key = std::string(line, 0, line.find(" ") - 1);
-	std::string value = std::string(line, key.size() + 2, line.find(" "));
+	std::string value = std::string(line, key.size() + 2, line.find(CRLF) - key.size());
 	for (int i = 0; i < key.size(); ++i) {
 		key[i] = static_cast<char>(toupper(key[i]));
 	}
