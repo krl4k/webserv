@@ -19,10 +19,12 @@ void Location::setRoot(const std::string &root) {
 }
 
 void Location::setAutoIndex(std::string autoIndex) {
+
 	if (autoIndex == "on"){	_autoIndex = true;	}
 	else if (autoIndex == "off"){ _autoIndex = false;}
-	else
+	else{
 		throw std::runtime_error("autoindex error in config file");
+	}
 }
 
 void Location::setUrl(const std::string &url) {
@@ -96,6 +98,7 @@ size_t Location::getClientMaxBodySize() const
 
 void Location::setClientMaxBodySize(std:: string clientMaxBodySize)
 {
+
 	try{
 		_clientMaxBodySize = std::stoi(clientMaxBodySize);
 	}

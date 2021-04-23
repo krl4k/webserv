@@ -114,8 +114,10 @@ void HttpResponse::generate(Client *client, Server *server) {
 	_code = 200;
 
 	Location ourLoc;
-	if (it == server->getLocation().end()) {
-		_code = 404;
+	/** todo */
+	if (it == server->getLocation().end()/* || isAuthClient(client)*/){
+		//if (isAuthClient(client)) {_code = 403;}
+		/*else */{_code = 404;}
 		path = "";
 		mergedPath = server->getErrorPage();
 		if (mergedPath.empty()){
