@@ -102,12 +102,13 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 	int j = 0;
 	std::string temp;
 	std::map<std::string, Location> locMap;
+
 	while (count < strings.size()){
 		if (strings[count].find("location:") != std::string::npos){
 			temp = getmyline(strings[count],  "location:", 2);
 			count++;
 			Location *newLoc = new Location();
-			while(strings[count].find("location:") == std::string::npos && count < strings.size()){
+			while(count < strings.size() && strings[count].find("location:") == std::string::npos){
 				if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#')
 					;
 				else if (strings[count].find("root:") != std::string::npos){
@@ -128,14 +129,12 @@ int Parser::initLocations(std::vector<std::string> &strings, int count, int i){
 				else if (strings[count].find("client_max_body_size:") != std::string::npos){
 					newLoc->setClientMaxBodySize(getmyline(strings[count], "client_max_body_size:",3));
 				}
-
 				else{
 					throw std::runtime_error("Config parser error");
 				}
 				count++;
 			}
 			locMap[temp] = *newLoc;
-
 		}
 		else{
 			std::cout << "Error: init location" << std::endl;
