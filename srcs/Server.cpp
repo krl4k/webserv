@@ -135,3 +135,24 @@ uint16_t Server::getPort() const {
 int Server::getErrorPageCode() const {
 	return _errorPageCode;
 }
+
+const std::vector<std::string> &Server::getWhiteList() const {
+	return _whiteList;
+}
+
+void Server::setWhiteList(const std::string &whiteListPath) {
+	std::ifstream file(whiteListPath);
+	std::string line;
+	if (file.is_open()){
+		while (std::getline(file, line))
+			_whiteList.push_back(line);
+
+		for (int i = 0; i < _whiteList.size(); ++i) {
+			std::cout << _whiteList[i] << std::endl;
+		}
+
+	} else {
+		//todo error!
+		throw std::runtime_error("no whiteList!");
+	}
+}

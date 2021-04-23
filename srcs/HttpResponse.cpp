@@ -119,8 +119,13 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 	Location ourLoc;
 	/** todo */
+	if (!isAuthClient(client, server)) {
+		_code = 401;
+	}
 	if (it == server->getLocation().end()/* || isAuthClient(client)*/){
-		//if (isAuthClient(client)) {_code = 403;}
+		if (!isAuthClient(client, server)) {
+			_code = 401;
+		}
 		/*else */{_code = 404;}
 		path = "";
 		mergedPath = server->getErrorPage();
@@ -296,5 +301,23 @@ void HttpResponse::clean() {
 
 const std::string &HttpResponse::getBody() const {
 	return _body;
+}
+
+bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
+//	std::string auth =
+//	std::map<std::string,std::string>::const_iterator = pClient->getRequest()->getHeaders().find("AUTHORIZATION");
+	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
+	if (it != pClient->getRequest()->getHeaders().end()){
+		std::cout << "iterat = " << it->second << std::endl;
+		size_t startEncode = it->second.find(" ") + 1;
+		std::string encode(it->second, startEncode, it->second.size() - startEncode);
+		std::string decode = base64_decode(encode);
+		for (int i = 0; i < pServer->getWhiteList().size(); ++i) {
+			if (decode == pServer->getWhiteList()[i]){
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
