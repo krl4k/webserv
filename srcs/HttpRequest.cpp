@@ -142,7 +142,6 @@ void HttpRequest::bodyParse() {
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
 	std::string key = std::string(line, 0, line.find(" ") - 1);
 	std::string value = std::string(line, key.size() + 2, line.find(CRLF) - key.size());
-	std::cout << "value= " << value << std::endl;
 	for (int i = 0; i < key.size(); ++i) {
 		key[i] = static_cast<char>(toupper(key[i]));
 	}

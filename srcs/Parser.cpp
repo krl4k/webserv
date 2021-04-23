@@ -27,7 +27,6 @@ Parser::Parser(const std::string &fileName) {
 	bigLine = this->readFile(file);
 	file.close();
 
-
 	//init whiteList
 	for (int i = 0; i < _servers.size(); ++i) {
 		try {

@@ -304,11 +304,8 @@ const std::string &HttpResponse::getBody() const {
 }
 
 bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
-//	std::string auth =
-//	std::map<std::string,std::string>::const_iterator = pClient->getRequest()->getHeaders().find("AUTHORIZATION");
 	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
 	if (it != pClient->getRequest()->getHeaders().end()){
-		std::cout << "iterat = " << it->second << std::endl;
 		size_t startEncode = it->second.find(" ") + 1;
 		std::string encode(it->second, startEncode, it->second.size() - startEncode);
 		std::string decode = base64_decode(encode);
