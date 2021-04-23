@@ -29,8 +29,6 @@ class CGI;
 #define RESOURCES_PATH "../resources/"
 #define ERROR_PAGE_PATH "../resources/error.html"
 
-
-
 class HttpResponse {
 public:
 	HttpResponse();
@@ -88,6 +86,8 @@ public:
 
 private:
 	std::string					_buffer;
+
+	std::string &getAutoIndexPage(std::string &path);
 };
 
 

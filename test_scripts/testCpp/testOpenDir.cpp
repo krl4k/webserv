@@ -41,10 +41,6 @@ public:
 		}
 
 
-
-//		time_t time = (time_t)structstat.st_mtimespec.tv_sec;
-//		time_t time = (time_t)structstat.st_atim.tv_sec;
-
 #if __APPLE__
 		time_t time = (time_t)structstat.st_mtimespec.tv_sec;
 #elif __linux__
@@ -54,7 +50,6 @@ public:
 		_lastMode = ctime(&time);
 		if (S_ISDIR(structstat.st_mode)){
 			_size = -1;
-//			_size = (structstat.st_size);
 		}
 		if (S_ISREG(structstat.st_mode)){
 			_size = (structstat.st_size);
