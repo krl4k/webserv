@@ -97,8 +97,7 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 void HttpRequest::queryStringParse() {
 	if (_sBuffer.find(CRLF) != std::string::npos) {
 		_method = std::string(_sBuffer, 0, _sBuffer.find(" "));
-		_path = std::string(_sBuffer, _method.length() + 1,
-							_sBuffer.find(" ", _method.length() + 1, 1) - _method.length());
+		_path = std::string(_sBuffer, _method.length() + 1,_sBuffer.find(" ", _method.length() + 1, 1) - _method.length() - 1);
 
 		size_t queryStringPos = 0;
 		if ((queryStringPos = _path.find('?')) != std::string::npos) {
