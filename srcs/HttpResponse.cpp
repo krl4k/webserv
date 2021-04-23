@@ -122,13 +122,11 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 	Location ourLoc;
 	/** todo */
-	if (!isAuthClient(client, server)) {
-		_code = 401;
-	}
+
 	if (it == server->getLocation().end()/* || isAuthClient(client)*/){
-		if (!isAuthClient(client, server)) {
-			_code = 401;
-		}
+//		if (!isAuthClient(client, server)) {
+//			_code = 401;
+//		}
 		/*else */{_code = 404;}
 		path = "";
 		mergedPath = server->getErrorPage();
