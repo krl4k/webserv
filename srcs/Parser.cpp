@@ -30,7 +30,7 @@ Parser::Parser(const std::string &fileName) {
 	//init whiteList
 	for (int i = 0; i < _servers.size(); ++i) {
 		try {
-			_servers[i]->setWhiteList("../secret/whiteList");
+			_servers[i]->setWhiteList("../secret/.secret");
 		} catch (std::exception &exception) {
 			throw std::runtime_error(exception.what());
 		}
