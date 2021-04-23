@@ -225,7 +225,7 @@ std::string & HttpResponse::getStatusMessages(int n) {
 
 std::string HttpResponse::getPage(std::string &path) {
 	std::stringstream buf;
-	if (_isThereErrorPage > 0){
+	if (_isThereErrorPage > 0 && _code >= 404){
 		path = ERROR_PAGE + path;
 	}
 	if ((_code > 400 && _isThereErrorPage != 0) || _isThereErrorPage >= 0){
