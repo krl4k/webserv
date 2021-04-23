@@ -59,7 +59,7 @@ public:
 
 	std::string _name;
 	std::string	_lastMode;
-	off_t _size;
+	off_t		_size;
 	std::string _dirRoot;
 };
 
@@ -148,9 +148,9 @@ int main()
 	str << "<!DOCTYPE html>"
 		   "<html lang=\"en\">"
 		   "<head>"
-		   "    <meta charset=\"UTF-8\">"
+		   "<meta charset=\"UTF-8\">"
 	 //todo add path
-		   "    <title>DirectoryContent of _PATH_";
+		   "<title>DirectoryContent of _PATH_";
 	str << "</title>"
 		   "</head>"
 		   "<body>"

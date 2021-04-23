@@ -77,18 +77,22 @@ std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
 void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode){
 	size_t n;
 
-	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
+	if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc.getAutoIndex()){
+		std::string autoIndexPage = getAutoIndexPage(mergedPath);
+		client->getResponse()->setBody(autoIndexPage);
+	}
+	else if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
 		if (client->getRequest()->getMethod() == "GET") {
 			std::string temp = bodyResponceInit(mergedPath);
 			this->setBody(temp);
 		}
 	}
-	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){ _code = 404;}
-	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc.getAutoIndex()){
-		client->getResponse()->setBody(getAutoIndexPage(mergedPath));
+	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){
+		_code = 404;
 	}
-	else{ _code = 404;}
-
+	else{
+		_code = 404;
+	}
 	if (_code == errorPageCode){
 		int status = 0;
 		int n = mergedPath.rfind('/');

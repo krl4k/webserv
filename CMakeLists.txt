@@ -16,6 +16,7 @@ add_executable(webserv1
         srcs/HttpRequest.cpp
         srcs/HttpResponse.cpp
         srcs/ChunkedRequest.cpp
+        srcs/AutoIndexGenerate.cpp
 
 #        tmp/testfiles/testCpp.cpp
         )
@@ -23,5 +24,5 @@ add_executable(webserv1
 
 
 add_executable(test_cpp
-        test_scripts/testCpp/testOpenDir.cpp
+        srcs/AutoIndexGenerate.cpp
         )

@@ -25,6 +25,8 @@ class CGI;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+
 
 #define RESOURCES_PATH "../resources/"
 #define ERROR_PAGE_PATH "../resources/error.html"
@@ -87,7 +89,7 @@ public:
 private:
 	std::string					_buffer;
 
-	std::string &getAutoIndexPage(std::string &path);
+	std::string getAutoIndexPage(std::string &path);
 };
 
 
