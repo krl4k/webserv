@@ -30,7 +30,8 @@ Parser::Parser(const std::string &fileName) {
 	//init whiteList
 	for (int i = 0; i < _servers.size(); ++i) {
 		try {
-			_servers[i]->setWhiteList("../secret/.secret");
+			if (!_servers[i]->getAuthBasicUserFile().empty())
+				_servers[i]->setWhiteList(_servers[i]->getAuthBasicUserFile());
 		} catch (std::exception &exception) {
 			throw std::runtime_error(exception.what());
 		}
@@ -165,7 +166,9 @@ Server *Parser::separateServers(std::string &line, size_t i) {
 			newServ->setServerName(getmyline(strings[count], "server_name:", 1));
 		} else if (strings[count].find("error_page:") != std::string::npos) {
 			newServ->setErrorPage(getmyline(strings[count], "error_page:", 1));
-		} else {
+		} else if (strings[count].find("auth_basic_user_file:") != std::string::npos) {
+			newServ->setAuthBasicUserFile(getmyline(strings[count], "auth_basic_user_file:", 1));}
+		else {
 			std::cout << "Error in the parser" << std::endl;
 		}
 		count++;

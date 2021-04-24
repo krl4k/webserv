@@ -72,7 +72,7 @@ std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
 	int res = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))){ std::cerr << "Can't open file" << std::endl;}
-	while (res = read(fd, &buff, 10000) > 0){
+	while ((res = read(fd, &buff, 10000)) > 0){
 		buff[res] = '\0';
 		temp << buff;
 	}
@@ -128,14 +128,15 @@ void HttpResponse::generate(Client *client, Server *server) {
 	it = server->getLocation().find(path);
 	_code = 200;
 	Location ourLoc;
-	if (it == server->getLocation().end()) {
-		_code = 404;
+	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
+		if (!isAuthClient(client, server)) { _code = 403; }
+		else 							   { _code = 404; }
 		path = "";
 		mergedPath = server->getErrorPage();
 		if (mergedPath.empty()){
 			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
 		}
-		else if (server->getErrorPageCode() != 404){
+		else if (server->getErrorPageCode() != _code){
 			_isThereErrorPage = -1;
 		}
 		else{

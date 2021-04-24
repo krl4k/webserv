@@ -77,6 +77,12 @@ private:
 	std::string							_errorPage;
 	int 								_errorPageCode;
 	std::vector<std::string>			_whiteList;
+	std::string							_auth_basic_user_file;
+public:
+	const std::string &getAuthBasicUserFile() const;
+
+	void setAuthBasicUserFile(const std::string &authBasicUserFile);
+
 public:
 	int getErrorPageCode() const;
 

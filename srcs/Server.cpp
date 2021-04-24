@@ -156,3 +156,11 @@ void Server::setWhiteList(const std::string &whiteListPath) {
 		throw std::runtime_error("no whiteList!");
 	}
 }
+
+const std::string &Server::getAuthBasicUserFile() const {
+	return _auth_basic_user_file;
+}
+
+void Server::setAuthBasicUserFile(const std::string &authBasicUserFile) {
+	_auth_basic_user_file = authBasicUserFile;
+}
