@@ -218,9 +218,9 @@ void HttpRequest::createChunkContainer() {
 }
 
 std::string HttpRequest::getContentType() const {
-	if (_headers.find("Content-Type") == _headers.end())
+	if (_headers.find("CONTENT-TYPE") == _headers.end())
 		return "text/html";
-	return _headers.at("Content-Type");
+	return _headers.at("CONTENT-TYPE");
 }
 
 int HttpRequest::getParserState() const

@@ -110,14 +110,20 @@ void HttpResponse::generate(Client *client, Server *server) {
 	struct stat fileInfo;
 	std::string mergedPath;
 	std::string root;
+	std::string tmpIndex;
 	int flag = 0;
 
 	std::string path = client->getRequest()->getPath();
 	if (path[path.size() - 1] == '/' && path.size() > 1)
 		path.erase(path.size() - 1, 1);
 	std::map<std::string, Location>::const_iterator it;
-	it = server->getLocation().find(path);
+	int pos = path.size();
+	if (path.rfind('/') != std::string::npos)
+		pos = path.rfind('/');
+	tmpIndex = path.substr(pos, std::string::npos);
+	path = path.substr(0, pos);
 
+	it = server->getLocation().find(path);
 	_code = 200;
 	Location ourLoc;
 	if (it == server->getLocation().end()) {
@@ -146,7 +152,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			root.erase(root.size() - 1, 1);
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
-		mergedPath += locName;
+		mergedPath += tmpIndex;
 
 		if (ourLoc.getClientMaxBodySize() > _body_size) { _code = 413; }
 
