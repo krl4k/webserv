@@ -136,7 +136,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 		if (mergedPath.empty()){
 			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
 		}
-		else if (server->getErrorPageCode() != _code){
+		else if (server->getErrorPageCode() != 404){
 			_isThereErrorPage = -1;
 		}
 		else{
@@ -305,6 +305,23 @@ void HttpResponse::clean() {
 
 const std::string &HttpResponse::getBody() const {
 	return _body;
+}
+
+
+//lol shit
+bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
+	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
+	if (it != pClient->getRequest()->getHeaders().end()) {
+		size_t startEncode = it->second.find(" ") + 1;
+		std::string encode(it->second, startEncode, it->second.size() - startEncode);
+		std::string decode = base64_decode(encode);
+		for (int i = 0; i < pServer->getWhiteList().size(); ++i) {
+			if (decode == pServer->getWhiteList()[i]) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void HttpResponse::setCGIHeader(std::string header) {
