@@ -307,6 +307,8 @@ const std::string &HttpResponse::getBody() const {
 	return _body;
 }
 
+
+//lol shit
 bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
 	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
 	if (it != pClient->getRequest()->getHeaders().end()){
