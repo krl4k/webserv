@@ -136,7 +136,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 		if (mergedPath.empty()){
 			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
 		}
-		else if (server->getErrorPageCode() != 404){
+		else if (server->getErrorPageCode() != _code){
 			_isThereErrorPage = -1;
 		}
 		else{
@@ -310,6 +310,7 @@ const std::string &HttpResponse::getBody() const {
 
 //lol shit
 bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
+	if (pServer->getAuthBasicUserFile().empty()){ return true;}
 	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
 	if (it != pClient->getRequest()->getHeaders().end()) {
 		size_t startEncode = it->second.find(" ") + 1;
