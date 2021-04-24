@@ -16,12 +16,8 @@ add_executable(webserv1
         srcs/HttpRequest.cpp
         srcs/HttpResponse.cpp
         srcs/ChunkedRequest.cpp
-
-#        tmp/testfiles/testCpp.cpp
+        srcs/CGI.cpp
         )
-
-
 
 add_executable(test_cpp
-        test_scripts/testCpp/testOpenDir.cpp
-        )
+        test_scripts/testCpp/testOpenDir.cpp)

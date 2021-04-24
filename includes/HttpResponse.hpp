@@ -64,29 +64,23 @@ public:
 	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
 	void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag);
 	void createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode);
+	void setCGIHeader(std::string header);
 	std::string bodyResponceInit(std::string &mergedPath);
-
+	int getCode() const;
+	void setCode(int code);
+	const std::string &getBody() const;
 
 private:
 	std::string					_toSend;
 	std::map<int, std::string>	_status_messages;
 	std::string 			  	_body;
-public:
-	const std::string &getBody() const;
-
-private:
+	char						*_cgiHeader;
 	std::string 			    _headers_cgi;
 	int  						_body_size;
 	int 						_header_size;
 	std::string					_error;
 	int							_code;
 	int 						_isThereErrorPage;
-public:
-	int getCode() const;
-
-	void setCode(int code);
-
-private:
 	std::string					_buffer;
 };
 

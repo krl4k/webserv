@@ -36,7 +36,7 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 	/** Checking access mode */
 	if (S_ISDIR(fileInfo->st_mode)){
 		if (!ourLoc.getIndex().empty()) { mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
-		if (!(fd = open(mergedPath.c_str(), O_RDONLY))) { std::cout << "File openning error" << std::endl;}
+		if (!(fd = open(mergedPath.c_str(), O_RDONLY))) { std::cout << "File opening error" << std::endl;}
 		close(fd);
 		stat(mergedPath.c_str(), fileInfo);
 	}
@@ -47,15 +47,22 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 
 void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag){
 	int fd = 0;
+	char buff;
+	int bytes = 0;
 
-	if (S_ISDIR(fileInfo.st_mode)){	_code = 404;}
-	if ((fd = open(mergedPath.c_str(), O_RDWR | O_CREAT |  O_TRUNC, 0755)) < 0){ _code = 500;}
+	if ((fd = open(mergedPath.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0755)) < 0){ _code = 500;}
+	else if (S_ISDIR(fileInfo.st_mode)){
+		_code = 404;
+		return ;
+	}
+
 	else{
 		write(fd, client->getRequest()->getBody().c_str(), client->getRequest()->getBody().size());
 		if (flag != -1)		{ _code = 200; }
 		else				{ _code = 201; }
-		close(fd);
 	}
+	close(fd);
+	std::cout << "Put request" << std::endl;
 }
 
 std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
@@ -65,7 +72,7 @@ std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
 	int res = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))){ std::cerr << "Can't open file" << std::endl;}
-	while (read(fd, &buff, 10000) > 0){
+	while (res = read(fd, &buff, 10000) > 0){
 		buff[res] = '\0';
 		temp << buff;
 	}
@@ -101,9 +108,9 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
 void HttpResponse::generate(Client *client, Server *server) {
 	struct stat fileInfo;
-	int flag = 0;
 	std::string mergedPath;
 	std::string root;
+	int flag = 0;
 
 	std::string path = client->getRequest()->getPath();
 	if (path[path.size() - 1] == '/' && path.size() > 1)
@@ -112,7 +119,6 @@ void HttpResponse::generate(Client *client, Server *server) {
 	it = server->getLocation().find(path);
 
 	_code = 200;
-
 	Location ourLoc;
 	if (it == server->getLocation().end()) {
 		_code = 404;
@@ -122,11 +128,10 @@ void HttpResponse::generate(Client *client, Server *server) {
 			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
 		}
 		else if (server->getErrorPageCode() != 404){
-			mergedPath = ERROR_PAGE_PATH;
 			_isThereErrorPage = -1;
 		}
 		else{
-			//mergedPath = RESOURCES_PATH + mergedPath;
+			mergedPath = RESOURCES_PATH + mergedPath;
 			_isThereErrorPage = 1;
 		}
 	}
@@ -141,7 +146,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			root.erase(root.size() - 1, 1);
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
-		mergedPath = root + locName;
+		mergedPath += locName;
 
 		if (ourLoc.getClientMaxBodySize() > _body_size) { _code = 413; }
 
@@ -156,7 +161,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 						int i = 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
-//						CGI newCGI(client, temp.c_str());
+						CGI newCGI(server, client, temp.c_str());
 					}
 				} else {
 					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
@@ -216,17 +221,8 @@ std::string & HttpResponse::getStatusMessages(int n) {
 
 std::string HttpResponse::getPage(std::string &path) {
 	std::stringstream buf;
-	if ((_code > 400 && _isThereErrorPage != 0) || _isThereErrorPage >= 0){
-		char temp;
-		int cor_fd = open(path.c_str(), O_RDONLY);
-		if (!cor_fd)
-			throw std::runtime_error("Can't open file");
-		while(read(cor_fd, &temp, 1) > 0){
-			buf << temp;
-		}
-		close(cor_fd);
-	}
-	else{
+
+	if (_code > 400 && _isThereErrorPage == -1){
 		/** If there is no error page*/
 		buf << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n"
 			   "<html>\n"
@@ -239,6 +235,16 @@ std::string HttpResponse::getPage(std::string &path) {
 													 " <h2>" << _code << "</h2>\n"
 																		" </body>\n"
 																		"</html>";
+	}
+	else {
+		char temp;
+		int cor_fd = open(path.c_str(), O_RDONLY);
+		if (!cor_fd)
+			throw std::runtime_error("Can't open file");
+		while(read(cor_fd, &temp, 1) > 0){
+			buf << temp;
+		}
+		close(cor_fd);
 	}
 	return (buf.str());
 }
@@ -290,4 +296,10 @@ void HttpResponse::clean() {
 
 const std::string &HttpResponse::getBody() const {
 	return _body;
+}
+
+void HttpResponse::setCGIHeader(std::string header) {
+	if (_cgiHeader)
+		free(_cgiHeader);
+	_cgiHeader = strdup(header.c_str());
 }

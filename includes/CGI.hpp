@@ -22,6 +22,8 @@ class Client ;
 #include <ios>
 #include "Colors.hpp"
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 class CGI {
 public:
@@ -31,18 +33,18 @@ public:
 
 	void 	setArguments();
 	char	**getEnvironment() const;
-	char **setEnvToString(std::map<std::string, std::string> env) const;
+	char	**setEnvToString(std::map<std::string, std::string> env) ;
 	void	executeCGI(Client *client);
 
 private:
-	char 			**_environment;
+	CGI &operator=(const CGI &other);
+	char		**_environment;
 	char			**_arguments;
 	size_t			_environmentSize;
 	char			*_path;
 	HttpResponse	*_response;
 	HttpRequest		*_request;
-	CGI(const CGI &other);
-	CGI &operator=(const CGI &other);
+	CGI(const CGI &other){};
 
 	void 			setEnvironment(Server *server, Client *client);
 	char **clone(char **other);

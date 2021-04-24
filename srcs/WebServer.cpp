@@ -175,8 +175,6 @@ void WebServer::sendResponce(Client *&client) {
 
 	size_t sendLen = 0;
 
-	std::cout << "buf:\n"  << buffer<< std::endl;
-
 	//todo rewrite
 	while (sendLen != responseLen){
 		sendLen += send(client->getSocketFd(), buffer, len, 0);
