@@ -120,6 +120,8 @@ void HttpResponse::generate(Client *client, Server *server) {
 	int pos = path.size();
 	if (path.rfind('/') != std::string::npos)
 		pos = path.rfind('/');
+	if (pos == 0)
+		pos = path.size();
 	tmpIndex = path.substr(pos, std::string::npos);
 	path = path.substr(0, pos);
 
@@ -164,7 +166,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 					std::cout << "---CGI---" << std::endl;
 					std::string cgi = ourLoc.getCgiPath();
 					if (cgi.find(".php", 0, 4) != std::string::npos) {
-						int i = 4;
+						int i = cgi.find(".php", 0, 4) + 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
 						CGI newCGI(server, client, temp.c_str());
