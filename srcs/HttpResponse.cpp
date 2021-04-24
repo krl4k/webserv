@@ -72,7 +72,7 @@ std::string HttpResponse::bodyResponceInit(std::string &mergedPath){
 	int res = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))){ std::cerr << "Can't open file" << std::endl;}
-	while (res = read(fd, &buff, 10000) > 0){
+	while ((res = read(fd, &buff, 10000)) > 0){
 		buff[res] = '\0';
 		temp << buff;
 	}
@@ -314,17 +314,18 @@ const std::string &HttpResponse::getBody() const {
 //lol shit
 bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
 	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
-	if (it != pClient->getRequest()->getHeaders().end()){
+	if (it != pClient->getRequest()->getHeaders().end()) {
 		size_t startEncode = it->second.find(" ") + 1;
 		std::string encode(it->second, startEncode, it->second.size() - startEncode);
 		std::string decode = base64_decode(encode);
 		for (int i = 0; i < pServer->getWhiteList().size(); ++i) {
-			if (decode == pServer->getWhiteList()[i]){
+			if (decode == pServer->getWhiteList()[i]) {
 				return true;
 			}
 		}
 	}
 	return false;
+}
 
 void HttpResponse::setCGIHeader(std::string header) {
 	if (_cgiHeader)
