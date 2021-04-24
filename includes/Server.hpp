@@ -8,6 +8,7 @@
 
 #include <string>
 #include <iostream>
+#include <istream>
 #include <map>
 #include "Location.hpp"
 #include "Client.hpp"
@@ -16,6 +17,8 @@
 #include <vector>
 #include <fcntl.h>
 #include <string.h>
+#include <fstream>
+
 
 
 class Server {
@@ -56,6 +59,10 @@ public:
 	void setPort(const std::string & port);
 	void setPort(uint16_t port);
 
+	const std::vector<std::string> &getWhiteList() const;
+
+	void setWhiteList(const std::string &whiteListPath);
+
 private:
 
 	//todo rename this class like "VirtualHost"
@@ -69,6 +76,7 @@ private:
 	std::string							_root;
 	std::string							_errorPage;
 	int 								_errorPageCode;
+	std::vector<std::string>			_whiteList;
 public:
 	int getErrorPageCode() const;
 

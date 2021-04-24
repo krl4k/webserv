@@ -14,7 +14,7 @@
 #define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
 #define DEBUG 1
-#define HTTP_REQUEST_DEBUG 0
+#define HTTP_REQUEST_DEBUG 1
 
 
 

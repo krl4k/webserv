@@ -14,6 +14,7 @@ class CGI;
 #include "../includes/Client.hpp"
 #include "../includes/Server.hpp"
 #include "../includes/CGI.hpp"
+#include "../includes/base64.h"
 
 #include <string>
 #include <iostream>
@@ -25,11 +26,12 @@ class CGI;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+
 
 #define RESOURCES_PATH "../resources/"
 #define ERROR_PAGE_PATH "../resources/error.html"
-
-
+#define ERROR_PAGE		"../html/"
 
 class HttpResponse {
 public:
@@ -82,6 +84,10 @@ private:
 	int							_code;
 	int 						_isThereErrorPage;
 	std::string					_buffer;
+
+	std::string getAutoIndexPage(std::string &path);
+
+	bool isAuthClient(Client *pClient, Server *pServer);
 };
 
 
