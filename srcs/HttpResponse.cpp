@@ -108,10 +108,11 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
 void HttpResponse::generate(Client *client, Server *server) {
 	struct stat fileInfo;
+	int flag = 0;
 	std::string mergedPath;
 	std::string root;
 	std::string tmpIndex;
-	int flag = 0;
+
 
 	std::string path = client->getRequest()->getPath();
 	if (path[path.size() - 1] == '/' && path.size() > 1)
@@ -126,7 +127,9 @@ void HttpResponse::generate(Client *client, Server *server) {
 	path = path.substr(0, pos);
 
 	it = server->getLocation().find(path);
+
 	_code = 200;
+
 	Location ourLoc;
 	if (it == server->getLocation().end()) {
 		_code = 404;
@@ -136,6 +139,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
 		}
 		else if (server->getErrorPageCode() != 404){
+			mergedPath = ERROR_PAGE_PATH;
 			_isThereErrorPage = -1;
 		}
 		else{
@@ -154,7 +158,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			root.erase(root.size() - 1, 1);
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
-		mergedPath += tmpIndex;
+		mergedPath = root + locName;
 
 		if (ourLoc.getClientMaxBodySize() > _body_size) { _code = 413; }
 
@@ -166,10 +170,10 @@ void HttpResponse::generate(Client *client, Server *server) {
 					std::cout << "---CGI---" << std::endl;
 					std::string cgi = ourLoc.getCgiPath();
 					if (cgi.find(".php", 0, 4) != std::string::npos) {
-						int i = cgi.find(".php", 0, 4) + 4;
+						int i = 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
-						CGI newCGI(server, client, temp.c_str());
+//						CGI newCGI(client, temp.c_str());
 					}
 				} else {
 					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
@@ -306,8 +310,25 @@ const std::string &HttpResponse::getBody() const {
 	return _body;
 }
 
+
+//lol shit
+bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
+	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
+	if (it != pClient->getRequest()->getHeaders().end()){
+		size_t startEncode = it->second.find(" ") + 1;
+		std::string encode(it->second, startEncode, it->second.size() - startEncode);
+		std::string decode = base64_decode(encode);
+		for (int i = 0; i < pServer->getWhiteList().size(); ++i) {
+			if (decode == pServer->getWhiteList()[i]){
+				return true;
+			}
+		}
+	}
+	return false;
+
 void HttpResponse::setCGIHeader(std::string header) {
 	if (_cgiHeader)
 		free(_cgiHeader);
 	_cgiHeader = strdup(header.c_str());
 }
+
