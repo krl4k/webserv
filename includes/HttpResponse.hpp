@@ -83,6 +83,7 @@ private:
 	std::string					_error;
 	int							_code;
 	int 						_isThereErrorPage;
+	int							_maxBodySize;
 	std::string					_buffer;
 
 	std::string getAutoIndexPage(std::string &path);

@@ -167,6 +167,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 	else {
 		ourLoc = it->second;
 		std::string locName = it->first;
+		_maxBodySize = ourLoc.getClientMaxBodySize();
 
 		if (!checkMethod(ourLoc.getAllowMethods(), client->getRequest()->getMethod())) { _code = 405; }
 
@@ -303,6 +304,9 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	if (_body.empty())
 		_body = getPage(path);
 	_body_size = _body.length();
+	if (_body_size > _maxBodySize && _maxBodySize != 0){
+		_body = _body.substr(0, _maxBodySize);
+	}
 	head = createHeader(req);
 	_toSend.append(head);
 	_toSend.append(BODY_SEP);
