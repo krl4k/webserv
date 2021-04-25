@@ -63,7 +63,7 @@ public:
 	void clean();
 
 
-	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
+	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo, std::string &root);
 	void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag);
 	void createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode);
 	void setCGIHeader(std::string header);
