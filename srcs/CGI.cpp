@@ -52,12 +52,20 @@ void CGI::setEnvironment(Server *server, Client *client) {
 	env.clear();
 }
 
+/**
+ * set path in arguments
+ */
 void CGI::setArguments() {
 	_arguments = (char **)calloc(3, sizeof(char *));
 	_arguments[0] = strdup(_path);
 	_arguments[1] = strdup(_path);
 }
 
+/**
+ * rotate env from map to string for execve
+ * @param std::map<>env
+ * @return string of env
+ */
 char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 	_environment = (char **)calloc(env.size(), sizeof(char *));
 
@@ -72,6 +80,9 @@ char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 
 char **CGI::getEnvironment() const {return _environment;}
 
+/**
+ * Function execute cgi script with execve and forked process
+ */
 void	CGI::executeCGI() {
 
 	int savedFd[2];
@@ -120,5 +131,4 @@ void	CGI::executeCGI() {
 	if (pid == 0)
 		exit(0);
 	_response->setBody(newBody);
-	std::cout << "new body: " + newBody << std::endl;
 }

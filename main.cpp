@@ -2,9 +2,17 @@
 
 #include "includes/WebServer.hpp"
 
+static	void	sigHandler(int sig_num)
+{
+	if (sig_num == SIGPIPE) {
+		signal(SIGPIPE, sigHandler);
+	}
+}
+
 int main(int argc, char **argv) {
 	if (argc <= 2){
 		try {
+			signal(SIGPIPE, sigHandler);
 			WebServer webServer(argv[1]);
 			webServer.start();
 		} catch (std::exception &exception) {
