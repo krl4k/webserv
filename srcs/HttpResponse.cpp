@@ -30,13 +30,13 @@ bool checkMethod(std::vector<std::string> vec, std::string meth){
 	return (false);
 }
 
-void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo){
+void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo, std::string &root){
 	int fd = 0;
 
 	/** Checking access mode */
 	if (S_ISDIR(fileInfo->st_mode)){
 		if (!ourLoc.getIndex().empty()) { mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
-		if (!(fd = open(mergedPath.c_str(), O_RDONLY))) { std::cout << "File opening error" << std::endl;}
+		if ((fd = open(mergedPath.c_str(), O_RDONLY)) < 0) { _code = 404;}
 		close(fd);
 		stat(mergedPath.c_str(), fileInfo);
 	}
@@ -106,6 +106,20 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 	}
 }
 
+int find_loc(std::string loc){
+	int n = std::count(loc.begin(), loc.end(), '/');
+	int pos = 0;
+
+	if (n >= 2){
+		while (std::count(loc.begin(), loc.end(), '/') > 1){
+			pos = loc.rfind('/');
+			if (pos == 0){	break;	}
+			loc = loc.substr(0, pos);
+		}
+	}
+	return (pos);
+}
+
 void HttpResponse::generate(Client *client, Server *server) {
 	struct stat fileInfo;
 	std::string mergedPath;
@@ -118,26 +132,37 @@ void HttpResponse::generate(Client *client, Server *server) {
 		path.erase(path.size() - 1, 1);
 	std::map<std::string, Location>::const_iterator it;
 	int pos = path.size();
-	if (path.rfind('/') != std::string::npos)
-		pos = path.rfind('/');
-	if (pos == 0 && std::count(path.begin(), path.end(), '/') < 2)
-		pos = path.size();
+	/*if (path.rfind('/') != std::string::npos)
+		pos = path.rfind('/');*/
+	pos = find_loc(path);
+	if (pos == 0){
+		it = server->getLocation().find(path);
+		pos = (it == server->getLocation().end()) ? 1 : path.size();
+	}
 	tmpIndex = path.substr(pos, std::string::npos);
-	path = path.substr(0, pos/* + 1*/);
+	path = path.substr(0, pos);
+
 
 	it = server->getLocation().find(path);
 	_code = 200;
+	/*if (path == "/directory" && tmpIndex == "/Yeah")
+		_code = 404;*/
 	Location ourLoc;
-
-
 	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
 		if (!isAuthClient(client, server)) { _code = 403; }
 		else 							   { _code = 404; }
 		path = "";
 		mergedPath = server->getErrorPage();
-		if (mergedPath.empty()){	_isThereErrorPage  = -1;}
-		else if (server->getErrorPageCode() != _code){	_isThereErrorPage = -1;	}
-		else{	mergedPath = RESOURCES_PATH + mergedPath;	_isThereErrorPage = 1;	}
+		if (mergedPath.empty()){
+			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
+		}
+		else if (server->getErrorPageCode() != _code){
+			_isThereErrorPage = -1;
+		}
+		else{
+			mergedPath = RESOURCES_PATH + mergedPath;
+			_isThereErrorPage = 1;
+		}
 	}
 	else {
 		ourLoc = it->second;
@@ -156,13 +181,13 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 		flag = stat(mergedPath.c_str(), &fileInfo);
 		if (_code < 400) {
-			checkFile(ourLoc, mergedPath, &fileInfo);
+			checkFile(ourLoc, mergedPath, &fileInfo, root);
 			if (client->getRequest()->getMethod() == "POST") {
 				if (!ourLoc.getCgiPath().empty()) {
 					std::cout << "---CGI---" << std::endl;
 					std::string cgi = ourLoc.getCgiPath();
-					if (cgi.find(".php", 0, 4) != std::string::npos) {
-						int i = cgi.find(".php", 0, 4) + 4;
+					if (cgi.find(".bla", 0, 4) != std::string::npos) {
+						int i = cgi.find(".bla", 0, 4) + 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
 						try {
