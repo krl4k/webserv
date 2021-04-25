@@ -293,16 +293,16 @@ std::string HttpResponse::getPage(std::string &path) {
 std::string HttpResponse::createHeader(HttpRequest *req) {
 	std::stringstream header;
 
-	if (_cgiHeader.empty())
+//	if (_cgiHeader.empty())
 	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
 		   "Content-type: " << req->getContentType() << CRLF <<
 		   "Content-Length: " << _body_size << BODY_SEP;
-	else
+/*	else
 		header << "HTTP/1.1 " << _code << " OK" << CRLF
 		<< "Content-type: " << req->getContentType() << CRLF
-		<< "Content-length: " << _body_size << BODY_SEP;
+		<< "Content-length: " << _body_size << BODY_SEP;*/
 	return (header.str());
 }
 
@@ -311,7 +311,6 @@ void HttpResponse::setBody(std::string &body) {
 }
 
 void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
-	std::string head;
 	if (_body.empty())
 		_body = getPage(path);
 	_body_size = _body.length();
@@ -319,9 +318,7 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 		_body = _body.substr(0, _maxBodySize);
 		_body_size = _maxBodySize;
 	}
-	if (head.empty())
-		head = createHeader(req);
-	_toSend.append(head);
+	_toSend.append(createHeader(req));
 	_toSend.append(_body);
 }
 
