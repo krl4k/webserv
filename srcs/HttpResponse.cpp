@@ -215,6 +215,10 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 }
 
+void HttpResponse::setBodySize(int bodySize) {
+	_body_size = bodySize;
+}
+
 void HttpResponse::setStatusMessages() {
 	_status_messages[100] = "Continue";
 	_status_messages[101] = "Switching Protocols";
@@ -289,11 +293,16 @@ std::string HttpResponse::getPage(std::string &path) {
 std::string HttpResponse::createHeader(HttpRequest *req) {
 	std::stringstream header;
 
+	if (_cgiHeader.empty())
 	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
 		   "Content-type: " << req->getContentType() << CRLF <<
-		   "Content-Length: " << _body_size;
+		   "Content-Length: " << _body_size << BODY_SEP;
+	else
+		header << "HTTP/1.1 " << _code << " OK" << CRLF
+		<< "Content-type: " << req->getContentType() << CRLF
+		<< "Content-length: " << _body_size << BODY_SEP;
 	return (header.str());
 }
 
@@ -313,7 +322,6 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	if (head.empty())
 		head = createHeader(req);
 	_toSend.append(head);
-	_toSend.append(BODY_SEP);
 	_toSend.append(_body);
 }
 
@@ -339,8 +347,6 @@ const std::string &HttpResponse::getBody() const {
 	return _body;
 }
 
-
-//lol shit
 bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
 	if (pServer->getAuthBasicUserFile().empty()){ return true;}
 	std::map<std::string, std::string>::const_iterator it(pClient->getRequest()->getHeaders().find("AUTHORIZATION"));
@@ -357,10 +363,8 @@ bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
 	return false;
 }
 
-void HttpResponse::setCGIHeader(std::string header) {
-	if (_cgiHeader)
-		free(_cgiHeader);
-	_cgiHeader = strdup(header.c_str());
+void HttpResponse::setCgiHeader(std::string header) {
+	_cgiHeader = header;
 }
 
 void HttpResponse::setCode(int code) {

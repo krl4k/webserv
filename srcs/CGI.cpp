@@ -4,6 +4,7 @@ CGI::CGI(Server *server, Client *client, const char *path) {
 	_request = client->getRequest();
 	_response = client->getResponse();
 	_path = strdup(path);
+	_bodySize = 0;
 	setEnvironment(server, client);
 	executeCGI();
 }
@@ -80,12 +81,6 @@ char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 		std::string str = it->first + "=" + it->second;
 		_environment[i] = strdup(str.c_str());
 	}
-#if CGI_DEBUG == 1
-	for (int j = 0; _environment[j]; ++j)
-	{
-		std::cout << _environment[j] << std::endl;
-	}
-#endif
 	return _environment;
 }
 
@@ -127,13 +122,13 @@ void	CGI::executeCGI() {
 	else
 	{
 		char buffer[CGI_BUFSIZE] = {0};
-		int bytes;
 		waitpid(-1, NULL, 0);
 		lseek(fd[OUT], SEEK_SET, SEEK_SET);
-		bytes = 1;
+		int bytes = 1;
 		while (bytes > 0) {
 			bzero(buffer, CGI_BUFSIZE);
 			bytes = read(fd[OUT], buffer, CGI_BUFSIZE);
+			_bodySize += bytes;
 			newBody += buffer;
 		}
 	}
@@ -150,7 +145,6 @@ void	CGI::executeCGI() {
 		exit(0);
 	size_t pos;
 	std::string cgiHeader;
-	std::cout << "Before cont: " << _request->getContentType() << std::endl;
 	if ((pos = newBody.find(BODY_SEP, 0)) != std::string::npos) {
 		cgiHeader = std::string(newBody, 0, pos + 4);
 		newBody = std::string(newBody, pos + 4);
@@ -158,8 +152,8 @@ void	CGI::executeCGI() {
 			_response->setCode(std::atoi(cgiHeader.substr(8, 3).c_str()));
 		if ((pos = cgiHeader.find("Content-Type: ", 0)) != std::string::npos)
 			_request->setContentType(cgiHeader.substr(pos + 14, 24));
-	std::cout << "Code: " << _response->getCode() << std::endl;
-	std::cout << "Content: " << _request->getContentType() << std::endl;
+		_response->setCgiHeader(cgiHeader);
+		_bodySize -= cgiHeader.size();
 	}
 	_response->setBody(newBody);
 }

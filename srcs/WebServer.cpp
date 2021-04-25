@@ -105,10 +105,10 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 			}
 		}
 		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::CREATING_RESPONSE){
-			generateResponce(_client[i]);
+			generateResponse(_client[i]);
 		}
 		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE) {
-			sendResponce(_client[i]);
+			sendResponse(_client[i]);
 //			if response sending all
 //			_client[i]->setState(Client::State::REQUEST_PARSE);
 //
@@ -161,12 +161,12 @@ Client *WebServer::acceptNewConnection(int serverNumber) {
 	return client;
 }
 
-void WebServer::generateResponce(Client *&client) {
+void WebServer::generateResponse(Client *&client) {
 	client->getResponse()->generate(client, findServer(client));
 	client->setState(Client::State::ACCEPT_RESPONSE);
 }
 
-void WebServer::sendResponce(Client *&client) {
+void WebServer::sendResponse(Client *&client) {
 	const char *buffer = client->getResponse()->getToSend().c_str();
 
 	size_t len = strlen(buffer);

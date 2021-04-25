@@ -42,10 +42,10 @@ private:
 	CGI &operator=(const CGI &other);
 	char		**_environment;
 	char			**_arguments;
-	size_t			_environmentSize;
 	char			*_path;
 	HttpResponse	*_response;
 	HttpRequest		*_request;
+	long 			_bodySize;
 	CGI(const CGI &other){};
 
 	void 			setEnvironment(Server *server, Client *client);

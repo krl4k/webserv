@@ -87,13 +87,13 @@ private:
 	 *
 	 * @param client
 	 */
-	void generateResponce(Client *&client);
+	void generateResponse(Client *&client);
 
 	/**
 	 *
 	 * @param client
 	 */
-	void sendResponce(Client *&client);
+	void sendResponse(Client *&client);
 
 //	UNUSED
 	WebServer();
