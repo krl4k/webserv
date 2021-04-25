@@ -120,29 +120,24 @@ void HttpResponse::generate(Client *client, Server *server) {
 	int pos = path.size();
 	if (path.rfind('/') != std::string::npos)
 		pos = path.rfind('/');
-	if (pos == 0)
+	if (pos == 0 && std::count(path.begin(), path.end(), '/') < 2)
 		pos = path.size();
 	tmpIndex = path.substr(pos, std::string::npos);
-	path = path.substr(0, pos);
+	path = path.substr(0, pos/* + 1*/);
 
 	it = server->getLocation().find(path);
 	_code = 200;
 	Location ourLoc;
+
+
 	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
 		if (!isAuthClient(client, server)) { _code = 403; }
 		else 							   { _code = 404; }
 		path = "";
 		mergedPath = server->getErrorPage();
-		if (mergedPath.empty()){
-			_isThereErrorPage  = -1; /* Means that there is no errorPage set */
-		}
-		else if (server->getErrorPageCode() != _code){
-			_isThereErrorPage = -1;
-		}
-		else{
-			mergedPath = RESOURCES_PATH + mergedPath;
-			_isThereErrorPage = 1;
-		}
+		if (mergedPath.empty()){	_isThereErrorPage  = -1;}
+		else if (server->getErrorPageCode() != _code){	_isThereErrorPage = -1;	}
+		else{	mergedPath = RESOURCES_PATH + mergedPath;	_isThereErrorPage = 1;	}
 	}
 	else {
 		ourLoc = it->second;
@@ -170,7 +165,11 @@ void HttpResponse::generate(Client *client, Server *server) {
 						int i = cgi.find(".php", 0, 4) + 4;
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
-						CGI newCGI(server, client, temp.c_str());
+						try {
+							CGI newCGI(server, client, temp.c_str());
+						} catch (std::exception &e) {
+							std::cout << e.what() << std::endl;
+						}
 					}
 				} else {
 					createPutResponse(client, &ourLoc, fileInfo, mergedPath, flag);
@@ -276,7 +275,8 @@ void HttpResponse::setBody(std::string &body) {
 
 void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	std::string head;
-	_body = getPage(path);
+	if (_body.empty())
+		_body = getPage(path);
 	_body_size = _body.length();
 	head = createHeader(req);
 	_toSend.append(head);
@@ -329,4 +329,8 @@ void HttpResponse::setCGIHeader(std::string header) {
 	if (_cgiHeader)
 		free(_cgiHeader);
 	_cgiHeader = strdup(header.c_str());
+}
+
+void HttpResponse::setCode(int code) {
+	_code = code;
 }
