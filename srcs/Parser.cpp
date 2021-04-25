@@ -98,7 +98,10 @@ std::string getmyline(std::string &str, std::string com, int n) {
 		i++;
 	if (str[i] == '\0')
 		throw std::runtime_error("Config file error");
-	temp = str.substr(i + com.size() + 1, str.size() - i);
+	i = i + com.size();
+	while (str[i] == ' ' || str[i] == '\t')
+		i++;
+	temp = str.substr(i, str.size());
 	if (str.find(com.c_str(), 0, com.size() - 1)) {
 		return (temp);
 	} else {

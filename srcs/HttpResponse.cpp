@@ -120,8 +120,10 @@ void HttpResponse::generate(Client *client, Server *server) {
 	int pos = path.size();
 	if (path.rfind('/') != std::string::npos)
 		pos = path.rfind('/');
-	if (pos == 0)
-		pos = path.size();
+	if (pos == 0){
+		it = server->getLocation().find(path);
+		pos = (it == server->getLocation().end()) ? 1 : path.size();
+	}
 	tmpIndex = path.substr(pos, std::string::npos);
 	path = path.substr(0, pos);
 
