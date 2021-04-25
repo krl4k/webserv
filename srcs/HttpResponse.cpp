@@ -315,7 +315,6 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	_toSend.append(head);
 	_toSend.append(BODY_SEP);
 	_toSend.append(_body);
-	_toSend.append(BODY_SEP);
 }
 
 std::string HttpResponse::getCurrentDate() const {
