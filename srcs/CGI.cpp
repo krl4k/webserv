@@ -24,30 +24,35 @@ CGI::~CGI() {
 void CGI::setEnvironment(Server *server, Client *client) {
 	std::map<std::string, std::string> env;
 
-	env["AUTH_TYPE="] = "basic";								 //use to check user
-	env["CONTENT_LENGTH="] = std::to_string(_request->getBody().size());// - The length of the said
+	//env["REDIRECT_STATUS"] = "200";
+	env["AUTH_TYPE"] = "basic";								 //use to check user
+	env["CONTENT_LENGTH"] = std::to_string(_request->getBody().size());// - The length of the said
 														 // content as given by the client.
-	env["CONTENT_TYPE="] = _request->getContentType();	 // - POST, GET, PUT
-	env["GATEWAY_INTERFACE="] = "CGI/1.1";
-	env["PATH_INFO="] = _request->getPath();				 // - The extra path information, as given by the client
+	env["CONTENT_TYPE"] = _request->getContentType();	 // - POST, GET, PUT
+	env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	env["PATH_INFO"] = _request->getPath();				 // - The extra path information, as given by the client
 														 //This information should be decoded by the server if it comes from a URL
-	env["PATH_TRANSLATED="] = _request->getPath();						 // - The server provides a translated version of PATH_INFO,
+	env["PATH_TRANSLATED"] = _request->getPath();						 // - The server provides a translated version of PATH_INFO,
 														 // which takes the path and does any virtual-to-physical mapping to it
-	env["QUERY_STRING="] = _request->getPath() + "?" + _request->getQueryString();			 // - The information which follows the ? in the URL,
+	env["QUERY_STRING"] = _request->getPath() + "?" + _request->getQueryString();			 // - The information which follows the ? in the URL,
 											   			 // It should not be decoded in any fashion
-	env["REMOTE_ADDR="] = server->getHost();			 // - The IP address of the remote host making the request
-	env["REMOTE_IDENT="] = "basic";							 // - name for remote user retrieved by server
+	env["REMOTE_ADDR"] = server->getHost();			 // - The IP address of the remote host making the request
+	env["REMOTE_IDENT"] = "basic";							 // - name for remote user retrieved by server
 														 // (server need supports RFC 931)
-	env["REMOTE_USER="] = "basic";							 // - if server supports auth(login)
-	env["REQUEST_METHOD="] = _request->getMethod();		 // - The method with which the request was made.
-	env["REQUEST_URI="] = _request->getPath();
-	env["SCRIPT_NAME="] = _request->getPath();			 // - A virtual path to the script being executed,
+	env["REMOTE_USER"] = "basic";							 // - if server supports auth(login)
+	env["REQUEST_METHOD"] = _request->getMethod();		 // - The method with which the request was made.
+	env["REQUEST_URI"] = _request->getPath();
+	env["SCRIPT_NAME"] = _request->getPath();			 // - A virtual path to the script being executed,
 														 // used for self-referencing URLs
-	env["SERVER_NAME="] = server->getServerName();
-	env["SERVER_PORT="] = std::to_string(server->getPort());			 // - The port number to which the request was sent.
-	env["SERVER_PROTOCOL="] = "HTTP/1.1";				 // - The name and revision of the information protocol
+	if (server->getServerName().empty())
+		env["SERVER_NAME"] = env["REMOTE_ADDR"];
+	else
+		env["SERVER_NAME"] = server->getServerName();
+	env["SERVER_PORT"] = std::to_string(server->getPort());			 // - The port number to which the request was sent.
+	env["SERVER_PROTOCOL"] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
-	env["SERVER_SOFTWARE="] = "KiRoTaMagic/6.9";
+	env["SERVER_SOFTWARE"] = "KiRoTaMagic/6.9";
+	env.insert(_request->getHeaders().begin(), _request->getHeaders().end());
 	setEnvToString(env);
 	env.clear();
 }
@@ -67,14 +72,20 @@ void CGI::setArguments() {
  * @return string of env
  */
 char **CGI::setEnvToString(std::map<std::string, std::string> env) {
-	_environment = (char **)calloc(env.size(), sizeof(char *));
+	_environment = (char **)calloc(env.size() + 1, sizeof(char *));
 
 	std::map<std::string, std::string>::iterator it;
 	int i = 0;
 	for (it = env.begin(); it != env.end(); it++, i++) {
-		std::string str = it->first + it->second;
+		std::string str = it->first + "=" + it->second;
 		_environment[i] = strdup(str.c_str());
 	}
+#if CGI_DEBUG == 1
+	for (int j = 0; _environment[j]; ++j)
+	{
+		std::cout << _environment[j] << std::endl;
+	}
+#endif
 	return _environment;
 }
 
@@ -113,12 +124,18 @@ void	CGI::executeCGI() {
 			throw std::runtime_error(RED + std::string("Execve crashed!") + RESET);
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
-	else {
-		char buffer;
+	else
+	{
+		char buffer[CGI_BUFSIZE] = {0};
+		int bytes;
 		waitpid(-1, NULL, 0);
 		lseek(fd[OUT], SEEK_SET, SEEK_SET);
-		while (read(fd[OUT], &buffer, 1) > 0)
+		bytes = 1;
+		while (bytes > 0) {
+			bzero(buffer, CGI_BUFSIZE);
+			bytes = read(fd[OUT], buffer, CGI_BUFSIZE);
 			newBody += buffer;
+		}
 	}
 	dup2(savedFd[IN], STDIN_FILENO);
 	dup2(savedFd[OUT], STDOUT_FILENO);
@@ -128,7 +145,21 @@ void	CGI::executeCGI() {
 	close(fd[OUT]);
 	close(savedFd[IN]);
 	close(savedFd[OUT]);
+	delete[] (_environment);
 	if (pid == 0)
 		exit(0);
+	size_t pos;
+	std::string cgiHeader;
+	std::cout << "Before cont: " << _request->getContentType() << std::endl;
+	if ((pos = newBody.find(BODY_SEP, 0)) != std::string::npos) {
+		cgiHeader = std::string(newBody, 0, pos + 4);
+		newBody = std::string(newBody, pos + 4);
+		if (cgiHeader.find("Status: ", 0) != std::string::npos)
+			_response->setCode(std::atoi(cgiHeader.substr(8, 3).c_str()));
+		if ((pos = cgiHeader.find("Content-Type: ", 0)) != std::string::npos)
+			_request->setContentType(cgiHeader.substr(pos + 14, 24));
+	std::cout << "Code: " << _response->getCode() << std::endl;
+	std::cout << "Content: " << _request->getContentType() << std::endl;
+	}
 	_response->setBody(newBody);
 }

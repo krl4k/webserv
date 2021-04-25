@@ -68,6 +68,7 @@ public:
 	const std::map<std::string, std::string> &getHeaders() const;
 
 	const std::string &getBody() const;
+	void setContentType(std::string);
 
 private:
 	std::string _path;

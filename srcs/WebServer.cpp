@@ -177,10 +177,10 @@ void WebServer::sendResponce(Client *&client) {
 	size_t sendLen = 0;
 
 	//todo rewrite
-	while (sendLen != responseLen){
+	while (sendLen != responseLen) {
 		sendLen += send(client->getSocketFd(), buffer, len, 0);
 	}
-
+	std::cout << "Send Len: " << sendLen << std::endl;
 	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo() << "."
 			  << MAGENTA << " FD = " << client->getSocketFd() << RESET << std::endl;
 	// if (response fully send)

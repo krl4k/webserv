@@ -71,13 +71,14 @@ public:
 	int getCode() const;
 	void setCode(int code);
 	const std::string &getBody() const;
+	void setContentType(std::string contentType);
 
 private:
 	std::string					_toSend;
 	std::map<int, std::string>	_status_messages;
 	std::string 			  	_body;
 	char						*_cgiHeader;
-	std::string 			    _headers_cgi;
+	std::string 			    _contentType;
 	int  						_body_size;
 	int 						_header_size;
 	std::string					_error;

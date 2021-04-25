@@ -8,10 +8,10 @@ def generator():
 url = 'http://localhost:8000/'
 
 # count user
-counUser = 200
+counUser = 1
 for i in range(0, counUser):
     print("==============================================================")
-    r = req.put(url)
+    r = req.put(url, data=("ad" * 5000000))
     print("Count    = " + str(i))
     print("Content  = " + r.text)
     print("Response = " + str(r.status_code))

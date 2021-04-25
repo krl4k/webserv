@@ -54,8 +54,9 @@ void HttpRequest::parse(char *buffer, int bufSize) {
 
 	_sBuffer.append(buffer, bufSize);
 
+#if HTTP_REQUEST_DEBUG >= 1
 	std::cout << "buffer:\n" << _sBuffer << std::endl;
-
+#endif
 	if (_parserState == ParserState::QUERY_STRING)
 		queryStringParse();
 	if (_parserState == ParserState::HEADERS)
@@ -159,7 +160,11 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 		for (size_t i = 0; i < _chunk.size(); ++i) {
 			_body.append(_chunk[i]->getBuffer(), 0, _chunk[i]->getIntSize());
 		}
-		std::cout << "body:\n" << _body << std::endl;
+
+#if CHUNKED_REQUEST_DEBUG == 1
+//		std::cout << "body:\n" << _body << std::endl;
+#endif
+
 	}
 }
 
@@ -179,8 +184,11 @@ void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 	}
 }
 
-void HttpRequest::createChunkContainer() {
+void HttpRequest::createChunkContainer(){
+
+#if CHUNKED_REQUEST_DEBUG == 1
 	std::cout << "chunk:\n" << _body << std::endl;
+#endif
 
 	for (size_t i = 0; i < _body.size();) {
 		size_t crlfPos = 0;
@@ -251,4 +259,8 @@ const std::map<std::string, std::string> &HttpRequest::getHeaders() const
 const std::string &HttpRequest::getBody() const
 {
 	return _body;
+}
+
+void HttpRequest::setContentType(std::string contentType) {
+	_headers["CONTENT-TYPE"] = contentType;
 }

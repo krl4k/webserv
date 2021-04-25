@@ -44,6 +44,9 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 		_code = 500;
 	}*/
 }
+int HttpResponse::getCode() const {
+	return _code;
+}
 
 void HttpResponse::createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag){
 	int fd = 0;
@@ -298,7 +301,6 @@ void HttpResponse::setBody(std::string &body) {
 	_body = body;
 }
 
-
 void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	std::string head;
 	if (_body.empty())
@@ -308,7 +310,8 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 		_body = _body.substr(0, _maxBodySize);
 		_body_size = _maxBodySize;
 	}
-	head = createHeader(req);
+	if (head.empty())
+		head = createHeader(req);
 	_toSend.append(head);
 	_toSend.append(BODY_SEP);
 	_toSend.append(_body);

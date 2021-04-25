@@ -4,15 +4,14 @@
 
 static	void	sigHandler(int sig_num)
 {
-	if (sig_num == SIGPIPE) {
-		signal(SIGPIPE, sigHandler);
-	}
+		signal(sig_num, sigHandler);
 }
 
 int main(int argc, char **argv) {
 	if (argc <= 2){
 		try {
 			signal(SIGPIPE, sigHandler);
+			signal(SIGILL, sigHandler);
 			WebServer webServer(argv[1]);
 			webServer.start();
 		} catch (std::exception &exception) {
@@ -22,7 +21,3 @@ int main(int argc, char **argv) {
 	}
 	return (0);
 }
-
-
-
-
