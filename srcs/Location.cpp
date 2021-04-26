@@ -2,25 +2,29 @@
 // Created by Foster Grisella on 4/13/21 16:24.
 //
 
-
 #include "../includes/Location.hpp"
 #include <string>
 #include <sstream>
 
 Location::Location() {
-	_autoIndex = false;
+	_autoIndex = true;
+	_clientMaxBodySize = 0;
 }
 
 Location::~Location() {
-
 }
 
 void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-void Location::setAutoIndex(bool autoIndex) {
-	_autoIndex = autoIndex;
+void Location::setAutoIndex(std::string autoIndex) {
+
+	if (autoIndex == "on"){	_autoIndex = true;	}
+	else if (autoIndex == "off"){ _autoIndex = false;}
+	else{
+		throw std::runtime_error("autoindex error in config file");
+	}
 }
 
 void Location::setUrl(const std::string &url) {
@@ -35,6 +39,7 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 	std::istringstream f(temp);
 
 	while (getline(f, s, ' ')) {
+		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
 	std::vector<std::string> newVec;
@@ -52,6 +57,8 @@ void Location::setAllowMethods(const std::string &allowMethods) {
 		else
 			throw std::runtime_error("Allow methods error");
 	}
+	if (newVec.empty())
+		throw std::runtime_error("Allow methods error");
 	for (size_t i = 0; i < newVec.size(); ++i){
 		for (size_t j = i + 1; j < newVec.size(); ++j)
 			if (newVec[i] == newVec[j] && i != j)
@@ -82,4 +89,32 @@ const std::string &Location::getCgiPath() const {
 
 void Location::setCgiPath(const std::string &cgiPath) {
 	_cgiPath = cgiPath;
+}
+
+size_t Location::getClientMaxBodySize() const
+{
+	return _clientMaxBodySize;
+}
+
+void Location::setClientMaxBodySize(std:: string clientMaxBodySize)
+{
+
+	try{
+		int temp = std::stoi(clientMaxBodySize);
+		if (temp < 0){
+			_clientMaxBodySize = 0;
+		} else
+			_clientMaxBodySize = static_cast<size_t>(temp);
+	}
+	catch (std::exception &e){
+		throw std::runtime_error("setClientMaxBodySize error");
+	}
+}
+
+const std::string &Location::getIndex() const {
+	return _index;
+}
+
+void Location::setIndex(const std::string &index) {
+	_index = index;
 }

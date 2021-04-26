@@ -17,18 +17,21 @@ public:
 
 	virtual ~Parser();
 
-	Parser(const Parser &other);
-
-	Parser &operator=(const Parser &other);
-
 	const std::vector<Server *> &getServers() const;
 
-	Server * separateServers(std::string &line, size_t i);
-	int initLocations(std::vector<std::string> &strings, int count, int i);
+	Server *separateServers(std::string &line, size_t i);
+
+	size_t initLocations(std::vector<std::string> &strings, size_t count, size_t i);
+
 	std::string readFile(std::ifstream &fd);
 
 private:
 	std::vector<Server *> _servers;
+
+	Parser(const Parser &other);
+
+	Parser &operator=(const Parser &other);
+
 };
 
 

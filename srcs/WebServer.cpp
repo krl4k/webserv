@@ -3,9 +3,8 @@
 //
 
 
-#include <fstream>
-#include <sstream>
 #include "../includes/WebServer.hpp"
+
 
 WebServer::WebServer(const char *fileName){
 	if (fileName)
@@ -19,12 +18,13 @@ WebServer::WebServer(const char *fileName){
 		throw std::runtime_error(exception.what());
 	}
 	_server = parser->getServers();
+
 	delete parser;
 	std::cout << BLUE << "Server inited!" << RESET << std::endl;
 }
 
 void WebServer::start() {
-	for (int i = 0; i < _server.size(); ++i) {
+	for (size_t i = 0; i < _server.size(); ++i) {
 		if (_server[i]->createSocket() < 0){
 			std::cerr  << "Socket dont creating!" << std::endl;
 			throw std::exception();
@@ -49,10 +49,7 @@ int WebServer::lifeCycle() {
 	fd_set readFdSet, writeFdSet;
 	_maxFdSize = _server.back()->getSocketFd();
 
-//	struct timeval timeout;
 	while (true) {
-//		timeout.tv_sec = 10;
-//		timeout.tv_usec = 1;
 		std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
 
@@ -68,9 +65,9 @@ void WebServer::initSocketSet(fd_set &readFdSet, fd_set &writeFdSet) {
 	FD_ZERO(&writeFdSet);
 	for (size_t i = 0; i < _server.size(); ++i)
 		FD_SET(_server[i]->getSocketFd(), &readFdSet);
-	for (int i = 0; i < _client.size(); ++i) {
+	for (size_t i = 0; i < _client.size(); ++i) {
 		FD_SET(_client[i]->getSocketFd(), &readFdSet);
-		if (_client[i]->getState() != Client::State::REQUEST_PARSE){
+		if (_client[i]->getState() != Client__State__REQUEST_PARSE){
 			FD_SET(_client[i]->getSocketFd(), &writeFdSet);
 		}
 		if (_client[i]->getSocketFd() > _maxFdSize)
@@ -79,14 +76,13 @@ void WebServer::initSocketSet(fd_set &readFdSet, fd_set &writeFdSet) {
 }
 
 void WebServer::acceptNewClient(fd_set &readFdSet) {
-	for (int i = 0; i < _server.size(); ++i) {
+	for (size_t i = 0; i < _server.size(); ++i) {
 		if (FD_ISSET(_server[i]->getSocketFd(), &readFdSet)){
 			Client *newClient = acceptNewConnection(i);
 			if (newClient == nullptr) {
 				std::cerr << "Accept error!" << std::endl;
 				return;
 			}
-			SET_NONBLOCK(newClient->getSocketFd());
 			_client.push_back(newClient);
 			if (newClient->getSocketFd() > _maxFdSize)
 				_maxFdSize = newClient->getSocketFd();
@@ -95,27 +91,28 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 }
 
 void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
-	for (int i = 0; i < _client.size(); ++i) {
+	for (size_t i = 0; i < _client.size(); ++i) {
 		int fd = _client[i]->getSocketFd();
-		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client::State::REQUEST_PARSE) {
+		if (FD_ISSET(fd, &readFdSet) && _client[i]->getState() == Client__State__REQUEST_PARSE) {
 			readRequest(_client[i]);
-			if (_client[i]->getState() != Client::State::CLOSE and \
-					_client[i]->getRequest()->getState() == HttpRequest::State::FULL){
+			if (_client[i]->getState() != Client__State__CLOSE and \
+					_client[i]->getRequest()->getState() == HttpRequest__State__FULL) {
 				FD_SET(fd, &writeFdSet);
 			}
 		}
-		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::CREATING_RESPONSE){
-			generateResponce(_client[i]);
+		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client__State__CREATING_RESPONSE){
+			generateResponse(_client[i]);
 		}
-		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client::State::ACCEPT_RESPONSE) {
-			sendResponce(_client[i]);
-//			_client[i]
-			_client[i]->setState(Client::State::REQUEST_PARSE);
-			_client[i]->getRequest()->clean();
-			_client[i]->getResponse()->clean();
+		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client__State__ACCEPT_RESPONSE) {
+			sendResponse(_client[i]);
+
+			if (_client[i]->getState() == Client__State__REQUEST_PARSE){
+				_client[i]->getRequest()->clean();
+				_client[i]->getResponse()->clean();
+			}
 		}
-		if (_client[i]->getState() == Client::State::CLOSE) {
-			std::vector<Client *>::iterator it = _client.begin() + i;
+		if (_client[i]->getState() == Client__State__CLOSE) {
+			std::vector<Client *>::iterator it = _client.begin() + (int)i;
 				delete _client[i];
 			_client.erase(it);
 		}
@@ -125,31 +122,29 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 void WebServer::readRequest(Client *&client) {
 	char buffer[BUFSIZE + 1];
 	bzero(&buffer, BUFSIZE);
-	int bytes_read;
+	ssize_t bytes_read;
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZE, 0);
-
 #if DEBUG == 1
 	std::cout << "bytes read = " << bytes_read << std::endl;
-	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
+//	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
 #endif
-
 	if (bytes_read <= 0) {
-		client->setState(Client::State::CLOSE);
+		client->setState(Client__State__CLOSE);
 		return;
 	}
 	client->getRequest()->parse(buffer, bytes_read);
-	if (client->getRequest()->getState() == HttpRequest::State::FULL){
+	if (client->getRequest()->getState() == HttpRequest__State__FULL){
 		std::cout << MAGENTA<< "full" << RESET<< std::endl;
-		client->setState(Client::State::CREATING_RESPONSE);
-//		client->getRequest()->setState(HttpRequest::ParserState::QUERY_STRING);
+		client->setState(Client__State__CREATING_RESPONSE);
 	}
 }
 
-Client *WebServer::acceptNewConnection(int serverNumber) {
+Client *WebServer::acceptNewConnection(size_t serverNumber) {
 	int clientSocket;
 	struct sockaddr_in clientAddr;
 	socklen_t addrSize = sizeof(sockaddr_in);
 	clientSocket = accept(_server[serverNumber]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
+	SET_NONBLOCK(clientSocket);
 	if (clientSocket < 0){
 		return nullptr;
 	}
@@ -159,45 +154,45 @@ Client *WebServer::acceptNewConnection(int serverNumber) {
 	return client;
 }
 
-void WebServer::generateResponce(Client *&client) {
-	client->getResponse()->generate();
-	client->setState(Client::State::ACCEPT_RESPONSE);
+void WebServer::generateResponse(Client *&client) {
+	client->getResponse()->generate(client, findServer(client));
+	client->setState(Client__State__ACCEPT_RESPONSE);
 }
 
-void WebServer::sendResponce(Client *&client) {
-	const char *buffer = client->getResponse()->getToSend().c_str();
+void WebServer::sendResponse(Client *&client) {
+	ssize_t sendLen = client->getResponse()->getSendPos();
 
-	size_t len = strlen(buffer);
-	std::cout << "len buffer to send = " << len << std::endl;
+	char *buf = client->getResponse()->getCToSend();
+	size_t len = static_cast<size_t>( client->getResponse()->getSendLen() - client->getResponse()->getSendPos());
+	sendLen += send(client->getSocketFd(), &buf[client->getResponse()->getSendPos()], len, 0);
+	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo()
+	<< MAGENTA << ", len = " << sendLen - client->getResponse()->getSendPos()
+	<< " FD = " << client->getSocketFd() <<  RESET << std::endl;
 
-	size_t responseLen = client->getResponse()->getToSend().size();
-
-	size_t sendLen = 0;
-
-
-	//todo rewrite
-	while (sendLen != responseLen){
-		sendLen += send(client->getSocketFd(), buffer, len, 0);
+	client->getResponse()->setSendPos(sendLen);
+	if (client->getResponse()->getSendLen() == client->getResponse()->getSendPos()){
+		client->setState(Client__State__REQUEST_PARSE);
+#if SEND_DEBUG == 1
+		std::cout << "sending:\n" << client->getResponse()->getToSend() << std::endl;
+#endif
+	}
+	if (client->getRequest()->getConnectionType() == "close") {
+		std::cout << "close connection!!!" << std::endl;
+        client->setState(Client__State__CLOSE);
 	}
 
-	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo() << "."
-			  << MAGENTA << " FD = " << client->getSocketFd() << RESET << std::endl;
-	// if (response fully send)
-
 }
 
-
-std::string readFile(const std::string& fileName) {
-	std::ifstream f(fileName);
-	f.seekg(0, std::ios::end);
-	size_t size = f.tellg();
-	std::string s(size, ' ');
-	f.seekg(0);
-	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
-	return s;
+Server *WebServer::findServer(Client *client){
+	for (size_t i = 0; i < _server.size();++i){
+		if (client->getHost() == _server[i]->getHost() && client->getPort() == _server[i]->getPort())
+			return (_server[i]);
+	}
+	return (nullptr);
 }
 
 
 WebServer::WebServer() {
 
 }
+

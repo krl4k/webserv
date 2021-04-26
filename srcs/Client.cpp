@@ -7,10 +7,10 @@
 
 
 Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in &addr) :
-	_socketFd(fd), _host(host), _port(port), _addr(addr){
+	_socketFd(fd),_addr(addr), _port(port),  _host(host){
 	_request = new HttpRequest();
 	_response = new HttpResponse();
-	_state = State::REQUEST_PARSE;
+	_state = Client__State__REQUEST_PARSE;
 	_clientInfo = new char[100];
 	socklen_t addrSize = sizeof(sockaddr_in);
 	inet_ntop(AF_INET, &_addr, _clientInfo, addrSize);
@@ -18,10 +18,15 @@ Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in
 
 Client::~Client() {
 	std::cout << RED << "Close connection, FD = " << _socketFd << RESET << std::endl;
-	close(_socketFd);
+
+    if (shutdown(_socketFd, 1) != -1){
+        if (close(_socketFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
+    }
 	delete _request;
 	delete _clientInfo;
-//	delete _response;
+	delete _response;
 }
 
 
@@ -50,4 +55,24 @@ HttpResponse *Client::getResponse() const {
 
 char *Client::getInfo() const {
 	return _clientInfo;
+}
+
+const std::string &Client::getHost() const
+{
+	return _host;
+}
+
+void Client::setHost(const std::string &host)
+{
+	_host = host;
+}
+
+uint16_t Client::getPort() const
+{
+	return _port;
+}
+
+void Client::setPort(uint16_t port)
+{
+	_port = port;
 }

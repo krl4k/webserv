@@ -14,6 +14,9 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include <fcntl.h>
+#include <fstream>
+#include <sstream>
+#include <string.h>
 #include "Colors.hpp"
 
 class WebServer {
@@ -39,21 +42,21 @@ private:
 	std::string 			_configFileName;
 	std::vector<Client *> 	_client;
 	std::vector<Server *> 	_server;
-	uint					_maxFdSize;
+	int					_maxFdSize;
 
 
 	/**
 	 * \brief Main Webserver cycle
 	 *
 	 */
-	[[noreturn]] int lifeCycle();
+	int lifeCycle();
 
 	/**
 	 * @brief Create and accept new client
 	 * @param serverNumber
 	 * @return new connected client
 	 */
-	Client * acceptNewConnection(int serverNumber);
+	Client * acceptNewConnection(size_t serverNumber);
 
 	/**
 	 *
@@ -84,18 +87,19 @@ private:
 	 *
 	 * @param client
 	 */
-	void generateResponce(Client *&client);
+	void generateResponse(Client *&client);
 
 	/**
 	 *
 	 * @param client
 	 */
-	void sendResponce(Client *&client);
+	void sendResponse(Client *&client);
 
 //	UNUSED
 	WebServer();
 	WebServer(const WebServer &other);
 	WebServer &operator=(const WebServer &other);
+	Server * findServer(Client *client);
 
 };
 

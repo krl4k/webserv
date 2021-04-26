@@ -3,8 +3,8 @@
 //
 
 
-#include <fcntl.h>
 #include "../includes/Server.hpp"
+
 
 Server::Server(){
 }
@@ -32,7 +32,7 @@ void Server::setHost(const std::string &host) {
 
 void Server::setPort(const std::string & port) {
 	try{
-		_port = std::stoi(port);
+		_port = static_cast<uint16_t>(std::stoi(port));
 		if (port.size() != std::to_string(_port).size())
 			throw std::exception();
 	}
@@ -70,12 +70,20 @@ void Server::setRoot(const std::string &root) {
 	_root = root;
 }
 
-const std::string &Server::getErrorPage() const {
+const std::string Server::getErrorPage() const {
 	return _errorPage;
 }
 
 void Server::setErrorPage(const std::string  &errorPage) {
-	_errorPage = errorPage;
+	std::string code = errorPage.substr(0, 3);
+	std::string file = errorPage.substr(4, errorPage.size() - 4);
+	_errorPage = file;
+	try {
+		_errorPageCode = std::stoi(code);
+	}
+	catch (std::exception &e){
+		std::cerr << "Error page line error" << std::endl;
+	}
 }
 
 int Server::createSocket() {
@@ -86,6 +94,7 @@ int Server::createSocket() {
 		return -1;
 	}
 	bzero(&servaddr, sizeof(servaddr));
+
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = inet_addr(_host.c_str());
 	servaddr.sin_port = htons(_port);
@@ -93,19 +102,30 @@ int Server::createSocket() {
 	if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 		std::cerr << "error setsockopt" << std::endl;
-		close(listenFd);
+		if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+		}
 		return -2;
 	}
 	if ((bind(listenFd, (struct sockaddr * )&servaddr, sizeof servaddr)) < 0){
 		std::cerr << "bind error" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -2;
 	}
 	if (fcntl(listenFd, F_SETFL, O_NONBLOCK) < 0) {
 		std::cerr << "fcntl error" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -3;
 	}
 	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -4;
 	}
 	_socketFd = listenFd;
@@ -115,10 +135,42 @@ int Server::createSocket() {
 
 
 Server::~Server() {
-	close(_socketFd);
+    if (shutdown(_socketFd, 1) != -1){
+        if (close(_socketFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
+    }
 	_location.clear();
 }
 
 uint16_t Server::getPort() const {
 	return _port;
+}
+
+int Server::getErrorPageCode() const {
+	return _errorPageCode;
+}
+
+const std::vector<std::string> &Server::getWhiteList() const {
+	return _whiteList;
+}
+
+void Server::setWhiteList(const std::string &whiteListPath) {
+	std::ifstream file(whiteListPath);
+	std::string line;
+	if (file.is_open()){
+		while (std::getline(file, line))
+			_whiteList.push_back(line);
+
+	} else {
+		throw std::runtime_error("no whiteList!");
+	}
+}
+
+const std::string &Server::getAuthBasicUserFile() const {
+	return _auth_basic_user_file;
+}
+
+void Server::setAuthBasicUserFile(const std::string &authBasicUserFile) {
+	_auth_basic_user_file = authBasicUserFile;
 }

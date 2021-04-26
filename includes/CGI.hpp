@@ -3,10 +3,15 @@
 
 #ifndef WEBSERV_CGI_H
 #define WEBSERV_CGI_H
-class HTTPResponse{};
-class HTTPRequest{};
-class Client {};
-//#include "Client.hpp"
+
+#include <sys/stat.h>
+class HttpResponse;
+class HttpRequest;
+class Client ;
+#include "../includes/Client.hpp"
+#include "../includes/HttpRequest.hpp"
+#include "../includes/HttpResponse.hpp"
+#include "../includes/Server.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -16,31 +21,36 @@ class Client {};
 #include <cstring>
 #include <ios>
 #include "Colors.hpp"
-
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#define IN 0
+#define OUT 1
 class CGI {
 public:
 
-	CGI(Client *client, char *path);
+	CGI();
 	virtual ~CGI();
 
-	void 	setArguments();
 	char	**getEnvironment() const;
-	void	executeCGI(Client &client);
+	char	**setEnvToString(std::map<std::string, std::string> env) ;
+	void	executeCGI();
+	void 	clean();
+	void 	init(Server *server, Client *client, const char *path);
+	bool 	isInit();
 
 private:
-	char 			**_environment;
-	char			**_arguments;
-	size_t			_environmentSize;
-	char			*_path;
-	HTTPResponse	*_response;
-	HTTPRequest		*_request;
-	CGI(const CGI &other);
-	CGI &operator=(const CGI &other);
 
-	void 			setEnvironment();
-	char *strjoin(char *s1, char *s2);
-	void makeProccess();
-	char **clone(char **other);
+	bool 			_init;
+	CGI &operator=(const CGI &other);
+	char		**_environment;
+	char			**_arguments;
+	char			*_path;
+	HttpResponse	*_response;
+	HttpRequest		*_request;
+	long 			_bodySize;
+	CGI(const CGI &other);
+	void 			setEnvironment(Server *server);
 };
 
 

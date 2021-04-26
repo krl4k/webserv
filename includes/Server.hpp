@@ -8,12 +8,18 @@
 
 #include <string>
 #include <iostream>
+#include <istream>
 #include <map>
 #include "Location.hpp"
 #include "Client.hpp"
 #include <netdb.h>
 #include <unistd.h>
 #include <vector>
+#include <fcntl.h>
+#include <string.h>
+#include <fstream>
+
+
 
 class Server {
 public:
@@ -43,7 +49,7 @@ public:
 	const std::string &getRoot() const;
 	void setRoot(const std::string &root);
 
-	const std::string &getErrorPage() const;
+	const std::string getErrorPage() const;
 
 	void setErrorPage(const std::string &errorPage);
 
@@ -52,6 +58,10 @@ public:
 	void setFds(const std::vector<int> &fds);
 	void setPort(const std::string & port);
 	void setPort(uint16_t port);
+
+	const std::vector<std::string> &getWhiteList() const;
+
+	void setWhiteList(const std::string &whiteListPath);
 
 private:
 
@@ -65,7 +75,18 @@ private:
 	std::map<std::string, Location>		_location;
 	std::string							_root;
 	std::string							_errorPage;
+	int 								_errorPageCode;
+	std::vector<std::string>			_whiteList;
+	std::string							_auth_basic_user_file;
+public:
+	const std::string &getAuthBasicUserFile() const;
 
+	void setAuthBasicUserFile(const std::string &authBasicUserFile);
+
+public:
+	int getErrorPageCode() const;
+
+private:
 
 
 //	UNUSED
