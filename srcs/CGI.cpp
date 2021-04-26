@@ -53,6 +53,7 @@ void CGI::setEnvironment(Server *server, Client *client) {
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";				 // - The name and revision of the information protocol
 														 // this request came in with.
 	env["SERVER_SOFTWARE"] = "KiRoTaMagic/6.9";
+	env["HTTP_X_SECRET_HEADER_FOR_TEST"] = "1";
 	env.insert(_request->getHeaders().begin(), _request->getHeaders().end());
 	setEnvToString(env);
 	env.clear();

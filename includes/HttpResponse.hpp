@@ -71,9 +71,25 @@ public:
 	void setCode(int code);
 	const std::string &getBody() const;
 	void setContentType(std::string contentType);
+	char *getCToSend() const;
+	void setCToSend();
 
 private:
 	std::string					_toSend;
+	char *						_c_toSend;
+	size_t 						_sendLen;
+public:
+	size_t getSendLen() const;
+
+private:
+	size_t 						_sendPos;
+public:
+	size_t getSendPos() const;
+
+	void setSendPos(size_t sendPos);
+
+private:
+
 	std::map<int, std::string>	_status_messages;
 	std::string 			  	_body;
 	std::string					_cgiHeader;

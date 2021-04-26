@@ -135,8 +135,6 @@ void HttpResponse::generate(Client *client, Server *server) {
 		path.erase(path.size() - 1, 1);
 	std::map<std::string, Location>::const_iterator it;
 	int pos = path.size();
-	/*if (path.rfind('/') != std::string::npos)
-		pos = path.rfind('/');*/
 	pos = find_loc(path);
 	if (pos == 0){
 		it = server->getLocation().find(path);
@@ -180,8 +178,6 @@ void HttpResponse::generate(Client *client, Server *server) {
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
 		mergedPath += tmpIndex;
-
-		if (ourLoc.getClientMaxBodySize() > _body_size) { _code = 413; }
 
 		flag = stat(mergedPath.c_str(), &fileInfo);
 		if (_code < 400) {
@@ -314,12 +310,14 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	if (_body.empty())
 		_body = getPage(path);
 	_body_size = _body.length();
+	std::cout << _maxBodySize << std::endl;
 	if (_body_size > _maxBodySize && _maxBodySize != 0){
 		_body = _body.substr(0, _maxBodySize);
 		_body_size = _maxBodySize;
 	}
 	_toSend.append(createHeader(req));
 	_toSend.append(_body);
+	setCToSend();
 }
 
 std::string HttpResponse::getCurrentDate() const {
@@ -366,4 +364,26 @@ void HttpResponse::setCgiHeader(std::string header) {
 
 void HttpResponse::setCode(int code) {
 	_code = code;
+}
+
+char *HttpResponse::getCToSend() const {
+	return _c_toSend;
+}
+
+void HttpResponse::setCToSend() {
+	_sendLen = _toSend.size();
+	_sendPos = 0;
+	_c_toSend = const_cast<char *>(_toSend.c_str());
+}
+
+size_t HttpResponse::getSendPos() const {
+	return _sendPos;
+}
+
+void HttpResponse::setSendPos(size_t sendPos) {
+	_sendPos = sendPos;
+}
+
+size_t HttpResponse::getSendLen() const {
+	return _sendLen;
 }

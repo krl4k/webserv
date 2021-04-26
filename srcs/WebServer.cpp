@@ -112,10 +112,14 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 //			if response sending all
 //			_client[i]->setState(Client::State::REQUEST_PARSE);
 //
+
 			//todo clint->clean
-			_client[i]->setState(Client::State::REQUEST_PARSE);
+		if (_client[i]->getState() == Client::State::REQUEST_PARSE)
+		{
 			_client[i]->getRequest()->clean();
 			_client[i]->getResponse()->clean();
+
+		}
 		}
 		if (_client[i]->getState() == Client::State::CLOSE) {
 			std::vector<Client *>::iterator it = _client.begin() + i;
@@ -167,41 +171,25 @@ void WebServer::generateResponse(Client *&client) {
 }
 
 void WebServer::sendResponse(Client *&client) {
-	const char *buffer = client->getResponse()->getToSend().c_str();
+	size_t sendLen = client->getResponse()->getSendPos();
 
-	size_t len = strlen(buffer);
-	std::cout << "len buffer to send = " << len << std::endl;
+	char *buf = client->getResponse()->getCToSend();
+	sendLen += send(client->getSocketFd(), &buf[client->getResponse()->getSendPos()], client->getResponse()->getSendLen() - client->getResponse()->getSendPos(), 0);
+	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo()
+	<< MAGENTA << ", len = " << client->getResponse()->getSendLen() - client->getResponse()->getSendPos()
+	<< " FD = " << client->getSocketFd() << ", len = " << RESET << std::endl;
 
-	size_t responseLen = client->getResponse()->getToSend().size();
-
-	size_t sendLen = 0;
-
-	//todo rewrite
-	std::string temp = buffer;
-	std::string buf = buffer;
-	std::cout << "Before send: " << responseLen << std::endl;
-	while (sendLen != responseLen) {
-		sendLen += send(client->getSocketFd(),temp.c_str(), temp.length(), 0);
-		temp = buf.substr(sendLen, responseLen);
+	client->getResponse()->setSendPos(sendLen);
+	if (client->getResponse()->getSendLen() == client->getResponse()->getSendPos()){
+		client->setState(Client::State::REQUEST_PARSE);
+#if SEND_DEBUG == 1
+		std::cout << "sending:\n" << client->getResponse()->getToSend() << std::endl;
+#endif
 	}
-	std::cout << "After send" << std::endl;
-	std::cout << "Send Len: " << sendLen << std::endl;
-	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo() << "."
-			  << MAGENTA << " FD = " << client->getSocketFd() << RESET << std::endl;
-	// if (response fully send)
+//	std::cout << "After send" << std::endl;
+//	std::cout << "Send Len: " << sendLen << std::endl;
 
 }
-
-
-//std::string readFile(const std::string& fileName) {
-//	std::ifstream f(fileName);
-//	f.seekg(0, std::ios::end);
-//	size_t size = f.tellg();
-//	std::string s(size, ' ');
-//	f.seekg(0);
-//	f.read(&s[0], size); // по стандарту можно в C++11, по факту работает и на старых компиляторах
-//	return s;
-//}
 
 Server *WebServer::findServer(Client *client){
 	for (size_t i = 0; i < _server.size();++i){
