@@ -106,6 +106,7 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 		}
 		if (FD_ISSET(fd, &writeFdSet) and _client[i]->getState() == Client__State__ACCEPT_RESPONSE) {
 			sendResponse(_client[i]);
+
 			if (_client[i]->getState() == Client__State__REQUEST_PARSE){
 				_client[i]->getRequest()->clean();
 				_client[i]->getResponse()->clean();
@@ -115,7 +116,6 @@ void WebServer::handler(fd_set &readFdSet, fd_set &writeFdSet) {
 			std::vector<Client *>::iterator it = _client.begin() + (int)i;
 				delete _client[i];
 			_client.erase(it);
-
 		}
 	}
 }
@@ -177,6 +177,10 @@ void WebServer::sendResponse(Client *&client) {
 		std::cout << "sending:\n" << client->getResponse()->getToSend() << std::endl;
 #endif
 	}
+	if (client->getRequest()->getConnectionType() == "Close"){
+        client->setState(Client__State__CLOSE);
+	}
+
 }
 
 Server *WebServer::findServer(Client *client){

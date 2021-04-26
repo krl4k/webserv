@@ -264,3 +264,7 @@ const std::string &HttpRequest::getBody() const
 void HttpRequest::setContentType(std::string contentType) {
 	_headers["CONTENT-TYPE"] = contentType;
 }
+
+std::string HttpRequest::getConnectionType() {
+    return _headers["CONNECTION"];
+}

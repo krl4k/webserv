@@ -102,19 +102,30 @@ int Server::createSocket() {
 	if (setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 		std::cerr << "error setsockopt" << std::endl;
-		close(listenFd);
+		if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+		}
 		return -2;
 	}
 	if ((bind(listenFd, (struct sockaddr * )&servaddr, sizeof servaddr)) < 0){
 		std::cerr << "bind error" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -2;
 	}
 	if (fcntl(listenFd, F_SETFL, O_NONBLOCK) < 0) {
 		std::cerr << "fcntl error" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -3;
 	}
 	if (listen(listenFd, 2048) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
+        if (close(listenFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
 		return -4;
 	}
 	_socketFd = listenFd;
@@ -124,7 +135,11 @@ int Server::createSocket() {
 
 
 Server::~Server() {
-	close(_socketFd);
+    if (shutdown(_socketFd, 1) != -1){
+        if (close(_socketFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
+    }
 	_location.clear();
 }
 

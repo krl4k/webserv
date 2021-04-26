@@ -18,7 +18,12 @@ Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in
 
 Client::~Client() {
 	std::cout << RED << "Close connection, FD = " << _socketFd << RESET << std::endl;
-	close(_socketFd);
+
+    if (shutdown(_socketFd, 1) != -1){
+        if (close(_socketFd) < 0){
+            std::cerr << "error close" << std::endl;
+        }
+    }
 	delete _request;
 	delete _clientInfo;
 

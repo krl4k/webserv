@@ -41,7 +41,6 @@ public:
 
 	std::string getContentType() const;
 
-public:
 	int getParserState() const;
 
 	const std::string &getMethod() const;
@@ -54,6 +53,7 @@ public:
 
 	const std::string &getBody() const;
 	void setContentType(std::string);
+	std::string getConnectionType();
 
 private:
 	std::string _sBuffer;
