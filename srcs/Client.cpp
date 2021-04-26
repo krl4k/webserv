@@ -26,8 +26,7 @@ Client::~Client() {
     }
 	delete _request;
 	delete _clientInfo;
-
-//	delete _response;
+	delete _response;
 }
 
 

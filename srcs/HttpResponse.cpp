@@ -20,8 +20,9 @@ HttpResponse::HttpResponse() {
 }
 
 HttpResponse::~HttpResponse() {
-
+	delete _newCGI;
 }
+
 
 bool checkMethod(std::vector<std::string> vec, std::string meth) {
 	for (size_t i = 0; i < vec.size(); ++i) {
@@ -84,7 +85,6 @@ std::string HttpResponse::bodyResponceInit(std::string &mergedPath) {
 
 void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath,
 								   std::string errorPage, int errorPageCode) {
-//	size_t n;
 
 	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
 		if (client->getRequest()->getMethod() == "GET") {
@@ -338,7 +338,8 @@ void HttpResponse::clean() {
 	_toSend.clear();
 //	free(_c_toSend);
 	_body.clear();
-	_newCGI->clean();
+	if (_newCGI && _newCGI->isInit())
+		_newCGI->clean();
 }
 
 const std::string &HttpResponse::getBody() const {
@@ -362,7 +363,8 @@ bool HttpResponse::isAuthClient(Client *pClient, Server *pServer) {
 }
 
 void HttpResponse::setCgiHeader(std::string header) {
-	_cgiHeader = header;
+	if (_newCGI->isInit())
+		_cgiHeader = header;
 }
 
 void HttpResponse::setCode(int code) {

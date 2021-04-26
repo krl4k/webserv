@@ -1,7 +1,7 @@
 #include "../includes/CGI.hpp"
 
 CGI::CGI() {
-
+	_init = false;
 }
 
 void CGI::init(Server *server, Client *client, const char *path) {
@@ -9,13 +9,16 @@ void CGI::init(Server *server, Client *client, const char *path) {
 	_response = client->getResponse();
 	_path = strdup(path);
 	_bodySize = 0;
+	_init = true;
 	setEnvironment(server);
 	executeCGI();
 }
 
 CGI::~CGI() {
-	clean();
+
 }
+
+bool CGI::isInit() {return _init;}
 
 /**
  * Check http://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html for environments.
@@ -54,18 +57,9 @@ void CGI::setEnvironment(Server *server) {
 	env["HTTP_X_SECRET_HEADER_FOR_TEST"] = "1";
 	env.insert(_request->getHeaders().begin(), _request->getHeaders().end());
 	setEnvToString(env);
-	setArguments();
 	env.clear();
 }
 
-/**
- * set path in arguments
- */
-void CGI::setArguments() {
-	_arguments = (char **)calloc(3, sizeof(char *));
-	_arguments[0] = strdup(_path);
-	_arguments[1] = strdup(_path);
-}
 
 /**
  * rotate env from map to string for execve
@@ -85,30 +79,18 @@ char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 }
 
 void CGI::clean() {
-//	if (_environment) {
-//		for (size_t i = 0; _environment[i]; i++) {
-//			if (_environment[i]) {
-//				free(_environment[i]);
-//				_environment[i] = nullptr;
-//			}
-//		}
-//		free(_environment);
-//		_environment = nullptr;
-//	}
-//	if (_arguments) {
-//		for (size_t i = 0; _arguments[i]; ++i)	{
-//			if (_arguments[i]) {
-//				free(_arguments[i]);
-//				_arguments = nullptr;
-//			}
-//		}
-//		free(_arguments);
-//		_arguments = nullptr;
-//	}
-//	if (_path) {
-//		free(_path);
-//		_path = nullptr;
-//	}
+	if (_init) {
+		for (size_t i = 0; _environment[i]; i++) {
+			if (_environment[i]) {
+				free(_environment[i]);
+				_environment[i] = nullptr;
+			}
+		}
+		free(_environment);
+		_environment = nullptr;
+		free(_path);
+		_path = nullptr;
+	}
 }
 
 char **CGI::getEnvironment() const {return _environment;}
@@ -142,7 +124,8 @@ void	CGI::executeCGI() {
 	else if (pid == 0) {
 		dup2(fd[IN], STDIN_FILENO);
 		dup2(fd[OUT], STDOUT_FILENO);
-		if (execve(_path, _arguments, _environment) == -1)
+		char * const * nlPointer = NULL;
+		if (execve(_path, nlPointer, _environment) == -1)
 			throw std::runtime_error(RED + std::string("Execve crashed!") + RESET);
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
@@ -182,5 +165,4 @@ void	CGI::executeCGI() {
 		_bodySize -= cgiHeader.size();
 	}
 	_response->setBody(newBody);
-	//clean();
 }
