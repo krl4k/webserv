@@ -95,6 +95,7 @@ private:
 	std::string					_cgiHeader;
 	std::string 			    _contentType;
 	int  						_body_size;
+	int 						_configErrorCode;
 	int 						_header_size;
 	std::string					_error;
 	int							_code;

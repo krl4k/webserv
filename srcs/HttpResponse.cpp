@@ -93,13 +93,12 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 			this->setBody(temp);
 			if (temp.size() > _maxBodySize && _maxBodySize != 0){
 				_code = 413;
-				_isThereErrorPage = -1;
+				_isThereErrorPage = (_configErrorCode == 413) ? -1 : 1;
 			}
 		}
 	}
 	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){ _code = 404;}
 	else if (S_ISDIR(fileInfo.st_mode) && client->getRequest()->getMethod() == "GET" && ourLoc.getAutoIndex()){
-//		client->getResponse()->setBody(getAutoIndexPage(mergedPath));
 	}
 	else{ _code = 404;}
 
@@ -134,6 +133,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 	std::string tmpIndex;
 	int flag = 0;
 
+
 	std::string path = client->getRequest()->getPath();
 	if (path[path.size() - 1] == '/' && path.size() > 1)
 		path.erase(path.size() - 1, 1);
@@ -150,8 +150,9 @@ void HttpResponse::generate(Client *client, Server *server) {
 
 	it = server->getLocation().find(path);
 	_code = 200;
-	/*if (path == "/directory" && tmpIndex == "/Yeah")
-		_code = 404;*/
+	_configErrorCode = server->getErrorPageCode();
+			/*if (path == "/directory" && tmpIndex == "/Yeah")
+				_code = 404;*/
 	Location ourLoc;
 	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
 		if (!isAuthClient(client, server)) { _code = 403; }
@@ -293,16 +294,11 @@ std::string HttpResponse::getPage(std::string &path) {
 std::string HttpResponse::createHeader(HttpRequest *req) {
 	std::stringstream header;
 
-//	if (_cgiHeader.empty())
 	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
 		   "Content-type: " << req->getContentType() << CRLF <<
 		   "Content-Length: " << _body_size << BODY_SEP;
-/*	else
-		header << "HTTP/1.1 " << _code << " OK" << CRLF
-		<< "Content-type: " << req->getContentType() << CRLF
-		<< "Content-length: " << _body_size << BODY_SEP;*/
 	return (header.str());
 }
 
@@ -317,6 +313,7 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 //	std::cout << _maxBodySize << std::endl;
 	if (_body_size > _maxBodySize && _maxBodySize != 0){
 		_code = 413;
+		_isThereErrorPage = (_configErrorCode == 413) ? 1 : -1;
 		_body = getPage(path);
 		_body_size = _body.length();
 	}
