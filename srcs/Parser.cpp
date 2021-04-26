@@ -140,6 +140,7 @@ size_t Parser::initLocations(std::vector<std::string> &strings, size_t count, si
 				count++;
 			}
 			locMap[temp] = *newLoc;
+			delete newLoc;
 		} else {
 			std::cout << "Error: init location" << std::endl;
 		}

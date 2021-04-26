@@ -21,8 +21,7 @@ Client::~Client() {
 	close(_socketFd);
 	delete _request;
 	delete _clientInfo;
-
-//	delete _response;
+	delete _response;
 }
 
 
