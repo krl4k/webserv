@@ -211,7 +211,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			}
 		}
 	}
-	initResponse(client->getRequest(), mergedPath);
+	initResponse(client->getRequest(), mergedPath, client);
 
 }
 
@@ -289,22 +289,26 @@ std::string HttpResponse::getPage(std::string &path) {
 	return (buf.str());
 }
 
-std::string HttpResponse::createHeader(HttpRequest *req) {
+std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 	std::stringstream header;
 
-	header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
+    header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
 		   "Content-type: " << req->getContentType() << CRLF <<
-		   "Content-Length: " << _body_size << BODY_SEP;
-	return (header.str());
+            "Content-Length: " << _body_size << CRLF;
+    if (not client->getRequest()->getConnectionType().empty())
+    {
+        header << "Connection: " << client->getRequest()->getConnectionType() << BODY_SEP;
+    }
+    return (header.str());
 }
 
 void HttpResponse::setBody(std::string &body) {
 	_body = body;
 }
 
-void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
+void HttpResponse::initResponse(HttpRequest *req, std::string &path, Client *&client) {
 	if (_body.empty())
 		_body = getPage(path);
 	_body_size = _body.length();
@@ -315,7 +319,7 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 		_body = getPage(path);
 		_body_size = _body.length();
 	}
-	_toSend.append(createHeader(req));
+	_toSend.append(createHeader(req, client));
 	_toSend.append(_body);
 	setCToSend();
 }
