@@ -14,10 +14,10 @@
 
 
 #define CONSOLE_MESSAGE_ON 0
-#define DEBUG 0
+#define DEBUG 1
 #define CGI_DEBUG 0
-#define SEND_DEBUG 0
-#define HTTP_REQUEST_DEBUG 0
+#define SEND_DEBUG 1
+#define HTTP_REQUEST_DEBUG 1
 #define CHUNKED_REQUEST_DEBUG 0
 
 

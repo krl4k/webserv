@@ -126,7 +126,7 @@ void WebServer::readRequest(Client *&client) {
 	bytes_read = recv(client->getSocketFd(), buffer, BUFSIZE, 0);
 #if DEBUG == 1
 	std::cout << "bytes read = " << bytes_read << std::endl;
-	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
+//	std::cout << "request:\n" << std::string(buffer, bytes_read) << std::endl;
 #endif
 	if (bytes_read <= 0) {
 		client->setState(Client__State__CLOSE);
@@ -176,8 +176,7 @@ void WebServer::sendResponse(Client *&client) {
 		std::cout << "sending:\n" << client->getResponse()->getToSend() << std::endl;
 #endif
 	}
-	if (client->getRequest()->getConnectionType() == "Close"){
-	    std::cout << "connection type close" << std::endl;
+	if (client->getRequest()->getConnectionType() == "close") {
         client->setState(Client__State__CLOSE);
 	}
 

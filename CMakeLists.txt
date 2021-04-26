@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
 project(webserv1)
 
-#set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 98)
 
-set(CMAKE_CXX_STANDARD 98)
 add_compile_options( -Wall -Wextra -Werror -Wconversion -Wno-unused -Wunused-value  -Wunused-variable -Wunused-macros -Wunused-function  -Wunused-label)
 add_compile_options(-Wunused-local-typedefs -Wunused-const-variable)
 
