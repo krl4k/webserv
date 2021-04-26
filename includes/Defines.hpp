@@ -8,7 +8,7 @@
 
 #define CRLF "\r\n"
 #define BODY_SEP "\r\n\r\n"
-#define BUFSIZE 1000000
+#define BUFSIZE 8000
 #define CGI_BUFSIZE 65535
 #define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 

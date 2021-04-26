@@ -83,7 +83,6 @@ void WebServer::acceptNewClient(fd_set &readFdSet) {
 				std::cerr << "Accept error!" << std::endl;
 				return;
 			}
-			SET_NONBLOCK(newClient->getSocketFd());
 			_client.push_back(newClient);
 			if (newClient->getSocketFd() > _maxFdSize)
 				_maxFdSize = newClient->getSocketFd();
@@ -137,7 +136,6 @@ void WebServer::readRequest(Client *&client) {
 	if (client->getRequest()->getState() == HttpRequest__State__FULL){
 		std::cout << MAGENTA<< "full" << RESET<< std::endl;
 		client->setState(Client__State__CREATING_RESPONSE);
-//		client->getRequest()->setState(HttpRequest::ParserState::QUERY_STRING);
 	}
 }
 
@@ -146,6 +144,7 @@ Client *WebServer::acceptNewConnection(size_t serverNumber) {
 	struct sockaddr_in clientAddr;
 	socklen_t addrSize = sizeof(sockaddr_in);
 	clientSocket = accept(_server[serverNumber]->getSocketFd(), (struct sockaddr *)&clientAddr, &addrSize);
+	SET_NONBLOCK(clientSocket);
 	if (clientSocket < 0){
 		return nullptr;
 	}
