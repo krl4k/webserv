@@ -16,6 +16,7 @@ HttpResponse::HttpResponse() {
 	_header_size = 0;
 	_body_size = 0;
 	_code = 0;
+	_newCGI = new CGI();
 }
 
 HttpResponse::~HttpResponse() {
@@ -196,7 +197,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 						for (; i < cgi.size() && (cgi[i] == ' ' || cgi[i] == '\t'); ++i);
 						std::string temp = cgi.substr(i, cgi.size() - i);
 						try {
-							CGI newCGI(server, client, temp.c_str());
+							_newCGI->init(server, client, temp.c_str());
 						} catch (std::exception &e) {
 							std::cout << e.what() << std::endl;
 						}
@@ -340,6 +341,7 @@ void HttpResponse::clean() {
 	_toSend.clear();
 //	free(_c_toSend);
 	_body.clear();
+	_newCGI->clean();
 }
 
 const std::string &HttpResponse::getBody() const {

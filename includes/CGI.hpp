@@ -29,13 +29,15 @@ class Client ;
 class CGI {
 public:
 
-	CGI(Server *server, Client *client, const char *path);
+	CGI();
 	virtual ~CGI();
 
 	void 	setArguments();
 	char	**getEnvironment() const;
 	char	**setEnvToString(std::map<std::string, std::string> env) ;
 	void	executeCGI();
+	void 	clean();
+	void 	init(Server *server, Client *client, const char *path);
 
 private:
 
@@ -47,7 +49,6 @@ private:
 	HttpRequest		*_request;
 	long 			_bodySize;
 	CGI(const CGI &other);
-	void 			clean();
 	void 			setEnvironment(Server *server);
 };
 

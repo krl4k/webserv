@@ -92,6 +92,7 @@ private:
 	size_t							_maxBodySize;
 	std::string					_buffer;
 	std::string getAutoIndexPage(std::string &path);
+	CGI							*_newCGI;
 	bool isAuthClient(Client *pClient, Server *pServer);
 };
 
