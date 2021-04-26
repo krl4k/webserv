@@ -1,24 +1,20 @@
 #include "../includes/CGI.hpp"
 
-CGI::CGI(Server *server, Client *client, const char *path) {
+CGI::CGI() {
+
+}
+
+void CGI::init(Server *server, Client *client, const char *path) {
 	_request = client->getRequest();
 	_response = client->getResponse();
 	_path = strdup(path);
 	_bodySize = 0;
-	IN = 0;
-	OUT = 1;
 	setEnvironment(server);
 	executeCGI();
 }
 
 CGI::~CGI() {
-//	for (int i = 0; i < sizeof(_environment); i++)
-//		free(_environment[i]);
-//	free(_environment);
-//	//for (int i = 0; i < sizeof(_arguments); i++)
-//		free(_arguments[i]);
-//	free(_arguments);
-//	free(_path);
+	clean();
 }
 
 /**
@@ -58,6 +54,7 @@ void CGI::setEnvironment(Server *server) {
 	env["HTTP_X_SECRET_HEADER_FOR_TEST"] = "1";
 	env.insert(_request->getHeaders().begin(), _request->getHeaders().end());
 	setEnvToString(env);
+	setArguments();
 	env.clear();
 }
 
@@ -85,6 +82,33 @@ char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 		_environment[i] = strdup(str.c_str());
 	}
 	return _environment;
+}
+
+void CGI::clean() {
+//	if (_environment) {
+//		for (size_t i = 0; _environment[i]; i++) {
+//			if (_environment[i]) {
+//				free(_environment[i]);
+//				_environment[i] = nullptr;
+//			}
+//		}
+//		free(_environment);
+//		_environment = nullptr;
+//	}
+//	if (_arguments) {
+//		for (size_t i = 0; _arguments[i]; ++i)	{
+//			if (_arguments[i]) {
+//				free(_arguments[i]);
+//				_arguments = nullptr;
+//			}
+//		}
+//		free(_arguments);
+//		_arguments = nullptr;
+//	}
+//	if (_path) {
+//		free(_path);
+//		_path = nullptr;
+//	}
 }
 
 char **CGI::getEnvironment() const {return _environment;}
@@ -143,7 +167,6 @@ void	CGI::executeCGI() {
 	close(fd[OUT]);
 	close(savedFd[IN]);
 	close(savedFd[OUT]);
-	delete[] (_environment);
 	if (pid == 0)
 		exit(0);
 	size_t pos;
@@ -159,4 +182,5 @@ void	CGI::executeCGI() {
 		_bodySize -= cgiHeader.size();
 	}
 	_response->setBody(newBody);
+	//clean();
 }
