@@ -53,8 +53,6 @@ int HttpResponse::getCode() const {
 
 void HttpResponse::createPutResponse(Client *client, struct stat fileInfo, std::string &mergedPath, int flag) {
 	int fd = 0;
-	char buff;
-	int bytes = 0;
 
 	if ((fd = open(mergedPath.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0755)) < 0) { _code = 500; }
 	else if (S_ISDIR(fileInfo.st_mode)) {
@@ -66,7 +64,6 @@ void HttpResponse::createPutResponse(Client *client, struct stat fileInfo, std::
 		else { _code = 201; }
 	}
 	close(fd);
-	std::cout << "Put request" << std::endl;
 }
 
 std::string HttpResponse::bodyResponceInit(std::string &mergedPath) {
@@ -190,7 +187,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			checkFile(ourLoc, mergedPath, &fileInfo);
 			if (client->getRequest()->getMethod() == "POST") {
 				if (!ourLoc.getCgiPath().empty()) {
-					std::cout << "---CGI---" << std::endl;
+					std::cout << YELLOW << "---CGI---" << RESET << std::endl;
 					std::string cgi = ourLoc.getCgiPath();
 					if (cgi.find(".bla", 0, 4) != std::string::npos) {
 						size_t i = cgi.find(".bla", 0, 4) + 4;

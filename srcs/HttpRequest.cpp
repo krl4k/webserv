@@ -48,15 +48,11 @@ void HttpRequest::clean() {
 
 }
 
-/*
-*
-*/
-
 void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 
 	_sBuffer.append(buffer, static_cast<size_t>(bufSize));
 
-#if HTTP_REQUEST_DEBUG >= 1
+#if HTTP_REQUEST_DEBUG
 	std::cout << "buffer:\n" << _sBuffer << std::endl;
 #endif
 	if (_parserState == ParserState__QUERY_STRING)
@@ -67,7 +63,7 @@ void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 		bodyParse();
 	if (_parserState == ParserState__FINISHED)
 		_state = HttpRequest__State__FULL;
-#if HTTP_REQUEST_DEBUG >= 1
+#if HTTP_REQUEST_DEBUG
 	switch (_parserState) {
 		case 0:
 			std::cout << MAGENTA << "PARSE QUERY" << RESET << std::endl;
@@ -172,18 +168,20 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 
 void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 	size_t contentLength = 0;
-	try {
-		contentLength = static_cast<size_t>(std::stoi(_headers["CONTENT-LENGTH"]));
-	} catch (std::exception &exception) {
-		std::cerr << exception.what() << std::endl;
-		_parserState = ParserState__FINISHED;
+//	if (not _headers["CONTENT-LENGTH"].empty()){
+		try {
+			contentLength = static_cast<size_t>(std::stoi(_headers["CONTENT-LENGTH"]));
+		} catch (std::exception &exception) {
+			std::cerr<< exception.what() << ", cont len = " << _headers["CONTENT-LENGTH"] << "|" << std::endl;
+			_parserState = ParserState__FINISHED;
+			return;
+		}
+		if (_sBuffer.size() - bodyStart == contentLength) {
+			_body = std::string(_sBuffer, bodyStart);
+			_parserState = ParserState__FINISHED;
+		}
 		return;
-	}
-	// todo check >= and set string(bodystart, contentLength)!
-	if (_sBuffer.size() - bodyStart == contentLength) {
-		_body = std::string(_sBuffer, bodyStart);
-		_parserState = ParserState__FINISHED;
-	}
+//	}
 }
 
 void HttpRequest::createChunkContainer(){
