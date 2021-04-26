@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
 project(webserv1)
 
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_CXX_STANDARD 98)
+add_compile_options( -Wall -Wextra -Werror -Wconversion -Wno-unused)
 
 include_directories(/ /includes /srcs)
 link_directories(/ /includes /srcs)

@@ -32,7 +32,7 @@ void Server::setHost(const std::string &host) {
 
 void Server::setPort(const std::string & port) {
 	try{
-		_port = std::stoi(port);
+		_port = static_cast<uint16_t>(std::stoi(port));
 		if (port.size() != std::to_string(_port).size())
 			throw std::exception();
 	}
@@ -147,12 +147,7 @@ void Server::setWhiteList(const std::string &whiteListPath) {
 		while (std::getline(file, line))
 			_whiteList.push_back(line);
 
-		for (int i = 0; i < _whiteList.size(); ++i) {
-			std::cout << _whiteList[i] << std::endl;
-		}
-
 	} else {
-		//todo error!
 		throw std::runtime_error("no whiteList!");
 	}
 }

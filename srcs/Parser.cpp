@@ -11,10 +11,11 @@ Parser::~Parser() {
 }
 
 Parser::Parser(const Parser &other) {
-
+	(void)other;
 }
 
 Parser &Parser::operator=(const Parser &other) {
+	(void)other;
 	return *this;
 }
 
@@ -28,7 +29,7 @@ Parser::Parser(const std::string &fileName) {
 	file.close();
 
 	//init whiteList
-	for (int i = 0; i < _servers.size(); ++i) {
+	for (size_t i = 0; i < _servers.size(); ++i) {
 		try {
 			if (!_servers[i]->getAuthBasicUserFile().empty())
 				_servers[i]->setWhiteList(_servers[i]->getAuthBasicUserFile());
@@ -57,7 +58,7 @@ std::string Parser::readFile(std::ifstream &fd) {
 	std::stringstream o;
 	std::string temp;
 
-	int i = 0;
+	size_t i = 0;
 
 
 	while (std::getline(fd, buf)) {
@@ -82,9 +83,9 @@ std::string Parser::readFile(std::ifstream &fd) {
 	return (o.str());
 }
 
-std::string getmyline(std::string &str, std::string com, int n) {
+std::string getmyline(std::string &str, std::string com, size_t n) {
 	std::string temp;
-	int i = 0;
+	size_t i = 0;
 	while (str[i] == '\t') {
 		i++;
 	}
@@ -109,7 +110,7 @@ std::string getmyline(std::string &str, std::string com, int n) {
 	}
 }
 
-int Parser::initLocations(std::vector<std::string> &strings, int count, int i) {
+size_t Parser::initLocations(std::vector<std::string> &strings, size_t count, size_t i) {
 	int j = 0;
 	std::string temp;
 	std::map<std::string, Location> locMap;
@@ -158,7 +159,7 @@ Server *Parser::separateServers(std::string &line, size_t i) {
 		s[s.size()] = '\0';
 		strings.push_back(s);
 	}
-	int count = 1;
+	size_t count = 1;
 	while (strings[count].find("location:") == std::string::npos && count != strings.size()) {
 		if (strings[count] == "\n" || strings[count] == "" || strings[count][0] == '#');
 		else if (strings[count].find("host:") != std::string::npos) {

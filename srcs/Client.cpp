@@ -7,10 +7,10 @@
 
 
 Client::Client(int fd, const std::string &host, uint16_t port, const sockaddr_in &addr) :
-	_socketFd(fd), _host(host), _port(port), _addr(addr){
+	_socketFd(fd),_addr(addr), _port(port),  _host(host){
 	_request = new HttpRequest();
 	_response = new HttpResponse();
-	_state = State::REQUEST_PARSE;
+	_state = Client__State__REQUEST_PARSE;
 	_clientInfo = new char[100];
 	socklen_t addrSize = sizeof(sockaddr_in);
 	inet_ntop(AF_INET, &_addr, _clientInfo, addrSize);

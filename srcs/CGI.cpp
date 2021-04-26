@@ -5,7 +5,9 @@ CGI::CGI(Server *server, Client *client, const char *path) {
 	_response = client->getResponse();
 	_path = strdup(path);
 	_bodySize = 0;
-	setEnvironment(server, client);
+	IN = 0;
+	OUT = 1;
+	setEnvironment(server);
 	executeCGI();
 }
 
@@ -22,7 +24,7 @@ CGI::~CGI() {
 /**
  * Check http://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html for environments.
  */
-void CGI::setEnvironment(Server *server, Client *client) {
+void CGI::setEnvironment(Server *server) {
 	std::map<std::string, std::string> env;
 
 	//env["REDIRECT_STATUS"] = "200";
@@ -125,7 +127,7 @@ void	CGI::executeCGI() {
 		char buffer[CGI_BUFSIZE] = {0};
 		waitpid(-1, NULL, 0);
 		lseek(fd[OUT], SEEK_SET, SEEK_SET);
-		int bytes = 1;
+		ssize_t bytes = 1;
 		while (bytes > 0) {
 			bzero(buffer, CGI_BUFSIZE);
 			bytes = read(fd[OUT], buffer, CGI_BUFSIZE);

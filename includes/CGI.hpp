@@ -37,8 +37,8 @@ public:
 	void	executeCGI();
 
 private:
-	int IN = 0;
-	int OUT = 1;
+	int IN;
+	int OUT;
 	CGI &operator=(const CGI &other);
 	char		**_environment;
 	char			**_arguments;
@@ -46,9 +46,9 @@ private:
 	HttpResponse	*_response;
 	HttpRequest		*_request;
 	long 			_bodySize;
-	CGI(const CGI &other){};
+	CGI(const CGI &other);
 
-	void 			setEnvironment(Server *server, Client *client);
+	void 			setEnvironment(Server *server);
 	char **clone(char **other);
 };
 

@@ -52,7 +52,7 @@ void ChunkedRequest::setSizeFull(bool sizeFull) {
 	_sizeFull = sizeFull;
 	if (_sizeFull == true) {
 		try {
-			_intSize = std::stoul(_size, nullptr, 16);
+			_intSize = static_cast<int>(std::stoul(_size, nullptr, 16));
 		}catch (std::exception &exception){
 			std::cerr << exception.what() << std::endl;
 		}

@@ -73,7 +73,7 @@ static std::vector<DirectoryContent> getDirectory(const std::string &path) {
 		closedir(dir);
 	}
 
-	for (int i = 0; i < directoryContent.size(); ++i) {
+	for (size_t i = 0; i < directoryContent.size(); ++i) {
 		std::cout << std::setw(20) << directoryContent[i].getName()
 				  << std::setw(20) << directoryContent[i].getSize() << "		"
 				  << std::setw(20) << directoryContent[i].getLastMode();
@@ -131,7 +131,7 @@ void generateBackButton(const std::string &path, std::stringstream &str) {
 }
 
 void generateAll(const std::string &path, std::stringstream &str, std::vector<DirectoryContent> dirCont) {
-	for (int i = 0; i < dirCont.size(); ++i) {
+	for (size_t i = 0; i < dirCont.size(); ++i) {
 		if (dirCont[i].getName()[0] == '.')
 			continue;
 		str << 	"<tr>";
@@ -178,7 +178,7 @@ void generateAll(const std::string &path, std::stringstream &str, std::vector<Di
 	}
 }
 
-void generateClose(const std::string &path, std::stringstream &str) {
+void generateClose(std::stringstream &str) {
 	str << "</table>"
 		   "</div>"
 		   "</center>"
@@ -196,7 +196,7 @@ std::string HttpResponse::getAutoIndexPage(std::string &path) {
 	generateTitle(path, str);
 	generateBackButton(path, str);
 	generateAll(path, str, directoryContent);
-	generateClose(path, str);
+	generateClose(str);
 
 //	return str.str();
 	return std::string(str.str());

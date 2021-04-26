@@ -100,7 +100,11 @@ void Location::setClientMaxBodySize(std:: string clientMaxBodySize)
 {
 
 	try{
-		_clientMaxBodySize = std::stoi(clientMaxBodySize);
+		int temp = std::stoi(clientMaxBodySize);
+		if (temp < 0){
+			_clientMaxBodySize = 0;
+		} else
+			_clientMaxBodySize = static_cast<size_t>(temp);
 	}
 	catch (std::exception &e){
 		throw std::runtime_error("setClientMaxBodySize error");

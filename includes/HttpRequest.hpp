@@ -14,25 +14,20 @@
 #include "ChunkedRequest.hpp"
 #include <vector>
 
+#define ParserState__QUERY_STRING 	0
+#define ParserState__HEADERS 		1
+#define ParserState__BODY 			2
+#define ParserState__FINISHED		3
+
+#define HttpRequest__State__FULL					0
+#define HttpRequest__State__NEED_INFO				1
+
 class HttpRequest {
 public:
 
-	enum State {
-		FULL,
-		NEED_INFO,
-	};
-
-	enum ParserState {
-		QUERY_STRING,
-		HEADERS,
-		BODY,
-		FINISHED,
-		ERROR
-	};
-
 	HttpRequest();
 
-	void parse(char *buffer, int bufSize);
+	void parse(char *buffer, ssize_t bufSize);
 
 	virtual ~HttpRequest();
 
@@ -46,16 +41,6 @@ public:
 
 	std::string getContentType() const;
 
-private:
-	//--
-	int it;
-	//--
-
-	std::string _sBuffer;
-	int _state;
-	int _parserState;
-
-	std::string _method;
 public:
 	int getParserState() const;
 
@@ -71,12 +56,16 @@ public:
 	void setContentType(std::string);
 
 private:
+	std::string _sBuffer;
+	int _state;
+	int _parserState;
+	std::string _method;
 	std::string _path;
 	std::string _queryString;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-	int			_bodyStart;
-	int			_chunkPoint;
+	size_t 		_bodyStart;
+	size_t		_chunkPoint;
 	std::vector<ChunkedRequest *> _chunk;
 
 	HttpRequest(const HttpRequest &other);
@@ -84,6 +73,7 @@ private:
 	HttpRequest &operator=(const HttpRequest &other);
 
 	std::pair<std::string, std::string> getPair(const std::string &line);
+
 
 	void headersParse();
 

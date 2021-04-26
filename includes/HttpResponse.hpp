@@ -55,16 +55,13 @@ public:
 	std::string getPage(std::string &path);
 	std::string createHeader(HttpRequest * req);
 	void		setBody(std::string & body);
-	void		setBodySize(int bodySize);
+	void		setBodySize(size_t bodySize);
 	const std::string &getToSend() const;
-
 	void initResponse(HttpRequest *req, std::string &path);
-
 	void clean();
-
 	void setCgiHeader(std::string header);
-	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo, std::string &root);
-	void createPutResponse(Client *client, Location *ourLoc, struct stat fileInfo, std::string &mergedPath, int flag);
+	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
+	void createPutResponse(Client *client,  struct stat fileInfo, std::string &mergedPath, int flag);
 	void createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode);
 	std::string bodyResponceInit(std::string &mergedPath);
 	int getCode() const;
@@ -73,38 +70,28 @@ public:
 	void setContentType(std::string contentType);
 	char *getCToSend() const;
 	void setCToSend();
+	ssize_t getSendLen() const;
+	ssize_t getSendPos() const;
+	void setSendPos(ssize_t sendPos);
 
 private:
 	std::string					_toSend;
 	char *						_c_toSend;
-	size_t 						_sendLen;
-public:
-	size_t getSendLen() const;
-
-private:
-	size_t 						_sendPos;
-public:
-	size_t getSendPos() const;
-
-	void setSendPos(size_t sendPos);
-
-private:
-
+	ssize_t 						_sendLen;
+	ssize_t 						_sendPos;
 	std::map<int, std::string>	_status_messages;
 	std::string 			  	_body;
 	std::string					_cgiHeader;
 	std::string 			    _contentType;
-	int  						_body_size;
+	size_t  						_body_size;
 	int 						_configErrorCode;
 	int 						_header_size;
 	std::string					_error;
 	int							_code;
 	int 						_isThereErrorPage;
-	int							_maxBodySize;
+	size_t							_maxBodySize;
 	std::string					_buffer;
-
 	std::string getAutoIndexPage(std::string &path);
-
 	bool isAuthClient(Client *pClient, Server *pServer);
 };
 

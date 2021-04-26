@@ -6,17 +6,20 @@
 #include "../includes/HttpRequest.hpp"
 
 HttpRequest::HttpRequest() : _sBuffer(),
-							 _state(State::NEED_INFO), _parserState(ParserState::QUERY_STRING),
-							 _method(), _path(), _queryString(), _headers(), _body(), _chunk(), _bodyStart(0),
-							 _chunkPoint(0) {
-	it = 0;
+							 _state(HttpRequest__State__NEED_INFO), _parserState(ParserState__QUERY_STRING),
+							 _method(), _path(), _queryString(), _headers(), _body(), _bodyStart(0),
+							 _chunkPoint(0),  _chunk() {
+
 }
 
 HttpRequest::~HttpRequest() {}
 
-HttpRequest::HttpRequest(const HttpRequest &other) {}
+HttpRequest::HttpRequest(const HttpRequest &other) {
+	(void)other;
+}
 
 HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
+	(void)other;
 	return *this;
 }
 
@@ -35,36 +38,35 @@ void HttpRequest::clean() {
 	_queryString.clear();
 	_headers.clear();
 	_body.clear();
-	_parserState = ParserState::QUERY_STRING;
-	_state = State::NEED_INFO;
+	_parserState = ParserState__QUERY_STRING;
+	_state = HttpRequest__State__NEED_INFO;
 	_bodyStart = 0;
 	_chunkPoint = 0;
 	for (size_t i = 0; i < _chunk.size(); ++i)
 		delete _chunk[i];
 	_chunk.clear();
 
-	it = 0;
 }
 
 /*
 *
 */
 
-void HttpRequest::parse(char *buffer, int bufSize) {
+void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 
-	_sBuffer.append(buffer, bufSize);
+	_sBuffer.append(buffer, static_cast<size_t>(bufSize));
 
 #if HTTP_REQUEST_DEBUG >= 1
 	std::cout << "buffer:\n" << _sBuffer << std::endl;
 #endif
-	if (_parserState == ParserState::QUERY_STRING)
+	if (_parserState == ParserState__QUERY_STRING)
 		queryStringParse();
-	if (_parserState == ParserState::HEADERS)
+	if (_parserState == ParserState__HEADERS)
 		headersParse();
-	if (_parserState == ParserState::BODY)
+	if (_parserState == ParserState__BODY)
 		bodyParse();
-	if (_parserState == ParserState::FINISHED)
-		_state = State::FULL;
+	if (_parserState == ParserState__FINISHED)
+		_state = HttpRequest__State__FULL;
 #if HTTP_REQUEST_DEBUG >= 1
 	switch (_parserState) {
 		case 0:
@@ -105,7 +107,7 @@ void HttpRequest::queryStringParse() {
 			_queryString = std::string(_path, queryStringPos + 1);
 			_path.resize(queryStringPos);
 		}
-		_parserState = ParserState::HEADERS;
+		_parserState = ParserState__HEADERS;
 	}
 }
 
@@ -121,10 +123,10 @@ void HttpRequest::headersParse() {
 			_headers.insert(getPair(line));
 		}
 		if (_headers["CONTENT-LENGTH"] != _headers.end()->second or _headers["TRANSFER-ENCODING"] == "chunked") {
-				_parserState = ParserState::BODY;
+				_parserState = ParserState__BODY;
 				_bodyStart = _headersEndPos;
 		}else {
-			_parserState = ParserState::FINISHED;
+			_parserState = ParserState__FINISHED;
 		}
 	}
 }
@@ -143,7 +145,7 @@ void HttpRequest::bodyParse() {
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
 	std::string key = std::string(line, 0, line.find(" ") - 1);
 	std::string value = std::string(line, key.size() + 2, line.find(CRLF) - key.size());
-	for (int i = 0; i < key.size(); ++i) {
+	for (size_t i = 0; i < key.size(); ++i) {
 		key[i] = static_cast<char>(toupper(key[i]));
 	}
 	return std::pair<std::string, std::string>(key, value);
@@ -158,7 +160,7 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 		//concatenate chunks
 		_body.clear();
 		for (size_t i = 0; i < _chunk.size(); ++i) {
-			_body.append(_chunk[i]->getBuffer(), 0, _chunk[i]->getIntSize());
+			_body.append(_chunk[i]->getBuffer(), 0, static_cast<size_t>(_chunk[i]->getIntSize()));
 		}
 
 #if CHUNKED_REQUEST_DEBUG == 1
@@ -171,16 +173,16 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 	size_t contentLength = 0;
 	try {
-		contentLength = std::stoi(_headers["CONTENT-LENGTH"]);
+		contentLength = static_cast<size_t>(std::stoi(_headers["CONTENT-LENGTH"]));
 	} catch (std::exception &exception) {
 		std::cerr << exception.what() << std::endl;
-		_parserState = ParserState::FINISHED;
+		_parserState = ParserState__FINISHED;
 		return;
 	}
 	// todo check >= and set string(bodystart, contentLength)!
 	if (_sBuffer.size() - bodyStart == contentLength) {
 		_body = std::string(_sBuffer, bodyStart);
-		_parserState = ParserState::FINISHED;
+		_parserState = ParserState__FINISHED;
 	}
 }
 
@@ -202,12 +204,12 @@ void HttpRequest::createChunkContainer(){
 				} catch (std::exception &exception) {
 					std::cerr << "Chunk size error!!!" << std::endl;
 //					_parserState = ParserState::ERROR; TODO change this
-					_parserState = ParserState::FINISHED;
+					_parserState = ParserState__FINISHED;
 					return;
 				}
 				if (_chunk.back()->getIntSize() == 0) {
 					_chunk.back()->setBufferFull(true);
-					_parserState = ParserState::FINISHED;
+					_parserState = ParserState__FINISHED;
 					return;
 				}
 				// + 2(CRLF), - i (position)
@@ -217,7 +219,7 @@ void HttpRequest::createChunkContainer(){
 		// read buffer chunk
 		if ((crlfPos = _body.find(CRLF, i)) != std::string::npos) {
 			if (!_chunk.back()->isBufferFull()) {
-				_chunk.back()->setBuffer(std::string(_body, i, _chunk.back()->getIntSize()));
+				_chunk.back()->setBuffer(std::string(_body, i, static_cast<size_t >(_chunk.back()->getIntSize())));
 				_chunk.back()->setBufferFull(true);
 				i += _chunk.back()->getBuffer().size() + 2;
 			}

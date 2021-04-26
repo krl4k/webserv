@@ -15,6 +15,11 @@ class HttpResponse;
 #include "HttpResponse.hpp"
 #include "Colors.hpp"
 
+#define Client__State__REQUEST_PARSE 0
+#define Client__State__CREATING_RESPONSE 1
+#define Client__State__ACCEPT_RESPONSE 2
+#define Client__State__CLOSE 3
+
 
 class Client {
 public:
@@ -55,8 +60,8 @@ private:
 	HttpResponse*	_response;
 	struct sockaddr_in _addr;
 	char				*_clientInfo;
-	std::string			_host;
 	uint16_t			_port;
+	std::string			_host;
 	int 			_state;
 
 	char	*_buffer;
