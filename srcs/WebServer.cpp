@@ -179,9 +179,6 @@ void WebServer::sendResponse(Client *&client) {
 		std::cout << "sending:\n" << client->getResponse()->getToSend() << std::endl;
 #endif
 	}
-//	std::cout << "After send" << std::endl;
-//	std::cout << "Send Len: " << sendLen << std::endl;
-
 }
 
 Server *WebServer::findServer(Client *client){

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "includes/WebServer.hpp"
+#include "Users/mwinter/webserv/includes/WebServer.hpp"
 
 static	void	sigHandler(int sig_num)
 {
@@ -8,6 +8,10 @@ static	void	sigHandler(int sig_num)
 }
 
 int main(int argc, char **argv) {
+#if CONSOLE_MESSAGE_ON
+	std::stringstream ss;
+	std::cout.rdbuf (ss.rdbuf());       // <-- redirect
+#endif
 	if (argc <= 2){
 		try {
 			signal(SIGPIPE, sigHandler);

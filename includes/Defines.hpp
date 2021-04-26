@@ -14,6 +14,8 @@
 #define SOCKET	int
 #define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
+
+#define CONSOLE_MESSAGE_ON 0
 #define DEBUG 0
 #define CGI_DEBUG 0
 #define SEND_DEBUG 0

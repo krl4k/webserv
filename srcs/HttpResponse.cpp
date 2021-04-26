@@ -134,8 +134,9 @@ void HttpResponse::generate(Client *client, Server *server) {
 	std::string root;
 	std::string tmpIndex;
 	int flag = 0;
-
-
+/**
+ * Need fix location parser
+ */
 	std::string path = client->getRequest()->getPath();
 	if (path[path.size() - 1] == '/' && path.size() > 1)
 		path.erase(path.size() - 1, 1);

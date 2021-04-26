@@ -10,7 +10,7 @@ include_directories(/ /includes /srcs)
 link_directories(/ /includes /srcs)
 
 add_executable(webserv1
-        main.cpp
+        srcs/main.cpp
         srcs/WebServer.cpp
         srcs/Client.cpp
         srcs/Location.cpp

@@ -24,7 +24,8 @@ class Client ;
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-
+#define IN 0
+#define OUT 1
 class CGI {
 public:
 
@@ -37,8 +38,7 @@ public:
 	void	executeCGI();
 
 private:
-	int IN;
-	int OUT;
+
 	CGI &operator=(const CGI &other);
 	char		**_environment;
 	char			**_arguments;
@@ -47,9 +47,8 @@ private:
 	HttpRequest		*_request;
 	long 			_bodySize;
 	CGI(const CGI &other);
-
+	void 			clean();
 	void 			setEnvironment(Server *server);
-	char **clone(char **other);
 };
 
 

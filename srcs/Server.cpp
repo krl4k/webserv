@@ -113,7 +113,7 @@ int Server::createSocket() {
 		std::cerr << "fcntl error" << std::endl;
 		return -3;
 	}
-	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
+	if (listen(listenFd, 2048) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
 		return -4;
 	}

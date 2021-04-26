@@ -5,8 +5,6 @@ CGI::CGI(Server *server, Client *client, const char *path) {
 	_response = client->getResponse();
 	_path = strdup(path);
 	_bodySize = 0;
-	IN = 0;
-	OUT = 1;
 	setEnvironment(server);
 	executeCGI();
 }
@@ -58,6 +56,7 @@ void CGI::setEnvironment(Server *server) {
 	env["HTTP_X_SECRET_HEADER_FOR_TEST"] = "1";
 	env.insert(_request->getHeaders().begin(), _request->getHeaders().end());
 	setEnvToString(env);
+	setArguments();
 	env.clear();
 }
 
@@ -85,6 +84,24 @@ char **CGI::setEnvToString(std::map<std::string, std::string> env) {
 		_environment[i] = strdup(str.c_str());
 	}
 	return _environment;
+}
+
+void CGI::clean() {
+	if (_environment) {
+		for (int i = 0; _environment[i]; i++)
+			if (_environment[i])
+				free(_environment[i]);
+		free(_environment);
+	}
+	if (_arguments) {
+		for (int i = 0; _arguments[i]; ++i)	{
+			if (_arguments[i])
+				free(_arguments);
+		free(_arguments);
+		}
+	}
+	if (_path)
+		free(_path);
 }
 
 char **CGI::getEnvironment() const {return _environment;}
@@ -143,7 +160,6 @@ void	CGI::executeCGI() {
 	close(fd[OUT]);
 	close(savedFd[IN]);
 	close(savedFd[OUT]);
-	delete[] (_environment);
 	if (pid == 0)
 		exit(0);
 	size_t pos;
@@ -159,4 +175,5 @@ void	CGI::executeCGI() {
 		_bodySize -= cgiHeader.size();
 	}
 	_response->setBody(newBody);
+	clean();
 }
