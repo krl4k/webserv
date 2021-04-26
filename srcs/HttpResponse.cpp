@@ -112,15 +112,23 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 	}
 }
 
-size_t find_loc(std::string loc) {
+size_t find_loc(std::string loc, Server *server) {
 	ssize_t n = std::count(loc.begin(), loc.end(), '/');
 	size_t pos = 0;
+	std::string location = loc;
+	std::map<std::string, Location>::const_iterator it;
+	std::string indexPath;
 
 	if (n >= 2) {
-		while (std::count(loc.begin(), loc.end(), '/') > 1) {
-			pos = static_cast<size_t>(loc.rfind('/'));
+		while (std::count(location.begin(), location.end(), '/') > 1) {
+			pos = static_cast<size_t>(location.rfind('/'));
 			if (pos == 0) { break; }
-			loc = loc.substr(0, pos);
+			location = loc.substr(0, pos);
+			indexPath = loc.substr(pos, loc.size());
+			if (server->getLocation().find(location) != server->getLocation().end()){
+				return (pos);
+				//pos = (it == server->getLocation().end()) ? 1 : path.size();
+			}
 		}
 	}
 	return (pos);
@@ -140,7 +148,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 		path.erase(path.size() - 1, 1);
 	std::map<std::string, Location>::const_iterator it;
 	size_t pos = path.size();
-	pos = find_loc(path);
+	pos = find_loc(path, server);
 	if (pos == 0) {
 		it = server->getLocation().find(path);
 		pos = (it == server->getLocation().end()) ? 1 : path.size();
