@@ -48,16 +48,12 @@ WebServer::~WebServer() {
 int WebServer::lifeCycle() {
 	fd_set readFdSet, writeFdSet;
 	_maxFdSize = _server.back()->getSocketFd();
-	struct timeval tout;
-
-	tout.tv_sec = 2;
-	tout.tv_usec = 0;
 
 	while (true) {
 		std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
 
-		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, &tout);
+		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
 
 		acceptNewClient(readFdSet);
 		handler(readFdSet, writeFdSet);
