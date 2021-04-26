@@ -53,11 +53,11 @@ public:
 	HttpResponse &operator=(HttpResponse const &src);
 
 	std::string getPage(std::string &path);
-	std::string createHeader(HttpRequest * req);
+	std::string createHeader(HttpRequest * req, Client *&client);
 	void		setBody(std::string & body);
 	void		setBodySize(size_t bodySize);
 	const std::string &getToSend() const;
-	void initResponse(HttpRequest *req, std::string &path);
+	void initResponse(HttpRequest *req, std::string &path, Client *&client);
 	void clean();
 	void setCgiHeader(std::string header);
 	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);

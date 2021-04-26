@@ -121,7 +121,7 @@ int Server::createSocket() {
         }
 		return -3;
 	}
-	if (listen(listenFd, 2048) < 0){ // todo delete magic number!
+	if (listen(listenFd, 1024) < 0){ // todo delete magic number!
 		std::cerr << "listen error!" << std::endl;
         if (close(listenFd) < 0){
             std::cerr << "error close" << std::endl;
