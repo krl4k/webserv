@@ -177,6 +177,7 @@ void WebServer::sendResponse(Client *&client) {
 #endif
 	}
 	if (client->getRequest()->getConnectionType() == "close") {
+		std::cout << "close connection!!!" << std::endl;
         client->setState(Client__State__CLOSE);
 	}
 

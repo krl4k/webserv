@@ -83,7 +83,7 @@ void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 	std::cout << "query string  = " << _queryString << std::endl;
 	std::cout << "------------HEADERS------------" << std::endl;
 	std::cout << "HEADERS COUNT = " << _headers.size() << std::endl;
-	for (auto mapIterator = _headers.begin(); mapIterator != _headers.end(); ++mapIterator) {
+	for (std::map<std::string,std::string>::iterator mapIterator = _headers.begin(); mapIterator != _headers.end(); ++mapIterator) {
 		std::cout << mapIterator->first << ": " << mapIterator->second << std::endl;
 	}
 	std::cout << "-------------------------------" << std::endl;
@@ -201,7 +201,6 @@ void HttpRequest::createChunkContainer(){
 					_chunk.back()->setSizeFull(true);
 				} catch (std::exception &exception) {
 					std::cerr << "Chunk size error!!!" << std::endl;
-//					_parserState = ParserState::ERROR; TODO change this
 					_parserState = ParserState__FINISHED;
 					return;
 				}
@@ -266,5 +265,11 @@ void HttpRequest::setContentType(std::string contentType) {
 }
 
 std::string HttpRequest::getConnectionType() {
-    return _headers["CONNECTION"];
+	std::string str;
+	try{
+		str = _headers.at("CONNECTION");
+		return str;
+	} catch (std::exception &exception){
+	}
+	return str;
 }

@@ -296,10 +296,12 @@ std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
 		   "Content-type: " << req->getContentType() << CRLF <<
-		   "Content-Length: " << _body_size << CRLF;
-    if (not client->getRequest()->getConnectionType().empty()){
-        header << "Connection: " << client->getRequest()->getConnectionType() << BODY_SEP;
-    }
+		   "Content-Length: " << _body_size;
+	(void)client;
+//	if (!client->getRequest()->getConnectionType().empty())
+//		header << "Connection: " << client->getRequest()->getConnectionType() << BODY_SEP;
+//	else
+		header << BODY_SEP;
     return (header.str());
 }
 
