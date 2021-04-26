@@ -169,8 +169,8 @@ void WebServer::sendResponse(Client *&client) {
 	size_t len = static_cast<size_t>( client->getResponse()->getSendLen() - client->getResponse()->getSendPos());
 	sendLen += send(client->getSocketFd(), &buf[client->getResponse()->getSendPos()], len, 0);
 	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo()
-	<< MAGENTA << ", len = " << client->getResponse()->getSendLen() - client->getResponse()->getSendPos()
-	<< " FD = " << client->getSocketFd() << ", len = " << RESET << std::endl;
+	<< MAGENTA << ", len = " << sendLen - client->getResponse()->getSendPos()
+	<< " FD = " << client->getSocketFd() <<  RESET << std::endl;
 
 	client->getResponse()->setSendPos(sendLen);
 	if (client->getResponse()->getSendLen() == client->getResponse()->getSendPos()){

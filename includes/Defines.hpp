@@ -10,8 +10,6 @@
 #define BODY_SEP "\r\n\r\n"
 #define BUFSIZE 1000000
 #define CGI_BUFSIZE 65535
-#define closesocket(socket)  close(socket)
-#define SOCKET	int
 #define SET_NONBLOCK(socket) fcntl(socket, F_SETFL, O_NONBLOCK);
 
 #define DEBUG 0

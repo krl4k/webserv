@@ -111,7 +111,6 @@ std::string getmyline(std::string &str, std::string com, size_t n) {
 }
 
 size_t Parser::initLocations(std::vector<std::string> &strings, size_t count, size_t i) {
-	int j = 0;
 	std::string temp;
 	std::map<std::string, Location> locMap;
 
