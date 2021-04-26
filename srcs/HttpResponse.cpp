@@ -120,9 +120,9 @@ size_t find_loc(std::string loc, Server *server) {
 	std::string indexPath;
 
 	if (n >= 2) {
-		while (std::count(location.begin(), location.end(), '/') > 1) {
+		while (std::count(location.begin(), location.end(), '/') >= 1) {
 			pos = static_cast<size_t>(location.rfind('/'));
-			if (pos == 0) { break; }
+			//if (pos == 0) { break; }
 			location = loc.substr(0, pos);
 			indexPath = loc.substr(pos, loc.size());
 			if (server->getLocation().find(location) != server->getLocation().end()){
@@ -188,7 +188,7 @@ void HttpResponse::generate(Client *client, Server *server) {
 			root.erase(root.size() - 1, 1);
 		mergedPath = root;
 		if (locName[0] != '/') { locName = ""; }
-		mergedPath += tmpIndex;
+		mergedPath += '/' + tmpIndex;
 
 		flag = stat(mergedPath.c_str(), &fileInfo);
 		if (_code < 400) {
@@ -299,11 +299,12 @@ std::string HttpResponse::getPage(std::string &path) {
 
 std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 	std::stringstream header;
+	(void)req;
 
     header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
-		   "Content-type: " << req->getContentType() << CRLF <<
+		   "Content-type: " << "image/apng" << CRLF <<
 		   "Content-Length: " << _body_size;
 	(void)client;
 //	if (!client->getRequest()->getConnectionType().empty())
