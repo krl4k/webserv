@@ -91,6 +91,10 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 		if (client->getRequest()->getMethod() == "GET") {
 			std::string temp = bodyResponceInit(mergedPath);
 			this->setBody(temp);
+			if (temp.size() > _maxBodySize && _maxBodySize != 0){
+				_code = 413;
+				_isThereErrorPage = -1;
+			}
 		}
 	}
 	else if (S_ISDIR(fileInfo.st_mode) && !ourLoc.getAutoIndex()){ _code = 404;}
@@ -310,10 +314,11 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path) {
 	if (_body.empty())
 		_body = getPage(path);
 	_body_size = _body.length();
-	std::cout << _maxBodySize << std::endl;
+//	std::cout << _maxBodySize << std::endl;
 	if (_body_size > _maxBodySize && _maxBodySize != 0){
-		_body = _body.substr(0, _maxBodySize);
-		_body_size = _maxBodySize;
+		_code = 413;
+		_body = getPage(path);
+		_body_size = _body.length();
 	}
 	_toSend.append(createHeader(req));
 	_toSend.append(_body);
