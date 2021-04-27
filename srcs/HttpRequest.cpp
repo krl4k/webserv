@@ -118,7 +118,7 @@ void HttpRequest::headersParse() {
 				break;
 			_headers.insert(getPair(line));
 		}
-		if (_headers["CONTENT-LENGTH"] != _headers.end()->second or _headers["TRANSFER-ENCODING"] == "chunked") {
+		if (_headers.find("CONTENT-LENGTH")->second != _headers.end()->second or _headers.find("TRANSFER-ENCODING")->second == "chunked") {
 				_parserState = ParserState__BODY;
 				_bodyStart = _headersEndPos;
 		}else {
@@ -129,7 +129,7 @@ void HttpRequest::headersParse() {
 
 void HttpRequest::bodyParse() {
 	size_t bodyStart = _sBuffer.find(BODY_SEP) + 4;
-	if (_headers["TRANSFER-ENCODING"] == "chunked") {
+	if (_headers.find("TRANSFER-ENCODING")->second == "chunked") {
 		std::cout << CYAN << "CHUNKED!!!" << RESET << std::endl;
 		parseChunk(bodyStart);
 	} else {
@@ -250,13 +250,11 @@ const std::string &HttpRequest::getQueryString() const
 	return _queryString;
 }
 
-const std::map<std::string, std::string> &HttpRequest::getHeaders() const
-{
+const std::map<std::string, std::string> &HttpRequest::getHeaders() const {
 	return _headers;
 }
 
-const std::string &HttpRequest::getBody() const
-{
+const std::string &HttpRequest::getBody() const{
 	return _body;
 }
 
