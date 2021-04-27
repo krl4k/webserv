@@ -68,7 +68,7 @@ void HttpResponse::createPutResponse(Client *client, struct stat fileInfo, std::
     close(fd);
 }
 
-char *HttpResponse::bodyResponceInit(std::string &mergedPath) {
+void HttpResponse::bodyResponceInit(std::string &mergedPath) {
     char buff;
     int fd = 0;
     std::vector<char> vector;
@@ -82,10 +82,9 @@ char *HttpResponse::bodyResponceInit(std::string &mergedPath) {
     size_t i = 0;
     for (; i < vector.size(); ++i)
         result[i] = vector[i];
-    result[i] = '\0';
     _body_size = i;
     close(fd);
-    return (result);
+    setBody(result);
 }
 
 
@@ -94,9 +93,8 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
     if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
         if (client->getRequest()->getMethod() == "GET") {
-            char *temp = bodyResponceInit(mergedPath);
+            bodyResponceInit(mergedPath);
 
-            this->setBody(temp);
             if (_body_size > _maxBodySize && _maxBodySize != 0) {
                 _code = 413;
                 _isThereErrorPage = (_configErrorCode == 413) ? -1 : 1;
@@ -108,10 +106,7 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
     if (_code == errorPageCode) {
         int status = 0;
-        size_t n;
-        if ((n = (mergedPath.rfind('/'))) == std::string::npos) {
-
-        }
+        size_t n = (mergedPath.rfind('/'));
         std::string tempPath = mergedPath.substr(0, n) + '/' + errorPage;
         mergedPath = tempPath;
         status = stat(mergedPath.c_str(), &fileInfo);
@@ -129,12 +124,10 @@ size_t find_loc(std::string loc, Server *server) {
     if (n >= 2) {
         while (std::count(location.begin(), location.end(), '/') >= 1) {
             pos = static_cast<size_t>(location.rfind('/'));
-            //if (pos == 0) { break; }
             location = loc.substr(0, pos);
             indexPath = loc.substr(pos, loc.size());
             if (server->getLocation().find(location) != server->getLocation().end()) {
                 return (pos);
-                //pos = (it == server->getLocation().end()) ? 1 : path.size();
             }
         }
     }
@@ -147,9 +140,7 @@ void HttpResponse::generate(Client *client, Server *server) {
     std::string root;
     std::string tmpIndex;
     int flag = 0;
-/**
- * Need fix location parser
- */
+
     std::string path = client->getRequest()->getPath();
     if (path[path.size() - 1] == '/' && path.size() > 1)
         path.erase(path.size() - 1, 1);
@@ -280,6 +271,9 @@ char *HttpResponse::getPage(std::string &path) {
     std::vector<char> vector;
     char *result;
 
+    if (_body != nullptr)
+        free(_body);
+
     if (_code > 400 && _isThereErrorPage == -1) {
         /** If there is no error page*/
         buf << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n"
@@ -296,7 +290,8 @@ char *HttpResponse::getPage(std::string &path) {
                "</h2>\n"
                "</body>\n"
                "</html>";
-        result = strdup(buf.str().c_str());
+        std::string s = buf.str();
+        result = strdup(s.c_str());
         _body_size = buf.str().size();
     } else {
         char temp;
@@ -313,7 +308,6 @@ char *HttpResponse::getPage(std::string &path) {
             result[i] = vector[i];
         }
         _body_size = i;
-        std::cout << "get page body size: " << _body_size << std::endl;
     }
     return (result);
 }
@@ -337,25 +331,22 @@ std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 //	else
     header << BODY_SEP;
     _header_size = header.str().size();
-    return (header.str());
+    std::string str = header.str();
+    return (str);
 }
 
 void HttpResponse::setBody(char *body) {
-//    _body = strdup(body);
     _body = body;
 }
 
 void HttpResponse::initResponse(HttpRequest *req, std::string &path, Client *&client) {
     if (!_newCGI->isInit()) {
         setBody(getPage(path));
-//        _body = getPage(path);
     }
-//	std::cout << _maxBodySize << std::endl;
     if (_body_size > _maxBodySize && _maxBodySize != 0) {
         _code = 413;
         _isThereErrorPage = (_configErrorCode == 413) ? 1 : -1;
         setBody(getPage(path));
-//        _body = getPage(path);
     }
     _toSend.append(createHeader(req, client));
     setCToSend();
@@ -377,9 +368,9 @@ const std::string &HttpResponse::getToSend() const {
 
 void HttpResponse::clean() {
     _toSend.clear();
-    if (_c_toSend)
+//    if (_c_toSend)
     	free(_c_toSend);
-    if (_body)
+//    if (_body)
         free(_body);
     _c_toSend = nullptr;
     _body = nullptr;
@@ -424,11 +415,7 @@ void HttpResponse::setCToSend() {
     _sendLen = static_cast<ssize_t>(_body_size + _header_size);
     _sendPos = 0;
 
-    std::cout << "sendlen: " << _sendLen  << std::endl;
-    std::cout << "response header: " << _header_size << ", body size: " << _body_size << std::endl;
-
     _c_toSend = (char *)malloc(sizeof(char) * static_cast<unsigned long>(_sendLen));
-  //  bzero(_c_toSend, static_cast<size_t>(_sendLen));
     size_t i = 0;
     for (; i < _header_size; ++i){
         _c_toSend[i] = _toSend[static_cast<unsigned long>(i)];
@@ -436,9 +423,6 @@ void HttpResponse::setCToSend() {
     for (size_t j = 0; j < _body_size; ++i, ++j){
         _c_toSend[i] = _body[j];
     }
-    std::cout << "i after all this shit: "<< i << std::endl;
-
-//    _c_toSend = const_cast<char *>(_toSend.c_str());
 
 }
 
