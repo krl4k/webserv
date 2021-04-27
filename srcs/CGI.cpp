@@ -164,5 +164,5 @@ void	CGI::executeCGI() {
 		_response->setCgiHeader(cgiHeader);
 		_bodySize -= cgiHeader.size();
 	}
-	_response->setBody(newBody);
+	_response->setBody(newBody.c_str());
 }
