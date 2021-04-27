@@ -156,12 +156,9 @@ void HttpResponse::generate(Client *client, Server *server) {
 	tmpIndex = path.substr(pos, std::string::npos);
 	path = path.substr(0, pos);
 
-
 	it = server->getLocation().find(path);
 	_code = 200;
 	_configErrorCode = server->getErrorPageCode();
-	/*if (path == "/directory" && tmpIndex == "/Yeah")
-		_code = 404;*/
 	Location ourLoc;
 	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
 		if (!isAuthClient(client, server)) { _code = 403; }
@@ -219,6 +216,21 @@ void HttpResponse::generate(Client *client, Server *server) {
 			}
 		}
 	}
+	if (_code >= 400){
+		if (_configErrorCode == _code){
+			mergedPath = root + '/' + server->getErrorPage();
+			if (open(mergedPath.c_str(), O_RDONLY) < 0) {
+				_code = 404;
+				_isThereErrorPage = -1;
+			}
+			else
+				_isThereErrorPage = 1;
+		}
+		else{
+			_isThereErrorPage = -1;
+		}
+
+	}
 	initResponse(client->getRequest(), mergedPath, client);
 
 }
@@ -229,17 +241,11 @@ void HttpResponse::setBodySize(size_t bodySize) {
 
 void HttpResponse::setStatusMessages() {
 	_status_messages[100] = "Continue";
-	_status_messages[101] = "Switching Protocols";
-	_status_messages[102] = "Processing";
-	_status_messages[103] = "Early Hints";
 	_status_messages[200] = "OK";
 	_status_messages[201] = "Created";
 	_status_messages[202] = "Accepted";
-	_status_messages[203] = "Non-Authoritative Information";
 	_status_messages[204] = "No Content";
 	_status_messages[205] = "Reset Content";
-	_status_messages[206] = "Partial content";
-	_status_messages[207] = "Multy-Status";
 	_status_messages[300] = "Multiple Choices";
 	_status_messages[301] = "Moved Permanently";
 	_status_messages[302] = "Mover Temporary";
@@ -251,10 +257,8 @@ void HttpResponse::setStatusMessages() {
 	_status_messages[404] = "Not Found";
 	_status_messages[405] = "Method Not Allowed";
 	_status_messages[406] = "Not Acceptable";
-	_status_messages[411] = "Length Required";
 	_status_messages[413] = "Rayload Too Large";
 	_status_messages[500] = "Internal Server Error";
-	_status_messages[501] = "Not Implemented";
 }
 
 void HttpResponse::setStatusCode(int code) {
@@ -299,12 +303,12 @@ std::string HttpResponse::getPage(std::string &path) {
 
 std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 	std::stringstream header;
-	(void)req;
+//	(void)req;
 
     header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
-		   "Content-type: " << "image/apng" << CRLF <<
+		   "Content-type: " << req->getConnectionType() << CRLF <<
 		   "Content-Length: " << _body_size;
 	(void)client;
 //	if (!client->getRequest()->getConnectionType().empty())
