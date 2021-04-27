@@ -52,9 +52,9 @@ public:
 
 	HttpResponse &operator=(HttpResponse const &src);
 
-	std::string getPage(std::string &path);
+	char * getPage(std::string &path);
 	std::string createHeader(HttpRequest * req, Client *&client);
-	void		setBody(std::string & body);
+	void		setBody(const char *body);
 	void		setBodySize(size_t bodySize);
 	const std::string &getToSend() const;
 	void initResponse(HttpRequest *req, std::string &path, Client *&client);
@@ -63,10 +63,10 @@ public:
 	void checkFile(Location &ourLoc, std::string &mergedPath, struct stat *fileInfo);
 	void createPutResponse(Client *client,  struct stat fileInfo, std::string &mergedPath, int flag);
 	void createGetOrHead(Client *client, struct stat fileInfo, Location &ourLoc, std::string &mergedPath, std::string errorPage, int errorPageCode);
-	std::string bodyResponceInit(std::string &mergedPath);
+	char * bodyResponceInit(std::string &mergedPath);
 	int getCode() const;
 	void setCode(int code);
-	const std::string &getBody() const;
+	char *getBody() const;
 	void setContentType(std::string contentType);
 	char *getCToSend() const;
 	void setCToSend();
@@ -80,12 +80,12 @@ private:
 	ssize_t 						_sendLen;
 	ssize_t 						_sendPos;
 	std::map<int, std::string>	_status_messages;
-	std::string 			  	_body;
+	char * 			  	_body;
 	std::string					_cgiHeader;
 	std::string 			    _contentType;
 	size_t  						_body_size;
 	int 						_configErrorCode;
-	int 						_header_size;
+	size_t						_header_size;
 	std::string					_error;
 	int							_code;
 	int 						_isThereErrorPage;

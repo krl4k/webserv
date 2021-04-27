@@ -11,7 +11,7 @@
 HttpResponse::HttpResponse() {
 	setStatusMessages();
 	_error = "";
-	_body = "";
+	_body = NULL;
 	_buffer = "";
 	_header_size = 0;
 	_body_size = 0;
@@ -66,20 +66,24 @@ void HttpResponse::createPutResponse(Client *client, struct stat fileInfo, std::
 	close(fd);
 }
 
-std::string HttpResponse::bodyResponceInit(std::string &mergedPath) {
-	char buff[10000];
+char * HttpResponse::bodyResponceInit(std::string &mergedPath) {
+	char buff;
 	int fd = 0;
-	std::stringstream temp;
+	std::vector<char> vector;
 	ssize_t res = 0;
 
 	if (!(fd = open(mergedPath.c_str(), O_RDONLY))) { std::cerr << "Can't open file" << std::endl; }
-	size_t size = 10000;
-	while ((res = read(fd, &buff, size)) > 0) {
-		buff[res] = '\0';
-		temp << buff;
+	while ((res = read(fd, &buff, 1)) > 0) {
+		vector.push_back(buff);
 	}
+	char *result = (char *)malloc(sizeof(char) * vector.size());
+	size_t i = 0;
+	for (; i < vector.size(); ++i)
+		result[i] = vector[i];
+	result[i] = '\0';
+	_body_size = i;
 	close(fd);
-	return (temp.str());
+	return (result);
 }
 
 
@@ -88,9 +92,9 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
 	if ((S_ISLNK(fileInfo.st_mode) || S_ISREG(fileInfo.st_mode))) {
 		if (client->getRequest()->getMethod() == "GET") {
-			std::string temp = bodyResponceInit(mergedPath);
+			char * temp = bodyResponceInit(mergedPath);
 			this->setBody(temp);
-			if (temp.size() > _maxBodySize && _maxBodySize != 0) {
+			if (_body_size > _maxBodySize && _maxBodySize != 0) {
 				_code = 413;
 				_isThereErrorPage = (_configErrorCode == 413) ? -1 : 1;
 			}
@@ -156,12 +160,9 @@ void HttpResponse::generate(Client *client, Server *server) {
 	tmpIndex = path.substr(pos, std::string::npos);
 	path = path.substr(0, pos);
 
-
 	it = server->getLocation().find(path);
 	_code = 200;
 	_configErrorCode = server->getErrorPageCode();
-	/*if (path == "/directory" && tmpIndex == "/Yeah")
-		_code = 404;*/
 	Location ourLoc;
 	if (it == server->getLocation().end() || !isAuthClient(client, server)) {
 		if (!isAuthClient(client, server)) { _code = 403; }
@@ -219,6 +220,21 @@ void HttpResponse::generate(Client *client, Server *server) {
 			}
 		}
 	}
+	if (_code >= 400){
+		if (_configErrorCode == _code){
+			mergedPath = root + '/' + server->getErrorPage();
+			if (open(mergedPath.c_str(), O_RDONLY) < 0) {
+				_code = 404;
+				_isThereErrorPage = -1;
+			}
+			else
+				_isThereErrorPage = 1;
+		}
+		else{
+			_isThereErrorPage = -1;
+		}
+
+	}
 	initResponse(client->getRequest(), mergedPath, client);
 
 }
@@ -229,17 +245,11 @@ void HttpResponse::setBodySize(size_t bodySize) {
 
 void HttpResponse::setStatusMessages() {
 	_status_messages[100] = "Continue";
-	_status_messages[101] = "Switching Protocols";
-	_status_messages[102] = "Processing";
-	_status_messages[103] = "Early Hints";
 	_status_messages[200] = "OK";
 	_status_messages[201] = "Created";
 	_status_messages[202] = "Accepted";
-	_status_messages[203] = "Non-Authoritative Information";
 	_status_messages[204] = "No Content";
 	_status_messages[205] = "Reset Content";
-	_status_messages[206] = "Partial content";
-	_status_messages[207] = "Multy-Status";
 	_status_messages[300] = "Multiple Choices";
 	_status_messages[301] = "Moved Permanently";
 	_status_messages[302] = "Mover Temporary";
@@ -251,10 +261,8 @@ void HttpResponse::setStatusMessages() {
 	_status_messages[404] = "Not Found";
 	_status_messages[405] = "Method Not Allowed";
 	_status_messages[406] = "Not Acceptable";
-	_status_messages[411] = "Length Required";
 	_status_messages[413] = "Rayload Too Large";
 	_status_messages[500] = "Internal Server Error";
-	_status_messages[501] = "Not Implemented";
 }
 
 void HttpResponse::setStatusCode(int code) {
@@ -268,8 +276,10 @@ std::string &HttpResponse::getStatusMessages(int n) {
 	return (it->second);
 }
 
-std::string HttpResponse::getPage(std::string &path) {
+char * HttpResponse::getPage(std::string &path) {
 	std::stringstream buf;
+	std::vector<char> vector;
+	char * result;
 
 	if (_code > 400 && _isThereErrorPage == -1) {
 		/** If there is no error page*/
@@ -284,59 +294,62 @@ std::string HttpResponse::getPage(std::string &path) {
 			" <h2>" << _code << "</h2>\n"
 								" </body>\n"
 								"</html>";
+		result = strdup(buf.str().c_str());
+		_body_size = buf.str().size();
 	} else {
 		char temp;
 		int cor_fd = open(path.c_str(), O_RDONLY);
 		if (!cor_fd)
 			throw std::runtime_error("Can't open file");
-//		todo rewrite to char *
-//      https://coderoad.ru/16762018/C-%D0%BE%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-HTTP
 		while (read(cor_fd, &temp, 1) > 0) {
-			buf << temp;
+			vector.push_back(temp);
 		}
 		close(cor_fd);
+		result = (char *)malloc(sizeof(char) * vector.size());
+		size_t i = 0;
+		for (; i < vector.size(); ++i){
+			result[i] = vector[i];
+		}
+		result[i] = '\0';
+		_body_size = i;
 	}
-	return (buf.str());
+	return (result);
 }
+#include <cstdlib>
 
 std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 	std::stringstream header;
-	(void)req;
+	std::string code = std::to_string(_code);
 
-    header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
-		   "Date: " << getCurrentDate() << CRLF <<
-		   "Server: " << "KiRoTa/0.1" << CRLF <<
-//		   "Content-type: " << "text/html; image/apng" << CRLF <<
-		   "Content-Type: " << "image/jpg" << CRLF <<
-//           "Content-Transfer-Encoding: " << "binary" << CRLF <<
+    header << ("HTTP/1.1 ") << _code <<" " << getStatusMessages(_code) << CRLF <<
+    "Date: " + getCurrentDate() << CRLF
+	<< "Server: "  << "KiRoTa/0.1" << CRLF <<
+		   "Content-type: " << req->getContentType() << CRLF <<
 		   "Content-Length: " << _body_size;
-    // Content-Type: image/gif
-    // Content-Transfer-Encoding: binary
 	(void)client;
 //	if (!client->getRequest()->getConnectionType().empty())
 //		header << "Connection: " << client->getRequest()->getConnectionType() << BODY_SEP;
 //	else
 		header << BODY_SEP;
+		_header_size = (header.str().size());
     return (header.str());
 }
 
-void HttpResponse::setBody(std::string &body) {
-	_body = body;
+void HttpResponse::setBody(const char *body) {
+	_body = (char *)body;
 }
 
 void HttpResponse::initResponse(HttpRequest *req, std::string &path, Client *&client) {
-	if (_body.empty())
+	if (!_body)
 		_body = getPage(path);
-	_body_size = _body.length();
 //	std::cout << _maxBodySize << std::endl;
 	if (_body_size > _maxBodySize && _maxBodySize != 0) {
 		_code = 413;
 		_isThereErrorPage = (_configErrorCode == 413) ? 1 : -1;
 		_body = getPage(path);
-		_body_size = _body.length();
 	}
 	_toSend.append(createHeader(req, client));
-	_toSend.append(_body);
+//	_toSend.append(_body);
 	setCToSend();
 }
 
@@ -356,13 +369,13 @@ const std::string &HttpResponse::getToSend() const {
 
 void HttpResponse::clean() {
 	_toSend.clear();
-//	free(_c_toSend);
-	_body.clear();
+	free(_c_toSend);
+	free(_body);
 	if (_newCGI && _newCGI->isInit())
 		_newCGI->clean();
 }
 
-const std::string &HttpResponse::getBody() const {
+char * HttpResponse::getBody() const {
 	return _body;
 }
 
@@ -396,9 +409,19 @@ char *HttpResponse::getCToSend() const {
 }
 
 void HttpResponse::setCToSend() {
-	_sendLen = static_cast<ssize_t>(_toSend.size());
+	_sendLen = static_cast<ssize_t>(_body_size + _toSend.size() + 1);
 	_sendPos = 0;
-	_c_toSend = const_cast<char *>(_toSend.c_str());
+
+	_c_toSend = (char *)malloc(sizeof(char) * static_cast<unsigned long>(_sendLen));
+	size_t i = 0;
+	for (; i < _header_size; ++i){
+		_c_toSend[i] = _toSend[static_cast<unsigned long>(i)];
+	}
+	for (size_t j = 0; j < _body_size; ++i, ++j){
+		_c_toSend[i] = _body[j];
+	}
+	_c_toSend[i] = '\0';
+//	_c_toSend = const_cast<char *>(_toSend.c_str());
 }
 
 ssize_t HttpResponse::getSendPos() const {
