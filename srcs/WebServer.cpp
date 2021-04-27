@@ -50,7 +50,7 @@ int WebServer::lifeCycle() {
 	_maxFdSize = _server.back()->getSocketFd();
 
 	while (true) {
-		std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
+	//	std::cout << GREEN << "\nWaiting for connection! " << WHITE <<"Clients count = " << _client.size() << RESET << std::endl;
 		initSocketSet(readFdSet, writeFdSet);
 
 		select(_maxFdSize + 1, &readFdSet, &writeFdSet, NULL, NULL);
@@ -163,8 +163,14 @@ void WebServer::sendResponse(Client *&client) {
 	ssize_t sendLen = client->getResponse()->getSendPos();
 
 	char *buf = client->getResponse()->getCToSend();
-	size_t len = static_cast<size_t>( client->getResponse()->getSendLen() - client->getResponse()->getSendPos());
-	sendLen += send(client->getSocketFd(), &buf[client->getResponse()->getSendPos()], len, 0);
+	size_t len = static_cast<size_t>(client->getResponse()->getSendLen() - client->getResponse()->getSendPos());
+	ssize_t s_send = send(client->getSocketFd(), &buf[client->getResponse()->getSendPos()], len, 0);
+	if (s_send < 0){
+        client->setState(Client__State__CLOSE);
+        client->getResponse()->getCToSend();
+
+	}
+    sendLen += s_send;
 	std::cout << YELLOW << "Sending a response to the user with ip " << RED << client->getInfo()
 	<< MAGENTA << ", len = " << sendLen - client->getResponse()->getSendPos()
 	<< " FD = " << client->getSocketFd() <<  RESET << std::endl;
