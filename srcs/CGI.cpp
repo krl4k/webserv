@@ -131,7 +131,7 @@ void	CGI::executeCGI() {
 	}
 	else
 	{
-		char buffer[CGI_BUFSIZE] = {0};
+		char buffer[CGI_BUFSIZE];
 		waitpid(-1, NULL, 0);
 		lseek(fd[OUT], SEEK_SET, SEEK_SET);
 		ssize_t bytes = 1;
@@ -162,7 +162,11 @@ void	CGI::executeCGI() {
 		if ((pos = cgiHeader.find("Content-Type: ", 0)) != std::string::npos)
 			_request->setContentType(cgiHeader.substr(pos + 14, 24));
 		_response->setCgiHeader(cgiHeader);
-		_bodySize -= cgiHeader.size();
+		_response->setBodySize((size_t)_bodySize - cgiHeader.size());
 	}
-	_response->setBody(newBody);
+    char *temp = (char *)malloc(sizeof(char) * newBody.size());
+    for (size_t i = 0; i < newBody.size(); ++i) {
+        temp[i] = newBody[i];
+    }
+	_response->setBody(temp);
 }
