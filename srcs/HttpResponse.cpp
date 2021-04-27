@@ -289,6 +289,8 @@ std::string HttpResponse::getPage(std::string &path) {
 		int cor_fd = open(path.c_str(), O_RDONLY);
 		if (!cor_fd)
 			throw std::runtime_error("Can't open file");
+//		todo rewrite to char *
+//      https://coderoad.ru/16762018/C-%D0%BE%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-HTTP
 		while (read(cor_fd, &temp, 1) > 0) {
 			buf << temp;
 		}
@@ -304,8 +306,12 @@ std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
     header << "HTTP/1.1 " << _code << " " << getStatusMessages(_code) << CRLF <<
 		   "Date: " << getCurrentDate() << CRLF <<
 		   "Server: " << "KiRoTa/0.1" << CRLF <<
-		   "Content-type: " << "image/apng" << CRLF <<
+//		   "Content-type: " << "text/html; image/apng" << CRLF <<
+		   "Content-Type: " << "image/jpg" << CRLF <<
+//           "Content-Transfer-Encoding: " << "binary" << CRLF <<
 		   "Content-Length: " << _body_size;
+    // Content-Type: image/gif
+    // Content-Transfer-Encoding: binary
 	(void)client;
 //	if (!client->getRequest()->getConnectionType().empty())
 //		header << "Connection: " << client->getRequest()->getConnectionType() << BODY_SEP;

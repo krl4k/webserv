@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
 			WebServer webServer(argv[1]);
 			webServer.start();
 		} catch (std::exception &exception) {
+		    std::cerr << exception.what() << std::endl;
 			std::cerr << "Server dont started!" << std::endl;
 			return -1;
 		}
