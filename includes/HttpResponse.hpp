@@ -53,7 +53,7 @@ public:
 	HttpResponse &operator=(HttpResponse const &src);
 
 	char * getPage(std::string &path);
-	std::string createHeader(HttpRequest * req, Client *&client);
+	std::string createHeader(HttpRequest * req, Client *&client, std::string & extencion);
 	void		setBody(const char *body);
 	void		setBodySize(size_t bodySize);
 	const std::string &getToSend() const;

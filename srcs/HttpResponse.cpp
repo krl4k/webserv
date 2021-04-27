@@ -317,14 +317,14 @@ char * HttpResponse::getPage(std::string &path) {
 }
 #include <cstdlib>
 
-std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
+std::string HttpResponse::createHeader(HttpRequest *req, Client *&client, std::string &path) {
 	std::stringstream header;
 	std::string code = std::to_string(_code);
 
     header << ("HTTP/1.1 ") << _code <<" " << getStatusMessages(_code) << CRLF <<
     "Date: " + getCurrentDate() << CRLF
 	<< "Server: "  << "KiRoTa/0.1" << CRLF <<
-		   "Content-type: " << req->getContentType() << CRLF <<
+		   "Content-type: " << req->getContentType(path) << CRLF <<
 		   "Content-Length: " << _body_size;
 	(void)client;
 //	if (!client->getRequest()->getConnectionType().empty())
@@ -338,8 +338,18 @@ std::string HttpResponse::createHeader(HttpRequest *req, Client *&client) {
 void HttpResponse::setBody(const char *body) {
 	_body = (char *)body;
 }
+/*std::string checkContentType(std::string &path){
+	size_t pos = path.rfind('/');
+	std::string index = path;
+	index = index.substr(pos, index.size());
+	if ((pos = index.rfind('.')) == std::string::npos)
+		return ("text/plain");
+	index = index.substr(pos, index.size());
+	return index;
+}*/
 
 void HttpResponse::initResponse(HttpRequest *req, std::string &path, Client *&client) {
+//	std::string extension = checkContentType(path);
 	if (!_body)
 		_body = getPage(path);
 //	std::cout << _maxBodySize << std::endl;
@@ -348,7 +358,7 @@ void HttpResponse::initResponse(HttpRequest *req, std::string &path, Client *&cl
 		_isThereErrorPage = (_configErrorCode == 413) ? 1 : -1;
 		_body = getPage(path);
 	}
-	_toSend.append(createHeader(req, client));
+	_toSend.append(createHeader(req, client, path));
 //	_toSend.append(_body);
 	setCToSend();
 }

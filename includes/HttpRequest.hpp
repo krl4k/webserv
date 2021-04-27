@@ -39,7 +39,7 @@ public:
 
 	void clean();
 
-	std::string getContentType() const;
+	std::string getContentType(std::string & extention) const;
 
 	int getParserState() const;
 
