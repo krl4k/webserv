@@ -157,6 +157,7 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 		_body.clear();
 		for (size_t i = 0; i < _chunk.size(); ++i) {
 			_body.append(_chunk[i]->getBuffer(), 0, static_cast<size_t>(_chunk[i]->getIntSize()));
+			delete _chunk[i];
 		}
 
 #if CHUNKED_REQUEST_DEBUG == 1
