@@ -3,7 +3,7 @@
 //
 
 
-#include "../includes/HttpRequest.hpp"
+#include "HttpRequest.hpp"
 
 HttpRequest::HttpRequest() : _sBuffer(),
 							 _state(HttpRequest__State__NEED_INFO), _parserState(ParserState__QUERY_STRING),
@@ -128,7 +128,9 @@ void HttpRequest::headersParse() {
 void HttpRequest::bodyParse() {
 	size_t bodyStart = _sBuffer.find(BODY_SEP) + 4;
 	if (_headers.find("TRANSFER-ENCODING")->second == "chunked") {
+#if CHUNKED_REQUEST_DEBUG
 		std::cout << CYAN << "CHUNKED!!!" << RESET << std::endl;
+#endif
 		parseChunk(bodyStart);
 	} else {
 		parseContentWithLength(bodyStart);
@@ -137,8 +139,17 @@ void HttpRequest::bodyParse() {
 
 
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
-	std::string key = std::string(line, 0, line.find(" ") - 1);
-	std::string value = std::string(line, key.size() + 2, line.find(CRLF) - key.size());
+    size_t spacePos = line.find(':');
+    size_t keyPos = spacePos++;
+    if (spacePos != std::string::npos){
+        while (line[spacePos] == ' ' && spacePos < line.size()){
+            ++spacePos;
+        }
+    }
+
+    std::string key = std::string(line, 0, keyPos);
+
+    std::string value = std::string(line, spacePos, line.find(CRLF) - key.size());
 	for (size_t i = 0; i < key.size(); ++i) {
 		key[i] = static_cast<char>(toupper(key[i]));
 	}
@@ -182,7 +193,7 @@ void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 
 void HttpRequest::createChunkContainer(){
 
-#if CHUNKED_REQUEST_DEBUG == 1
+#if CHUNKED_REQUEST_DEBUG
 	std::cout << "chunk:\n" << _body << std::endl;
 #endif
 

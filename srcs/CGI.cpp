@@ -1,4 +1,4 @@
-#include "../includes/CGI.hpp"
+#include "CGI.hpp"
 
 CGI::CGI() {
 	_init = false;

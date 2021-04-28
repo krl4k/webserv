@@ -7,8 +7,11 @@ set(CMAKE_CXX_STANDARD 11)
 add_compile_options( -Wall -Wextra -Werror -Wconversion -Wno-unused -Wunused-value  -Wunused-variable -Wunused-macros -Wunused-function  -Wunused-label)
 add_compile_options(-Wunused-local-typedefs -Wunused-const-variable)
 
-include_directories(/ /includes /srcs)
-link_directories(/ /includes /srcs)
+include_directories(/ /Users/fgrisell/CLionProjects/webserv/includes)
+#link_directories(/ /includes /srcs)
+
+#link_directories(includes srcs /)
+
 
 add_executable(webserv1
         srcs/main.cpp
@@ -29,6 +32,3 @@ add_executable(webserv1
 
 
 
-add_executable(test_cpp
-        srcs/AutoIndexGenerate.cpp
-        )

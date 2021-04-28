@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../includes/WebServer.hpp"
+#include "WebServer.hpp"
 
 static	void	sigHandler(int sig_num)
 {

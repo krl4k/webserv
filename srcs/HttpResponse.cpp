@@ -3,9 +3,8 @@
 //
 
 
-#include "../includes/HttpResponse.hpp"
-#include "../includes/Client.hpp"
-#include <sys/time.h>
+#include "HttpResponse.hpp"
+
 
 
 HttpResponse::HttpResponse() {
@@ -112,9 +111,8 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
     if (_code == errorPageCode) {
         int status = 0;
-        size_t n = (mergedPath.rfind('/'));
-        std::string tempPath = mergedPath.substr(0, n) + '/' + errorPage;
-        mergedPath = tempPath;
+        //size_t n = (mergedPath.rfind('/'));
+        mergedPath = errorPage;
         status = stat(mergedPath.c_str(), &fileInfo);
         _isThereErrorPage = (status != -1) ? 1 : 2;
     }
@@ -177,7 +175,7 @@ void HttpResponse::generate(Client *client, Server *server) {
         } else if (server->getErrorPageCode() != _code) {
             _isThereErrorPage = -1;
         } else {
-            mergedPath = RESOURCES_PATH + mergedPath;
+//            mergedPath = RESOURCES_PATH + mergedPath;
             _isThereErrorPage = 1;
         }
     } else {
@@ -218,17 +216,17 @@ void HttpResponse::generate(Client *client, Server *server) {
                     createPutResponse(client, fileInfo, mergedPath, flag);
                 }
             }
-            if ((client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD") && _code != 403) {
+            if ((client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD") && _code < 400) {
                 createGetOrHead(client, fileInfo, ourLoc, mergedPath, server->getErrorPage(),
                                 server->getErrorPageCode());
-            } else if (client->getRequest()->getMethod() == "PUT" && _code != 403) {
+            } else if (client->getRequest()->getMethod() == "PUT" && _code < 400) {
                 createPutResponse(client, fileInfo, mergedPath, flag);
             }
         }
     }
 	if (_code >= 400){
 		if (_configErrorCode == _code){
-			mergedPath = root + '/' + server->getErrorPage();
+			mergedPath = server->getErrorPage();
 			if (open(mergedPath.c_str(), O_RDONLY) < 0) {	_code = 404;	_isThereErrorPage = -1;	}
 			else 										{_isThereErrorPage = 1;}
 		}
