@@ -64,8 +64,8 @@ public:
 	void setWhiteList(const std::string &whiteListPath);
 
 private:
-
 	//todo rename this class like "VirtualHost"
+
 	int									_socketFd;
 	struct sockaddr_in					_socketAddr;
 

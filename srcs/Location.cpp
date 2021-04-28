@@ -2,9 +2,8 @@
 // Created by Foster Grisella on 4/13/21 16:24.
 //
 
-#include "../includes/Location.hpp"
-#include <string>
-#include <sstream>
+#include "Location.hpp"
+
 
 Location::Location() {
 	_autoIndex = true;

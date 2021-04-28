@@ -10,11 +10,11 @@
 class Client;
 class Server;
 class CGI;
-#include "../includes/HttpRequest.hpp"
-#include "../includes/Client.hpp"
-#include "../includes/Server.hpp"
-#include "../includes/CGI.hpp"
-#include "../includes/base64.h"
+#include "HttpRequest.hpp"
+#include "Client.hpp"
+#include "Server.hpp"
+#include "CGI.hpp"
+#include "base64.h"
 
 #include <string>
 #include <iostream>
@@ -27,11 +27,16 @@ class CGI;
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <iomanip>
+#include <fstream>
+#include <sys/time.h>
 
+#if __APPLE__
+#define GET_TIME_OF_STRUCT(structstat) (time_t)structstat.st_mtimespec.tv_sec;
+#elif __linux__
+#define GET_TIME_OF_STRUCT(x) = (time_t)x.st_atim.tv_sec;
+#endif
 
-#define RESOURCES_PATH "../resources/"
-#define ERROR_PAGE_PATH "../resources/error.html"
-#define ERROR_PAGE		"../html/"
 
 class HttpResponse {
 public:

@@ -3,9 +3,8 @@
 //
 
 
-#include "../includes/HttpResponse.hpp"
-#include "../includes/Client.hpp"
-#include <sys/time.h>
+#include "HttpResponse.hpp"
+
 
 
 HttpResponse::HttpResponse() {
@@ -39,6 +38,12 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 
     /** Checking access mode */
     if (S_ISDIR(fileInfo->st_mode)) {
+    	if (!ourLoc.isAutoIndex()) {
+			_code = 403;
+			return;
+		}
+    	if (ourLoc.getIndex().empty()) {_code = 404;
+			return;}
         if (!ourLoc.getIndex().empty()) { mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
         if ((fd = open(mergedPath.c_str(), O_RDONLY)) < 0) { _code = 404; }
         close(fd);
@@ -106,9 +111,8 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
 
     if (_code == errorPageCode) {
         int status = 0;
-        size_t n = (mergedPath.rfind('/'));
-        std::string tempPath = mergedPath.substr(0, n) + '/' + errorPage;
-        mergedPath = tempPath;
+        //size_t n = (mergedPath.rfind('/'));
+        mergedPath = errorPage;
         status = stat(mergedPath.c_str(), &fileInfo);
         _isThereErrorPage = (status != -1) ? 1 : 2;
     }
@@ -171,7 +175,7 @@ void HttpResponse::generate(Client *client, Server *server) {
         } else if (server->getErrorPageCode() != _code) {
             _isThereErrorPage = -1;
         } else {
-            mergedPath = RESOURCES_PATH + mergedPath;
+//            mergedPath = RESOURCES_PATH + mergedPath;
             _isThereErrorPage = 1;
         }
     } else {
@@ -191,7 +195,10 @@ void HttpResponse::generate(Client *client, Server *server) {
         flag = stat(mergedPath.c_str(), &fileInfo);
         if (_code < 400) {
             checkFile(ourLoc, mergedPath, &fileInfo);
-            if (client->getRequest()->getMethod() == "POST") {
+            if (_code == 403){
+				_isThereErrorPage = (_code != _configErrorCode) ? -1 : 1;
+            }
+            else if (client->getRequest()->getMethod() == "POST") {
                 if (!ourLoc.getCgiPath().empty()) {
                     std::cout << YELLOW << "---CGI---" << RESET << std::endl;
                     std::string cgi = ourLoc.getCgiPath();
@@ -209,14 +216,22 @@ void HttpResponse::generate(Client *client, Server *server) {
                     createPutResponse(client, fileInfo, mergedPath, flag);
                 }
             }
-            if (client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD") {
+            if ((client->getRequest()->getMethod() == "GET" || client->getRequest()->getMethod() == "HEAD") && _code < 400) {
                 createGetOrHead(client, fileInfo, ourLoc, mergedPath, server->getErrorPage(),
                                 server->getErrorPageCode());
-            } else if (client->getRequest()->getMethod() == "PUT") {
+            } else if (client->getRequest()->getMethod() == "PUT" && _code < 400) {
                 createPutResponse(client, fileInfo, mergedPath, flag);
             }
         }
     }
+	if (_code >= 400){
+		if (_configErrorCode == _code){
+			mergedPath = server->getErrorPage();
+			if (open(mergedPath.c_str(), O_RDONLY) < 0) {	_code = 404;	_isThereErrorPage = -1;	}
+			else 										{_isThereErrorPage = 1;}
+		}
+		else											{_isThereErrorPage = -1;}
+	}
     initResponse(client->getRequest(), mergedPath, client);
 
 }

@@ -3,8 +3,7 @@
 //
 
 
-#include <fstream>
-#include "../includes/Parser.hpp"
+#include "Parser.hpp"
 
 Parser::~Parser() {
 
@@ -36,6 +35,12 @@ Parser::Parser(const std::string &fileName) {
 		} catch (std::exception &exception) {
 			throw std::runtime_error(exception.what());
 		}
+	}
+	for (size_t i = 0; i < _servers.size(); ++i){
+	    for (size_t j = i + 1; j < _servers.size(); ++j){
+	        if (_servers[i]->getPort() == _servers[j]->getPort())
+                throw std::runtime_error("Port error");
+	    }
 	}
 
 	for (size_t i = 0; i < _servers.size(); ++i) {
