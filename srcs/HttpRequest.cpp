@@ -3,7 +3,7 @@
 //
 
 
-#include "../includes/HttpRequest.hpp"
+#include "HttpRequest.hpp"
 
 HttpRequest::HttpRequest() : _sBuffer(),
 							 _state(HttpRequest__State__NEED_INFO), _parserState(ParserState__QUERY_STRING),
@@ -45,11 +45,9 @@ void HttpRequest::clean() {
 	for (size_t i = 0; i < _chunk.size(); ++i)
 		delete _chunk[i];
 	_chunk.clear();
-
 }
 
 void HttpRequest::parse(char *buffer, ssize_t bufSize) {
-
 	_sBuffer.append(buffer, static_cast<size_t>(bufSize));
 
 #if HTTP_REQUEST_DEBUG
@@ -76,7 +74,7 @@ void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 	}
 #endif
 
-#if HTTP_REQUEST_DEBUG == 1
+#if HTTP_REQUEST_DEBUG
 	std::cout << MAGENTA << "DEBUG INFO" << RESET << std::endl;
 	std::cout << "method = " << _method << std::endl;
 	std::cout << "path  = " << _path << std::endl;
@@ -95,7 +93,7 @@ void HttpRequest::parse(char *buffer, ssize_t bufSize) {
 
 void HttpRequest::queryStringParse() {
 	if (_sBuffer.find(CRLF) != std::string::npos) {
-		_method = std::string(_sBuffer, 0, _sBuffer.find(" "));
+		_method = std::string(_sBuffer, 0, _sBuffer.find(' '));
 		_path = std::string(_sBuffer, _method.length() + 1,_sBuffer.find(" ", _method.length() + 1, 1) - _method.length() - 1);
 
 		size_t queryStringPos = 0;
@@ -130,7 +128,9 @@ void HttpRequest::headersParse() {
 void HttpRequest::bodyParse() {
 	size_t bodyStart = _sBuffer.find(BODY_SEP) + 4;
 	if (_headers.find("TRANSFER-ENCODING")->second == "chunked") {
+#if CHUNKED_REQUEST_DEBUG
 		std::cout << CYAN << "CHUNKED!!!" << RESET << std::endl;
+#endif
 		parseChunk(bodyStart);
 	} else {
 		parseContentWithLength(bodyStart);
@@ -139,8 +139,17 @@ void HttpRequest::bodyParse() {
 
 
 std::pair<std::string, std::string> HttpRequest::getPair(const std::string &line) {
-	std::string key = std::string(line, 0, line.find(" ") - 1);
-	std::string value = std::string(line, key.size() + 2, line.find(CRLF) - key.size());
+    size_t spacePos = line.find(':');
+    size_t keyPos = spacePos++;
+    if (spacePos != std::string::npos){
+        while (line[spacePos] == ' ' && spacePos < line.size()){
+            ++spacePos;
+        }
+    }
+
+    std::string key = std::string(line, 0, keyPos);
+
+    std::string value = std::string(line, spacePos, line.find(CRLF) - key.size());
 	for (size_t i = 0; i < key.size(); ++i) {
 		key[i] = static_cast<char>(toupper(key[i]));
 	}
@@ -151,9 +160,7 @@ void HttpRequest::parseChunk(size_t bodyStart) {
 	size_t endBody = 0;
 	if ((endBody = _sBuffer.find("0\r\n\r\n", bodyStart)) != std::string::npos){
 		_body.append(_sBuffer, bodyStart, (endBody - bodyStart + 3));
-		//todo errors checker
 		createChunkContainer();
-		//concatenate chunks
 		_body.clear();
 		for (size_t i = 0; i < _chunk.size(); ++i) {
 			_body.append(_chunk[i]->getBuffer(), 0, static_cast<size_t>(_chunk[i]->getIntSize()));
@@ -186,7 +193,7 @@ void HttpRequest::parseContentWithLength(size_t  bodyStart) {
 
 void HttpRequest::createChunkContainer(){
 
-#if CHUNKED_REQUEST_DEBUG == 1
+#if CHUNKED_REQUEST_DEBUG
 	std::cout << "chunk:\n" << _body << std::endl;
 #endif
 

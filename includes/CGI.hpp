@@ -7,11 +7,11 @@
 #include <sys/stat.h>
 class HttpResponse;
 class HttpRequest;
-class Client ;
+class Client;
 #include "../includes/Client.hpp"
-#include "../includes/HttpRequest.hpp"
-#include "../includes/HttpResponse.hpp"
-#include "../includes/Server.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+#include "Server.hpp"
 #include <string>
 #include <iostream>
 #include <vector>

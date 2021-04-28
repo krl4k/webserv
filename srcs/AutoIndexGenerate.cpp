@@ -2,15 +2,9 @@
 // Created by Foster Grisella on 4/23/21 13:29.
 //
 
-#include <iomanip>
-#include <fstream>
-#include "../includes/HttpResponse.hpp"
+#include "HttpResponse.hpp"
 
-#if __APPLE__
-	#define GET_TIME_OF_STRUCT(structstat) (time_t)structstat.st_mtimespec.tv_sec;
-#elif __linux__
-	#define GET_TIME_OF_STRUCT(x) = (time_t)x.st_atim.tv_sec;
-#endif
+
 
 class DirectoryContent{
 public:
