@@ -39,10 +39,12 @@ void HttpResponse::checkFile(Location &ourLoc, std::string &mergedPath, struct s
 
     /** Checking access mode */
     if (S_ISDIR(fileInfo->st_mode)) {
-    	if (!ourLoc.isAutoIndex()){
-    		_code = 403;
-			return ;
-    	}
+    	if (!ourLoc.isAutoIndex()) {
+			_code = 403;
+			return;
+		}
+    	if (ourLoc.getIndex().empty()) {_code = 404;
+			return;}
         if (!ourLoc.getIndex().empty()) { mergedPath = mergedPath + '/' + ourLoc.getIndex(); }
         if ((fd = open(mergedPath.c_str(), O_RDONLY)) < 0) { _code = 404; }
         close(fd);
