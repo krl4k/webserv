@@ -34,7 +34,7 @@ class CGI;
 #if __APPLE__
 #define GET_TIME_OF_STRUCT(structstat) (time_t)structstat.st_mtimespec.tv_sec;
 #elif __linux__
-#define GET_TIME_OF_STRUCT(x) = (time_t)x.st_atim.tv_sec;
+#define GET_TIME_OF_STRUCT(x)  (time_t)x.st_atim.tv_sec;
 #endif
 
 

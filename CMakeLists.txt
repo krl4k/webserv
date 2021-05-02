@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 11)
 add_compile_options( -Wall -Wextra -Werror -Wconversion -Wno-unused -Wunused-value  -Wunused-variable -Wunused-macros -Wunused-function  -Wunused-label)
 add_compile_options(-Wunused-local-typedefs -Wunused-const-variable)
 
-include_directories(/ /Users/mwinter/CLionProjects/webserv/includes)
+include_directories(/ ../webserv/includes)
 
 
 add_executable(webserv1

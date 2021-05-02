@@ -22,7 +22,7 @@ SRCS_PATH = $(addprefix $(SRCS_DIR)/, $(SRCS))
 
 RM = rm -f
 
-CC = clang++
+CC = g++
 
 CFLAGS = -Wall -Wextra -Werror
 

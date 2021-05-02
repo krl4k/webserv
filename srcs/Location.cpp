@@ -29,7 +29,9 @@ void Location::setAutoIndex(std::string autoIndex) {
 void Location::setUrl(const std::string &url) {
 	_url = url;
 }
-
+#include <cstring>
+#include <string>
+#include <algorithm>
 void Location::setAllowMethods(const std::string &allowMethods) {
 	std::vector<std::string> strings;
 	std::string temp = allowMethods;

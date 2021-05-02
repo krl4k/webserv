@@ -118,6 +118,9 @@ void HttpResponse::createGetOrHead(Client *client, struct stat fileInfo, Locatio
     }
 }
 
+#include <iostream>
+#include <algorithm>
+
 size_t find_loc(std::string loc, Server *server) {
     ssize_t n = std::count(loc.begin(), loc.end(), '/');
     size_t pos = 0;

@@ -46,7 +46,7 @@ Parser::Parser(const std::string &fileName) {
 	for (size_t i = 0; i < _servers.size(); ++i) {
 		if (_servers[i]->getServerName().empty())
 			throw std::runtime_error("There is no server name");
-		if (_servers[i]->getPort() < 1024 || _servers[i]->getPort() > 65535)
+		if (_servers[i]->getPort() < 1024)
 			throw std::runtime_error("Port should be between 1024 and 65534");
 		if (_servers[i]->getLocation().empty())
 			throw std::runtime_error("There is no locations");

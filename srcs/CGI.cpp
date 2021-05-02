@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include "CGI.hpp"
 
 CGI::CGI() {

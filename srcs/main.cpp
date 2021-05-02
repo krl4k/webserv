@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <signal.h>
 #include "WebServer.hpp"
 
 static	void	sigHandler(int sig_num)
